@@ -6,6 +6,7 @@ const MaintenanceStaffSchema = new mongoose.Schema(
     siteName: { type: String, required: true, trim: true },
     designation: { type: String, required: true, trim: true },
     name: { type: String, required: true, trim: true },
+    photo: { type: String, default: "" },
   },
   { timestamps: true }
 );

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Users, Shield, Sparkles, Leaf, Car, Zap, Droplet } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Shield, Sparkles, Leaf, Car, Zap, Droplet, IdCard, User } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import StatCard from "../../components/StatCard";
 import FilterBar, { Select } from "../../components/FilterBar";
@@ -13,6 +13,7 @@ import {
   createMaintenanceStaff,
   updateMaintenanceStaff,
   deleteMaintenanceStaff,
+  idCardUrl,
 } from "../../api/maintenanceStaff";
 
 const DESIGNATION_ICONS = {
@@ -122,6 +123,18 @@ export default function MaintenanceStaffPage() {
 
       <DataTable
         columns={[
+          {
+            key: "photo",
+            header: "Photo",
+            render: (r) =>
+              r.photo ? (
+                <img src={r.photo} alt={r.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                  <User size={16} className="text-gray-400" />
+                </div>
+              ),
+          },
           { key: "employeeId", header: "Employee ID" },
           { key: "siteName", header: "Site Name" },
           { key: "designation", header: "Designation" },
@@ -131,6 +144,9 @@ export default function MaintenanceStaffPage() {
             header: "Actions",
             render: (r) => (
               <div className="flex gap-3">
+                <a href={idCardUrl(r._id)} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-primary" title="Download ID Card">
+                  <IdCard size={16} />
+                </a>
                 <button onClick={() => { setEditing(r); setShowForm(true); }} className="text-gray-500 hover:text-primary">
                   <Pencil size={16} />
                 </button>
@@ -165,6 +181,8 @@ export default function MaintenanceStaffPage() {
 
 function StaffFormModal({ staff, meta, onClose, onSaved }) {
   const [form, setForm] = useState(staff || { employeeId: "", siteName: "", designation: "", name: "" });
+  const [photo, setPhoto] = useState(null);
+  const [preview, setPreview] = useState(staff?.photo || null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -174,13 +192,20 @@ function StaffFormModal({ staff, meta, onClose, onSaved }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const onPhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhoto(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
     if (staff) {
-      await updateMaintenanceStaff(staff._id, form);
+      await updateMaintenanceStaff(staff._id, form, photo);
     } else {
-      await createMaintenanceStaff(form);
+      await createMaintenanceStaff(form, photo);
     }
     setSaving(false);
     onSaved();
@@ -189,6 +214,21 @@ function StaffFormModal({ staff, meta, onClose, onSaved }) {
   return (
     <Modal title={staff ? "Edit Staff Member" : "Add Staff Member"} onClose={onClose}>
       <form onSubmit={submit} className="space-y-3">
+        <Field label="Photo">
+          <div className="flex items-center gap-3">
+            {preview ? (
+              <img src={preview} alt="" className="w-16 h-16 rounded-full object-cover border border-gray-200" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                <User size={22} className="text-gray-400" />
+              </div>
+            )}
+            <label className="cursor-pointer text-sm font-medium text-primary hover:underline">
+              Upload photo
+              <input type="file" accept="image/*" onChange={onPhotoChange} className="hidden" />
+            </label>
+          </div>
+        </Field>
         <Field label="Employee ID">
           <input required value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} className="input" />
         </Field>

@@ -1,4 +1,6 @@
 const MaintenanceStaff = require("../models/MaintenanceStaff");
+const { fileToUrl } = require("../middleware/upload");
+const { buildIdCardPdf } = require("../utils/idCardPdf");
 
 function collapseSpaces(value) {
   return value.trim().replace(/\s+/g, " ");
@@ -77,6 +79,7 @@ exports.create = async (req, res) => {
   }
   if (body.designation) body.designation = await normalizeAgainstExisting("designation", body.designation);
   if (body.siteName) body.siteName = await normalizeAgainstExisting("siteName", body.siteName);
+  if (req.file) body.photo = fileToUrl(req.file);
   const staff = await MaintenanceStaff.create(body);
   res.status(201).json(staff);
 };
@@ -85,6 +88,7 @@ exports.update = async (req, res) => {
   const body = { ...req.body };
   if (body.designation) body.designation = await normalizeAgainstExisting("designation", body.designation);
   if (body.siteName) body.siteName = await normalizeAgainstExisting("siteName", body.siteName);
+  if (req.file) body.photo = fileToUrl(req.file);
   const staff = await MaintenanceStaff.findByIdAndUpdate(req.params.id, body, {
     new: true,
     runValidators: true,
@@ -97,4 +101,15 @@ exports.remove = async (req, res) => {
   const staff = await MaintenanceStaff.findByIdAndDelete(req.params.id);
   if (!staff) return res.status(404).json({ message: "Staff member not found" });
   res.json({ message: "Staff member deleted" });
+};
+
+exports.idCard = async (req, res) => {
+  const staff = await MaintenanceStaff.findById(req.params.id);
+  if (!staff) return res.status(404).json({ message: "Staff member not found" });
+
+  const doc = await buildIdCardPdf(staff);
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `inline; filename=id-card-${staff.employeeId}.pdf`);
+  doc.pipe(res);
+  doc.end();
 };
