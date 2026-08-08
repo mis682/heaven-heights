@@ -87,9 +87,9 @@ async function drawBack(doc, staff) {
 
 // Front and back are placed side by side on one landscape page, scaled down
 // to CARD_WIDTH/CARD_HEIGHT, so the sheet can be folded down the middle and
-// laminated as a single two-sided card. The back half is mirrored
-// horizontally — once folded behind the front half, it reads correctly
-// instead of backwards.
+// laminated as a single two-sided card. Both halves are drawn in normal
+// (non-mirrored) orientation — folding this particular way reads correctly
+// without any mirroring, and mirroring would make the QR unscannable.
 async function buildIdCardPdf(staff) {
   const doc = new PDFDocument({ size: [CARD_WIDTH * 2, CARD_HEIGHT], margin: 0 });
 
@@ -104,7 +104,7 @@ async function buildIdCardPdf(staff) {
   doc.restore();
 
   doc.save();
-  doc.translate(CARD_WIDTH * 2, 0).scale(-SCALE_X, SCALE_Y);
+  doc.translate(CARD_WIDTH, 0).scale(SCALE_X, SCALE_Y);
   await drawBack(doc, staff);
   doc.restore();
 
