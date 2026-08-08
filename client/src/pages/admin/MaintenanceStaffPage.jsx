@@ -38,7 +38,8 @@ export default function MaintenanceStaffPage() {
   const [showForm, setShowForm] = useState(false);
 
   const loadMeta = () => getMaintenanceStaffMeta().then(setMeta);
-  const loadStats = () => getMaintenanceStaffStats().then(setStats);
+  const loadStats = () =>
+    getMaintenanceStaffStats({ siteName: siteFilter || undefined, search: search || undefined }).then(setStats);
 
   const load = async () => {
     setLoading(true);
@@ -53,13 +54,19 @@ export default function MaintenanceStaffPage() {
 
   useEffect(() => {
     loadMeta();
-    loadStats();
   }, []);
 
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteFilter, designationFilter, search]);
+
+  // Stat cards reflect the site/search filter but stay independent of the
+  // designation filter, so all designation counts remain visible to switch between.
+  useEffect(() => {
+    loadStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [siteFilter, search]);
 
   const remove = async (id) => {
     await deleteMaintenanceStaff(id);

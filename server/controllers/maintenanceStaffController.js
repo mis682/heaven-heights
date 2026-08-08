@@ -42,12 +42,17 @@ exports.meta = async (req, res) => {
 };
 
 exports.stats = async (req, res) => {
+  const { siteName, search } = req.query;
+  const filter = {};
+  if (siteName) filter.siteName = siteName;
+  if (search) {
+    const re = new RegExp(search, "i");
+    filter.$or = [{ name: re }, { employeeId: re }, { siteName: re }, { designation: re }];
+  }
+
   const [total, byDesignation] = await Promise.all([
-    MaintenanceStaff.countDocuments({}),
-    MaintenanceStaff.aggregate([
-      { $group: { _id: "$designation", count: { $sum: 1 } } },
-      { $sort: { _id: 1 } },
-    ]),
+    MaintenanceStaff.countDocuments(filter),
+    MaintenanceStaff.aggregate([{ $match: filter }, { $group: { _id: "$designation", count: { $sum: 1 } } }, { $sort: { _id: 1 } }]),
   ]);
   res.json({
     total,
