@@ -3,8 +3,6 @@ import { Menu, Sun, Moon, Maximize, Bell, LogOut } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 
-const TEAM_AVATARS = ["A", "R", "P", "S"];
-
 export default function Topbar({ onToggleSidebar }) {
   const { dark, toggle } = useTheme();
   const { user, logout } = useAuth();
@@ -34,20 +32,6 @@ export default function Topbar({ onToggleSidebar }) {
         <button onClick={toggleFullscreen} className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" aria-label="Fullscreen">
           <Maximize size={18} />
         </button>
-
-        <div className="flex items-center -space-x-2">
-          {TEAM_AVATARS.map((initial, idx) => (
-            <div
-              key={idx}
-              className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs font-semibold text-gray-600"
-            >
-              {initial}
-            </div>
-          ))}
-          <div className="w-8 h-8 rounded-full bg-primary text-white border-2 border-white flex items-center justify-center text-xs font-semibold">
-            +5
-          </div>
-        </div>
 
         <button className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 relative" aria-label="Notifications">
           <Bell size={18} />
