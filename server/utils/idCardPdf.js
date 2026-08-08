@@ -30,10 +30,7 @@ function drawLogo(doc, y, width) {
   }
 }
 
-async function buildIdCardPdf(staff) {
-  const doc = new PDFDocument({ size: [CARD_WIDTH, CARD_HEIGHT], margin: 0 });
-
-  // --- Front side ---
+async function drawFront(doc, staff) {
   doc.rect(0, 0, CARD_WIDTH, CARD_HEIGHT).fill("#ffffff");
   drawLogo(doc, 10, 130);
 
@@ -66,9 +63,9 @@ async function buildIdCardPdf(staff) {
   doc.text(`Site: ${staff.siteName}`, textX, ty, { width: textWidth });
 
   drawFooterBars(doc);
+}
 
-  // --- Back side ---
-  doc.addPage({ size: [CARD_WIDTH, CARD_HEIGHT], margin: 0 });
+async function drawBack(doc, staff) {
   doc.rect(0, 0, CARD_WIDTH, CARD_HEIGHT).fill("#ffffff");
   drawLogo(doc, 10, 110);
 
@@ -78,6 +75,28 @@ async function buildIdCardPdf(staff) {
   doc.image(qrBuffer, (CARD_WIDTH - qrSize) / 2, 48, { width: qrSize, height: qrSize });
 
   drawFooterBars(doc);
+}
+
+// Front and back are placed side by side on one landscape page so the sheet
+// can be folded down the middle and laminated as a single two-sided card.
+// The back half is mirrored horizontally — once folded behind the front
+// half, it reads correctly instead of backwards.
+async function buildIdCardPdf(staff) {
+  const doc = new PDFDocument({ size: [CARD_WIDTH * 2, CARD_HEIGHT], margin: 0 });
+
+  doc.save();
+  await drawFront(doc, staff);
+  doc.restore();
+
+  doc.save();
+  doc.dash(3, { space: 2 }).lineWidth(0.75).moveTo(CARD_WIDTH, 0).lineTo(CARD_WIDTH, CARD_HEIGHT).stroke("#9ca3af");
+  doc.undash();
+  doc.restore();
+
+  doc.save();
+  doc.translate(CARD_WIDTH * 2, 0).scale(-1, 1);
+  await drawBack(doc, staff);
+  doc.restore();
 
   return doc;
 }
