@@ -41,6 +41,20 @@ exports.meta = async (req, res) => {
   res.json({ sites: sites.sort(), designations: designations.sort() });
 };
 
+exports.stats = async (req, res) => {
+  const [total, byDesignation] = await Promise.all([
+    MaintenanceStaff.countDocuments({}),
+    MaintenanceStaff.aggregate([
+      { $group: { _id: "$designation", count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]),
+  ]);
+  res.json({
+    total,
+    byDesignation: byDesignation.map((d) => ({ designation: d._id, count: d.count })),
+  });
+};
+
 async function suggestNextEmployeeId() {
   const docs = await MaintenanceStaff.find({ employeeId: /^NP\d+$/ }, { employeeId: 1 });
   const max = docs.reduce((m, d) => Math.max(m, parseInt(d.employeeId.slice(2), 10)), 0);

@@ -4,6 +4,7 @@ const ctrl = require("../controllers/maintenanceStaffController");
 const asyncHandler = require("../utils/asyncHandler");
 
 router.get("/meta", asyncHandler(ctrl.meta));
+router.get("/stats", asyncHandler(ctrl.stats));
 router.get("/next-id", asyncHandler(ctrl.nextId));
 router.get("/", asyncHandler(ctrl.list));
 router.post("/", asyncHandler(ctrl.create));

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Shield, Sparkles, Leaf, Car, Zap, Droplet } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
+import StatCard from "../../components/StatCard";
 import FilterBar, { Select } from "../../components/FilterBar";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
 import {
   getMaintenanceStaffMeta,
+  getMaintenanceStaffStats,
   getNextMaintenanceStaffId,
   listMaintenanceStaff,
   createMaintenanceStaff,
@@ -13,9 +15,21 @@ import {
   deleteMaintenanceStaff,
 } from "../../api/maintenanceStaff";
 
+const DESIGNATION_ICONS = {
+  "Security Guard": Shield,
+  "House Keeping": Sparkles,
+  Gardener: Leaf,
+  Driver: Car,
+  Electrician: Zap,
+  "Tanki Guard": Droplet,
+};
+
+const DESIGNATION_COLORS = ["blue", "orange", "green", "amber", "gray", "red"];
+
 export default function MaintenanceStaffPage() {
   const [staff, setStaff] = useState([]);
   const [meta, setMeta] = useState({ sites: [], designations: [] });
+  const [stats, setStats] = useState({ total: 0, byDesignation: [] });
   const [search, setSearch] = useState("");
   const [siteFilter, setSiteFilter] = useState("");
   const [designationFilter, setDesignationFilter] = useState("");
@@ -24,6 +38,7 @@ export default function MaintenanceStaffPage() {
   const [showForm, setShowForm] = useState(false);
 
   const loadMeta = () => getMaintenanceStaffMeta().then(setMeta);
+  const loadStats = () => getMaintenanceStaffStats().then(setStats);
 
   const load = async () => {
     setLoading(true);
@@ -38,6 +53,7 @@ export default function MaintenanceStaffPage() {
 
   useEffect(() => {
     loadMeta();
+    loadStats();
   }, []);
 
   useEffect(() => {
@@ -49,6 +65,7 @@ export default function MaintenanceStaffPage() {
     await deleteMaintenanceStaff(id);
     load();
     loadMeta();
+    loadStats();
   };
 
   return (
@@ -58,6 +75,31 @@ export default function MaintenanceStaffPage() {
         subtitle="Full staff directory across all sites — guards, housekeeping, gardeners, drivers and more."
         primaryAction={{ label: "Add Staff", icon: <Plus size={16} />, onClick: () => { setEditing(null); setShowForm(true); } }}
       />
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-5">
+        <StatCard
+          label="Total Staff"
+          value={stats.total}
+          icon={<Users size={16} />}
+          color="orange"
+          active={!designationFilter}
+          onClick={() => setDesignationFilter("")}
+        />
+        {stats.byDesignation.map((d, idx) => {
+          const Icon = DESIGNATION_ICONS[d.designation] || Users;
+          return (
+            <StatCard
+              key={d.designation}
+              label={d.designation}
+              value={d.count}
+              icon={<Icon size={16} />}
+              color={DESIGNATION_COLORS[idx % DESIGNATION_COLORS.length]}
+              active={designationFilter === d.designation}
+              onClick={() => setDesignationFilter(d.designation)}
+            />
+          );
+        })}
+      </div>
 
       <FilterBar
         search={search}
@@ -106,6 +148,7 @@ export default function MaintenanceStaffPage() {
             setShowForm(false);
             load();
             loadMeta();
+            loadStats();
           }}
         />
       )}
