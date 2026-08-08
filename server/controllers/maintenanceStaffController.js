@@ -1,5 +1,25 @@
 const MaintenanceStaff = require("../models/MaintenanceStaff");
 
+function collapseSpaces(value) {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+// Ignore case AND whether words are separated by a space at all, so
+// "Housekeeping" and "House Keeping" are treated as the same value.
+function matchKey(value) {
+  return value.toLowerCase().replace(/\s+/g, "");
+}
+
+// Reuses the existing canonical spelling/casing when the same value already
+// exists (ignoring case and spacing), so typing "Housekeeping" reuses the
+// existing "House Keeping" designation instead of forking into two.
+async function normalizeAgainstExisting(field, value) {
+  const cleaned = collapseSpaces(value);
+  const existing = await MaintenanceStaff.distinct(field);
+  const match = existing.find((v) => matchKey(v) === matchKey(cleaned));
+  return match || cleaned;
+}
+
 exports.list = async (req, res) => {
   const { siteName, designation, search } = req.query;
   const filter = {};
@@ -36,12 +56,17 @@ exports.create = async (req, res) => {
   if (!body.employeeId) {
     body.employeeId = await suggestNextEmployeeId();
   }
+  if (body.designation) body.designation = await normalizeAgainstExisting("designation", body.designation);
+  if (body.siteName) body.siteName = await normalizeAgainstExisting("siteName", body.siteName);
   const staff = await MaintenanceStaff.create(body);
   res.status(201).json(staff);
 };
 
 exports.update = async (req, res) => {
-  const staff = await MaintenanceStaff.findByIdAndUpdate(req.params.id, req.body, {
+  const body = { ...req.body };
+  if (body.designation) body.designation = await normalizeAgainstExisting("designation", body.designation);
+  if (body.siteName) body.siteName = await normalizeAgainstExisting("siteName", body.siteName);
+  const staff = await MaintenanceStaff.findByIdAndUpdate(req.params.id, body, {
     new: true,
     runValidators: true,
   });
