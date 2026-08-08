@@ -91,25 +91,49 @@ export default function AttendanceRecordsPage() {
               ),
           },
           {
-            key: "timestamp",
-            header: "Time",
-            render: (r) => new Date(r.timestamp).toLocaleString(),
+            key: "date",
+            header: "Date",
+            render: (r) => new Date(r.timestamp).toLocaleDateString(),
           },
           {
-            key: "withinGeofence",
+            key: "timestamp",
+            header: "Time",
+            render: (r) => new Date(r.timestamp).toLocaleTimeString(),
+          },
+          {
+            key: "location",
             header: "Location",
-            render: (r) =>
-              r.withinGeofence == null ? (
-                <span className="text-xs text-gray-400">—</span>
-              ) : r.withinGeofence ? (
-                <span className="inline-flex items-center gap-1 text-green-700 text-xs">
-                  <CheckCircle2 size={13} /> On site
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-red-600 text-xs">
-                  <XCircle size={13} /> Off site
-                </span>
-              ),
+            render: (r) => {
+              if (r.latitude == null || r.longitude == null) {
+                return <span className="text-xs text-gray-400">—</span>;
+              }
+              return (
+                <div className="max-w-[220px]">
+                  <a
+                    href={`https://www.google.com/maps?q=${r.latitude},${r.longitude}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={r.address || `${r.latitude}, ${r.longitude}`}
+                    className="text-xs text-gray-600 hover:text-primary hover:underline line-clamp-2"
+                  >
+                    {r.address || `${r.latitude.toFixed(5)}, ${r.longitude.toFixed(5)}`}
+                  </a>
+                  {r.withinGeofence != null && (
+                    <div className="mt-0.5">
+                      {r.withinGeofence ? (
+                        <span className="inline-flex items-center gap-1 text-green-700 text-xs">
+                          <CheckCircle2 size={13} /> On site
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-red-600 text-xs">
+                          <XCircle size={13} /> Off site
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            },
           },
         ]}
         rows={loading ? [] : records}
