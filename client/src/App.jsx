@@ -21,6 +21,7 @@ import NightGuardAdminReportPage from "./pages/security/nightguard/NightGuardAdm
 import AttendancePage from "./pages/attendance/AttendancePage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
+import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
 
         <Route path="/attendance" element={<AttendancePage />} />
 
+        <Route path="/admin/maintenance-staff" element={<MaintenanceStaffPage />} />
         <Route path="/admin/guards" element={<GuardMasterDataPage />} />
       </Route>
 

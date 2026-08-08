@@ -7,6 +7,7 @@ const Project = require("../models/Project");
 const Checkpoint = require("../models/Checkpoint");
 const Guard = require("../models/Guard");
 const Employee = require("../models/Employee");
+const MaintenanceStaff = require("../models/MaintenanceStaff");
 
 const PATROL_PROJECTS = [
   { name: "Garden City", slug: "garden-city", checkpointCount: 20 },
@@ -104,6 +105,32 @@ async function seedGuards() {
   console.log(`[seed] guards ready (${records.length} rows)`);
 }
 
+async function seedMaintenanceStaff() {
+  const csvPath = path.join(__dirname, "..", "..", "maintenance_staff_seed.csv");
+  if (!fs.existsSync(csvPath)) {
+    console.warn(`[seed] maintenance_staff_seed.csv not found at ${csvPath}, skipping`);
+    return;
+  }
+
+  const content = fs.readFileSync(csvPath, "utf-8");
+  const records = parse(content, { columns: true, skip_empty_lines: true, trim: true });
+
+  for (const row of records) {
+    await MaintenanceStaff.findOneAndUpdate(
+      { employeeId: row.EmployeeID },
+      {
+        employeeId: row.EmployeeID,
+        siteName: row.SiteName,
+        designation: row.Designation,
+        name: row.Name,
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  }
+
+  console.log(`[seed] maintenance staff ready (${records.length} rows)`);
+}
+
 async function seedEmployees() {
   for (const e of DEMO_EMPLOYEES) {
     await Employee.findOneAndUpdate(
@@ -119,6 +146,7 @@ async function run() {
   await connectDB();
   await seedProjectsAndCheckpoints();
   await seedGuards();
+  await seedMaintenanceStaff();
   await seedEmployees();
   console.log("[seed] done");
   process.exit(0);

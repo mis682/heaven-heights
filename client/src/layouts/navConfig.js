@@ -37,6 +37,7 @@ export const NAV_SECTIONS = [
         ],
       },
       { label: "Attendance", path: "/attendance" },
+      { label: "Maintenance Staff", path: "/admin/maintenance-staff" },
       { label: "Guard Master Data", path: "/admin/guards" },
     ],
   },
