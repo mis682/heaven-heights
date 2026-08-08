@@ -19,6 +19,9 @@ import NightGuardDailyReportPage from "./pages/security/nightguard/NightGuardDai
 import NightGuardAdminReportPage from "./pages/security/nightguard/NightGuardAdminReportPage";
 
 import AttendancePage from "./pages/attendance/AttendancePage";
+import ScanAttendancePage from "./pages/attendance/ScanAttendancePage";
+import AttendanceRecordsPage from "./pages/attendance/AttendanceRecordsPage";
+import SiteLocationsPage from "./pages/attendance/SiteLocationsPage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
@@ -52,6 +55,9 @@ export default function App() {
         <Route path="/security/night-guard/admin-report" element={<NightGuardAdminReportPage />} />
 
         <Route path="/attendance" element={<AttendancePage />} />
+        <Route path="/attendance/scan" element={<ScanAttendancePage />} />
+        <Route path="/attendance/records" element={<AttendanceRecordsPage />} />
+        <Route path="/attendance/sites" element={<SiteLocationsPage />} />
 
         <Route path="/admin/maintenance-staff" element={<MaintenanceStaffPage />} />
         <Route path="/admin/guards" element={<GuardMasterDataPage />} />

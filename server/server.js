@@ -14,6 +14,8 @@ const patrolReportRoutes = require("./routes/patrolReports");
 const nightguardRoutes = require("./routes/nightguard");
 const attendanceRoutes = require("./routes/attendance");
 const maintenanceStaffRoutes = require("./routes/maintenanceStaff");
+const siteLocationRoutes = require("./routes/siteLocations");
+const attendanceScanRoutes = require("./routes/attendanceScan");
 
 const app = express();
 
@@ -29,6 +31,8 @@ app.use("/api/patrol-reports", patrolReportRoutes);
 app.use("/api/nightguard", nightguardRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/maintenance-staff", maintenanceStaffRoutes);
+app.use("/api/site-locations", siteLocationRoutes);
+app.use("/api/attendance-scan", attendanceScanRoutes);
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 

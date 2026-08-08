@@ -36,7 +36,15 @@ export const NAV_SECTIONS = [
           },
         ],
       },
-      { label: "Attendance", path: "/attendance" },
+      {
+        label: "Attendance",
+        children: [
+          { label: "Daily Attendance", path: "/attendance" },
+          { label: "Scan Attendance", path: "/attendance/scan" },
+          { label: "Attendance Records", path: "/attendance/records" },
+          { label: "Site Locations", path: "/attendance/sites" },
+        ],
+      },
       { label: "Maintenance Staff", path: "/admin/maintenance-staff" },
       { label: "Guard Master Data", path: "/admin/guards" },
     ],
