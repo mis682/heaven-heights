@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Users, Shield, Sparkles, Leaf, Car, Zap, Droplet, IdCard, User } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Shield, Sparkles, Leaf, Car, Zap, Droplet, IdCard, User, Camera } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import StatCard from "../../components/StatCard";
 import FilterBar, { Select } from "../../components/FilterBar";
@@ -37,6 +37,7 @@ export default function MaintenanceStaffPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [uploadingId, setUploadingId] = useState(null);
 
   const loadMeta = () => getMaintenanceStaffMeta().then(setMeta);
   const loadStats = () =>
@@ -74,6 +75,13 @@ export default function MaintenanceStaffPage() {
     load();
     loadMeta();
     loadStats();
+  };
+
+  const quickUploadPhoto = async (id, file) => {
+    setUploadingId(id);
+    await updateMaintenanceStaff(id, {}, file);
+    setUploadingId(null);
+    load();
   };
 
   return (
@@ -143,7 +151,26 @@ export default function MaintenanceStaffPage() {
             key: "actions",
             header: "Actions",
             render: (r) => (
-              <div className="flex gap-3">
+              <div className="flex gap-3 items-center">
+                {!r.photo && (
+                  <label
+                    className={`cursor-pointer ${uploadingId === r._id ? "text-gray-300" : "text-gray-500 hover:text-primary"}`}
+                    title="Upload photo for ID card"
+                  >
+                    <Camera size={16} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploadingId === r._id}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (file) quickUploadPhoto(r._id, file);
+                      }}
+                    />
+                  </label>
+                )}
                 <a href={idCardUrl(r._id)} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-primary" title="Download ID Card">
                   <IdCard size={16} />
                 </a>
