@@ -1,11 +1,56 @@
-import React, { useEffect, useState } from "react";
-import { LogIn, LogOut, User, CheckCircle2, XCircle } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { User, CheckCircle2, XCircle } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import FilterBar, { Select } from "../../components/FilterBar";
 import PhotoLightbox from "../../components/PhotoLightbox";
 import { listAttendanceScanRecords } from "../../api/attendanceScan";
 import { listSiteLocations } from "../../api/siteLocations";
+
+function PunchCell({ record, onPhotoClick }) {
+  if (!record) return <span className="text-xs text-gray-400">—</span>;
+
+  return (
+    <div className="flex items-center gap-2">
+      {record.photo ? (
+        <img
+          src={record.photo}
+          alt=""
+          className="w-8 h-8 rounded-full object-cover border border-gray-200 cursor-pointer shrink-0"
+          onClick={() => onPhotoClick(record)}
+        />
+      ) : (
+        <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+          <User size={14} className="text-gray-400" />
+        </div>
+      )}
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-heading">{new Date(record.timestamp).toLocaleTimeString()}</p>
+        {record.latitude != null && (
+          <a
+            href={`https://www.google.com/maps?q=${record.latitude},${record.longitude}`}
+            target="_blank"
+            rel="noreferrer"
+            title={record.address || `${record.latitude}, ${record.longitude}`}
+            className="text-xs text-gray-500 hover:text-primary hover:underline line-clamp-1 max-w-[160px] block"
+          >
+            {record.address || `${record.latitude.toFixed(5)}, ${record.longitude.toFixed(5)}`}
+          </a>
+        )}
+        {record.withinGeofence != null &&
+          (record.withinGeofence ? (
+            <span className="inline-flex items-center gap-1 text-green-700 text-xs">
+              <CheckCircle2 size={12} /> On site
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-red-600 text-xs">
+              <XCircle size={12} /> Off site
+            </span>
+          ))}
+      </div>
+    </div>
+  );
+}
 
 export default function AttendanceRecordsPage() {
   const [records, setRecords] = useState([]);
@@ -38,6 +83,29 @@ export default function AttendanceRecordsPage() {
 
   const photosWithRecord = records.filter((r) => r.photo);
 
+  // Each scan is a single in/out event; group same staff + same day pairs
+  // into one row so Punch In and Punch Out show side by side.
+  const rows = useMemo(() => {
+    const byKey = new Map();
+    records.forEach((r) => {
+      const dateKey = new Date(r.timestamp).toISOString().slice(0, 10);
+      const key = `${r.employeeId}__${dateKey}`;
+      if (!byKey.has(key)) {
+        byKey.set(key, {
+          key,
+          employeeId: r.employeeId,
+          name: r.name,
+          siteName: r.siteName,
+          dateKey,
+          in: null,
+          out: null,
+        });
+      }
+      byKey.get(key)[r.type] = r;
+    });
+    return Array.from(byKey.values()).sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
+  }, [records]);
+
   return (
     <div>
       <PageHeader title="Attendance Records" subtitle="QR scan se capture hui saari punch in/out entries." />
@@ -56,87 +124,27 @@ export default function AttendanceRecordsPage() {
 
       <DataTable
         columns={[
-          {
-            key: "photo",
-            header: "Photo",
-            render: (r) =>
-              r.photo ? (
-                <img
-                  src={r.photo}
-                  alt=""
-                  className="w-9 h-9 rounded-full object-cover border border-gray-200 cursor-pointer"
-                  onClick={() => setLightboxIndex(photosWithRecord.indexOf(r))}
-                />
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
-                  <User size={16} className="text-gray-400" />
-                </div>
-              ),
-          },
           { key: "name", header: "Name" },
           { key: "employeeId", header: "Employee ID" },
           { key: "siteName", header: "Site" },
           {
-            key: "type",
-            header: "Type",
-            render: (r) =>
-              r.type === "in" ? (
-                <span className="inline-flex items-center gap-1 text-green-700 text-xs font-medium">
-                  <LogIn size={13} /> In
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-amber-600 text-xs font-medium">
-                  <LogOut size={13} /> Out
-                </span>
-              ),
-          },
-          {
-            key: "date",
+            key: "dateKey",
             header: "Date",
-            render: (r) => new Date(r.timestamp).toLocaleDateString(),
+            render: (r) => new Date(r.dateKey).toLocaleDateString(),
           },
           {
-            key: "timestamp",
-            header: "Time",
-            render: (r) => new Date(r.timestamp).toLocaleTimeString(),
+            key: "in",
+            header: "Punch In",
+            render: (r) => <PunchCell record={r.in} onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))} />,
           },
           {
-            key: "location",
-            header: "Location",
-            render: (r) => {
-              if (r.latitude == null || r.longitude == null) {
-                return <span className="text-xs text-gray-400">—</span>;
-              }
-              return (
-                <div className="max-w-[220px]">
-                  <a
-                    href={`https://www.google.com/maps?q=${r.latitude},${r.longitude}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    title={r.address || `${r.latitude}, ${r.longitude}`}
-                    className="text-xs text-gray-600 hover:text-primary hover:underline line-clamp-2"
-                  >
-                    {r.address || `${r.latitude.toFixed(5)}, ${r.longitude.toFixed(5)}`}
-                  </a>
-                  {r.withinGeofence != null && (
-                    <div className="mt-0.5">
-                      {r.withinGeofence ? (
-                        <span className="inline-flex items-center gap-1 text-green-700 text-xs">
-                          <CheckCircle2 size={13} /> On site
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-red-600 text-xs">
-                          <XCircle size={13} /> Off site
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            },
+            key: "out",
+            header: "Punch Out",
+            render: (r) => <PunchCell record={r.out} onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))} />,
           },
         ]}
-        rows={loading ? [] : records}
+        rows={loading ? [] : rows}
+        rowKey="key"
         emptyMessage={loading ? "Loading..." : "Koi attendance record nahi mila"}
         emptyHint={loading ? "" : "Scan Attendance page se QR scan karke shuru karein"}
       />
