@@ -43,7 +43,10 @@ async function buildIdCardPdf(staff) {
   const photoSize = 68;
 
   if (photoBuffer) {
-    doc.image(photoBuffer, photoX, photoY, { width: photoSize, height: photoSize, fit: [photoSize, photoSize] });
+    doc.save();
+    doc.rect(photoX, photoY, photoSize, photoSize).clip();
+    doc.image(photoBuffer, photoX, photoY, { cover: [photoSize, photoSize], align: "center", valign: "center" });
+    doc.restore();
   } else {
     doc.rect(photoX, photoY, photoSize, photoSize).fillAndStroke("#f3f4f6", "#d1d5db");
     doc.fillColor("#9ca3af").fontSize(7).text("No Photo", photoX, photoY + photoSize / 2 - 4, { width: photoSize, align: "center" });
