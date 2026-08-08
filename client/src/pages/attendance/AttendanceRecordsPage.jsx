@@ -7,6 +7,16 @@ import PhotoLightbox from "../../components/PhotoLightbox";
 import { listAttendanceScanRecords } from "../../api/attendanceScan";
 import { listSiteLocations } from "../../api/siteLocations";
 
+function formatTotalHours(inRecord, outRecord) {
+  if (!inRecord || !outRecord) return "—";
+  const ms = new Date(outRecord.timestamp) - new Date(inRecord.timestamp);
+  if (ms <= 0) return "—";
+  const totalMinutes = Math.round(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h ${minutes}m`;
+}
+
 function PunchCell({ record, onPhotoClick }) {
   if (!record) return <span className="text-xs text-gray-400">—</span>;
 
@@ -141,6 +151,11 @@ export default function AttendanceRecordsPage() {
             key: "out",
             header: "Punch Out",
             render: (r) => <PunchCell record={r.out} onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))} />,
+          },
+          {
+            key: "totalHours",
+            header: "Total Hours",
+            render: (r) => <span className="text-sm font-medium text-heading">{formatTotalHours(r.in, r.out)}</span>,
           },
         ]}
         rows={loading ? [] : rows}
