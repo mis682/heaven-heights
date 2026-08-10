@@ -33,9 +33,44 @@ const upload = multer({
   limits: { fileSize: 15 * 1024 * 1024 },
 });
 
+// Resource type is picked per field name — images stay optimized, videos and
+// documents (fieldname-driven) go up untouched via Cloudinary's video/raw
+// endpoints instead of the image endpoint, which would reject them.
+const FIELD_RESOURCE_TYPES = {
+  panelPhoto: "image",
+  videos: "video",
+  reportAttachment: "raw",
+};
+
+class MixedCloudinaryStorage {
+  _handleFile(req, file, cb) {
+    const resourceType = FIELD_RESOURCE_TYPES[file.fieldname] || "auto";
+    const options = { folder: "heaven-heights", resource_type: resourceType };
+    if (resourceType === "image") {
+      options.transformation = [{ width: 1600, height: 1600, crop: "limit", quality: "auto:good", fetch_format: "auto" }];
+    }
+    const uploadStream = cloudinary.uploader.upload_stream(options, (error, result) => {
+      if (error) return cb(error);
+      cb(null, { path: result.secure_url, filename: result.public_id, size: result.bytes, resourceType });
+    });
+    file.stream.pipe(uploadStream);
+  }
+
+  _removeFile(req, file, cb) {
+    const resourceType = FIELD_RESOURCE_TYPES[file.fieldname] || "image";
+    cloudinary.uploader.destroy(file.filename, { resource_type: resourceType }, () => cb());
+  }
+}
+
+// Separate instance with a much larger size limit for video/document uploads.
+const uploadMixed = multer({
+  storage: new MixedCloudinaryStorage(),
+  limits: { fileSize: 200 * 1024 * 1024 },
+});
+
 // file.path is the Cloudinary secure_url set by CloudinaryStorage above
 function fileToUrl(file) {
   return file.path;
 }
 
-module.exports = { upload, cloudinary, fileToUrl };
+module.exports = { upload, uploadMixed, cloudinary, fileToUrl };

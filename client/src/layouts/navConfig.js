@@ -34,6 +34,7 @@ export const NAV_SECTIONS = [
               { label: "Admin Report View", path: "/security/night-guard/admin-report" },
             ],
           },
+          { label: "Fire Mock Drill", path: "/security/fire-mock-drill/submissions" },
         ],
       },
       {

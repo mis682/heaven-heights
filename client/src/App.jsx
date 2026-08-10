@@ -18,6 +18,9 @@ import NightGuardSubmissionsPage from "./pages/security/nightguard/NightGuardSub
 import NightGuardDailyReportPage from "./pages/security/nightguard/NightGuardDailyReportPage";
 import NightGuardAdminReportPage from "./pages/security/nightguard/NightGuardAdminReportPage";
 
+import FireMockDrillPublicForm from "./pages/security/firemockdrill/FireMockDrillPublicForm";
+import FireMockDrillSubmissionsPage from "./pages/security/firemockdrill/FireMockDrillSubmissionsPage";
+
 import AttendancePage from "./pages/attendance/AttendancePage";
 import ScanAttendancePage from "./pages/attendance/ScanAttendancePage";
 import AttendanceRecordsPage from "./pages/attendance/AttendanceRecordsPage";
@@ -33,6 +36,7 @@ export default function App() {
       {/* Public, no-login guard forms */}
       <Route path="/patrol-form/:project" element={<PatrolPublicForm />} />
       <Route path="/night-guard-form" element={<NightGuardPublicForm />} />
+      <Route path="/fire-mock-drill-form" element={<FireMockDrillPublicForm />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -54,6 +58,8 @@ export default function App() {
         <Route path="/security/night-guard/submissions" element={<NightGuardSubmissionsPage />} />
         <Route path="/security/night-guard/daily-report" element={<NightGuardDailyReportPage />} />
         <Route path="/security/night-guard/admin-report" element={<NightGuardAdminReportPage />} />
+
+        <Route path="/security/fire-mock-drill/submissions" element={<FireMockDrillSubmissionsPage />} />
 
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/attendance/scan" element={<ScanAttendancePage />} />

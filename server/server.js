@@ -16,6 +16,7 @@ const attendanceRoutes = require("./routes/attendance");
 const maintenanceStaffRoutes = require("./routes/maintenanceStaff");
 const siteLocationRoutes = require("./routes/siteLocations");
 const attendanceScanRoutes = require("./routes/attendanceScan");
+const fireMockDrillRoutes = require("./routes/fireMockDrill");
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/maintenance-staff", maintenanceStaffRoutes);
 app.use("/api/site-locations", siteLocationRoutes);
 app.use("/api/attendance-scan", attendanceScanRoutes);
+app.use("/api/fire-mock-drill", fireMockDrillRoutes);
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
