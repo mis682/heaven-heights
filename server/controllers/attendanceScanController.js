@@ -1,8 +1,21 @@
+const ExcelJS = require("exceljs");
 const MaintenanceStaff = require("../models/MaintenanceStaff");
 const SiteLocation = require("../models/SiteLocation");
 const AttendanceScan = require("../models/AttendanceScan");
 const { fileToUrl } = require("../middleware/upload");
 const { haversineMeters } = require("../utils/geo");
+const { buildTeamAttendancePdf } = require("../utils/teamAttendancePdf");
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function presentPercent(days) {
+  const relevant = days.filter((d) => d.status);
+  if (!relevant.length) return 0;
+  return Math.round((relevant.filter((d) => d.status === "P").length / relevant.length) * 100);
+}
 
 function startOfToday() {
   const d = new Date();
@@ -104,8 +117,7 @@ exports.records = async (req, res) => {
 // between is ignored. Status is derived from the resulting duration:
 // 0 scans -> Absent, 1 scan -> Single Punch, <5h -> Absent,
 // 5h-5h30m -> Half Day, >5h30m -> Present.
-exports.monthSummary = async (req, res) => {
-  const { month, year, search } = req.query;
+async function computeMonthSummary({ month, year, search }) {
   const y = Number(year);
   const m = Number(month);
   const start = new Date(y, m - 1, 1, 0, 0, 0, 0);
@@ -167,7 +179,76 @@ exports.monthSummary = async (req, res) => {
     };
   });
 
-  res.json({ daysInMonth, rows });
+  return { daysInMonth, rows, month: m, year: y };
+}
+
+exports.monthSummary = async (req, res) => {
+  const summary = await computeMonthSummary(req.query);
+  res.json(summary);
+};
+
+exports.exportTeamAttendanceExcel = async (req, res) => {
+  const { daysInMonth, rows, month, year } = await computeMonthSummary(req.query);
+
+  const FILL = { P: "FF22C55E", A: "FFEF4444", HD: "FF3B82F6", SP: "FFF59E0B" };
+
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet(`Attendance ${MONTH_NAMES[month - 1]} ${year}`);
+  const columns = [
+    { header: "Name", key: "name", width: 24 },
+    { header: "Employee ID", key: "employeeId", width: 14 },
+    { header: "Site", key: "siteName", width: 22 },
+    { header: "Present %", key: "presentPercent", width: 10 },
+  ];
+  for (let d = 1; d <= daysInMonth; d += 1) columns.push({ header: String(d), key: `day${d}`, width: 5 });
+  sheet.columns = columns;
+
+  rows.forEach((row) => {
+    const rowData = {
+      name: row.name,
+      employeeId: row.employeeId,
+      siteName: row.siteName,
+      presentPercent: `${presentPercent(row.days)}%`,
+    };
+    row.days.forEach((d) => {
+      rowData[`day${d.day}`] = d.status || "";
+    });
+    const excelRow = sheet.addRow(rowData);
+    row.days.forEach((d, idx) => {
+      if (!d.status) return;
+      const cell = excelRow.getCell(5 + idx);
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: FILL[d.status] } };
+      cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
+      cell.alignment = { horizontal: "center" };
+    });
+  });
+  sheet.getRow(1).font = { bold: true };
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename=team-attendance-${year}-${String(month).padStart(2, "0")}.xlsx`
+  );
+  await workbook.xlsx.write(res);
+  res.end();
+};
+
+exports.exportTeamAttendancePdf = async (req, res) => {
+  const { daysInMonth, rows, month, year } = await computeMonthSummary(req.query);
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename=team-attendance-${year}-${String(month).padStart(2, "0")}.pdf`
+  );
+
+  const doc = buildTeamAttendancePdf({
+    daysInMonth,
+    rows: rows.map((r) => ({ ...r, presentPercent: presentPercent(r.days) })),
+    monthLabel: `${MONTH_NAMES[month - 1]} ${year}`,
+  });
+  doc.pipe(res);
+  doc.end();
 };
 
 exports.remove = async (req, res) => {

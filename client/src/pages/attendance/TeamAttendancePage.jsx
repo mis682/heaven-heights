@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { User } from "lucide-react";
+import { User, FileText, FileSpreadsheet } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
-import { getTeamAttendanceSummary } from "../../api/attendanceScan";
+import { getTeamAttendanceSummary, teamAttendanceExportExcelUrl, teamAttendanceExportPdfUrl } from "../../api/attendanceScan";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -81,6 +81,18 @@ export default function TeamAttendancePage() {
             </option>
           ))}
         </select>
+        <a
+          href={teamAttendanceExportPdfUrl({ month, year, search: search || undefined })}
+          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50"
+        >
+          <FileText size={15} /> Export PDF
+        </a>
+        <a
+          href={teamAttendanceExportExcelUrl({ month, year, search: search || undefined })}
+          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50"
+        >
+          <FileSpreadsheet size={15} /> Export Excel
+        </a>
       </div>
 
       <div className="flex flex-wrap gap-4 mb-4">

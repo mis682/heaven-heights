@@ -6,6 +6,8 @@ const { upload } = require("../middleware/upload");
 
 router.get("/records", asyncHandler(ctrl.records));
 router.get("/team-summary", asyncHandler(ctrl.monthSummary));
+router.get("/team-summary/export", asyncHandler(ctrl.exportTeamAttendanceExcel));
+router.get("/team-summary/export-pdf", asyncHandler(ctrl.exportTeamAttendancePdf));
 router.get("/lookup/:employeeId", asyncHandler(ctrl.lookup));
 router.post("/", upload.single("photo"), asyncHandler(ctrl.scan));
 router.delete("/:id", asyncHandler(ctrl.remove));
