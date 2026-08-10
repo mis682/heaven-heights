@@ -14,3 +14,6 @@ export const listAttendanceScanRecords = (params = {}) =>
   api.get("/attendance-scan/records", { params }).then((r) => r.data);
 
 export const deleteAttendanceScanRecord = (id) => api.delete(`/attendance-scan/${id}`).then((r) => r.data);
+
+export const getTeamAttendanceSummary = (params = {}) =>
+  api.get("/attendance-scan/team-summary", { params }).then((r) => r.data);

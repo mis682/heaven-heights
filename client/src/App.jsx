@@ -22,6 +22,7 @@ import AttendancePage from "./pages/attendance/AttendancePage";
 import ScanAttendancePage from "./pages/attendance/ScanAttendancePage";
 import AttendanceRecordsPage from "./pages/attendance/AttendanceRecordsPage";
 import SiteLocationsPage from "./pages/attendance/SiteLocationsPage";
+import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
@@ -58,6 +59,7 @@ export default function App() {
         <Route path="/attendance/scan" element={<ScanAttendancePage />} />
         <Route path="/attendance/records" element={<AttendanceRecordsPage />} />
         <Route path="/attendance/sites" element={<SiteLocationsPage />} />
+        <Route path="/attendance/team" element={<TeamAttendancePage />} />
 
         <Route path="/admin/maintenance-staff" element={<MaintenanceStaffPage />} />
         <Route path="/admin/guards" element={<GuardMasterDataPage />} />

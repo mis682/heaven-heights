@@ -100,6 +100,76 @@ exports.records = async (req, res) => {
   res.json(records);
 };
 
+// First scan of the day = punch in, last scan = punch out, everything in
+// between is ignored. Status is derived from the resulting duration:
+// 0 scans -> Absent, 1 scan -> Single Punch, <5h -> Absent,
+// 5h-5h30m -> Half Day, >5h30m -> Present.
+exports.monthSummary = async (req, res) => {
+  const { month, year, search } = req.query;
+  const y = Number(year);
+  const m = Number(month);
+  const start = new Date(y, m - 1, 1, 0, 0, 0, 0);
+  const end = new Date(y, m, 0, 23, 59, 59, 999);
+  const daysInMonth = end.getDate();
+
+  const staffFilter = {};
+  if (search) {
+    const re = new RegExp(search, "i");
+    staffFilter.$or = [{ name: re }, { employeeId: re }, { siteName: re }];
+  }
+  const staffList = await MaintenanceStaff.find(staffFilter).sort({ employeeId: 1 });
+
+  const scans = await AttendanceScan.find({ timestamp: { $gte: start, $lte: end } }).sort({ timestamp: 1 });
+
+  const byStaffDay = new Map();
+  scans.forEach((s) => {
+    const day = new Date(s.timestamp).getDate();
+    const key = `${s.employeeId}__${day}`;
+    if (!byStaffDay.has(key)) byStaffDay.set(key, []);
+    byStaffDay.get(key).push(s);
+  });
+
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === y && today.getMonth() + 1 === m;
+  const lastRelevantDay = isCurrentMonth ? today.getDate() : daysInMonth;
+
+  const rows = staffList.map((staff) => {
+    const days = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      if (day > lastRelevantDay) {
+        days.push({ day, status: null });
+        continue;
+      }
+      const dayScans = byStaffDay.get(`${staff.employeeId}__${day}`) || [];
+      if (dayScans.length === 0) {
+        days.push({ day, status: "A", totalHours: 0 });
+      } else if (dayScans.length === 1) {
+        const t = dayScans[0].timestamp;
+        days.push({ day, status: "SP", punchIn: t, punchOut: t, totalHours: 0 });
+      } else {
+        const punchIn = dayScans[0].timestamp;
+        const punchOut = dayScans[dayScans.length - 1].timestamp;
+        const hours = (new Date(punchOut) - new Date(punchIn)) / 3600000;
+        let status;
+        if (hours < 5) status = "A";
+        else if (hours <= 5.5) status = "HD";
+        else status = "P";
+        days.push({ day, status, punchIn, punchOut, totalHours: Math.round(hours * 100) / 100 });
+      }
+    }
+    return {
+      employeeId: staff.employeeId,
+      name: staff.name,
+      siteName: staff.siteName,
+      designation: staff.designation,
+      photo: staff.photo,
+      days,
+    };
+  });
+
+  res.json({ daysInMonth, rows });
+};
+
 exports.remove = async (req, res) => {
   const record = await AttendanceScan.findByIdAndDelete(req.params.id);
   if (!record) return res.status(404).json({ message: "Record not found" });

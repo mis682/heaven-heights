@@ -5,6 +5,7 @@ const asyncHandler = require("../utils/asyncHandler");
 const { upload } = require("../middleware/upload");
 
 router.get("/records", asyncHandler(ctrl.records));
+router.get("/team-summary", asyncHandler(ctrl.monthSummary));
 router.get("/lookup/:employeeId", asyncHandler(ctrl.lookup));
 router.post("/", upload.single("photo"), asyncHandler(ctrl.scan));
 router.delete("/:id", asyncHandler(ctrl.remove));

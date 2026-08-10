@@ -42,6 +42,7 @@ export const NAV_SECTIONS = [
           { label: "Daily Attendance", path: "/attendance" },
           { label: "Scan Attendance", path: "/attendance/scan" },
           { label: "Attendance Records", path: "/attendance/records" },
+          { label: "Team Attendance", path: "/attendance/team" },
           { label: "Site Locations", path: "/attendance/sites" },
         ],
       },
