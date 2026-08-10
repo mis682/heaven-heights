@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { User, CheckCircle2, XCircle } from "lucide-react";
+import { User, CheckCircle2, XCircle, Trash2 } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import FilterBar, { Select } from "../../components/FilterBar";
 import PhotoLightbox from "../../components/PhotoLightbox";
-import { listAttendanceScanRecords } from "../../api/attendanceScan";
+import { listAttendanceScanRecords, deleteAttendanceScanRecord } from "../../api/attendanceScan";
 import { listSiteLocations } from "../../api/siteLocations";
 
 function formatTotalHours(inRecord, outRecord) {
@@ -17,11 +17,11 @@ function formatTotalHours(inRecord, outRecord) {
   return `${hours}h ${minutes}m`;
 }
 
-function PunchCell({ record, onPhotoClick }) {
+function PunchCell({ record, onPhotoClick, onDelete }) {
   if (!record) return <span className="text-xs text-gray-400">—</span>;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 group">
       {record.photo ? (
         <img
           src={record.photo}
@@ -58,6 +58,13 @@ function PunchCell({ record, onPhotoClick }) {
             </span>
           ))}
       </div>
+      <button
+        onClick={() => onDelete(record)}
+        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 shrink-0"
+        title="Delete this punch"
+      >
+        <Trash2 size={14} />
+      </button>
     </div>
   );
 }
@@ -92,6 +99,12 @@ export default function AttendanceRecordsPage() {
   }, [siteFilter, date, search]);
 
   const photosWithRecord = records.filter((r) => r.photo);
+
+  const handleDelete = async (record) => {
+    if (!window.confirm(`Delete ${record.type === "in" ? "Punch In" : "Punch Out"} for ${record.name}?`)) return;
+    await deleteAttendanceScanRecord(record._id);
+    load();
+  };
 
   // Each scan is a single in/out event; group same staff + same day pairs
   // into one row so Punch In and Punch Out show side by side.
@@ -145,12 +158,24 @@ export default function AttendanceRecordsPage() {
           {
             key: "in",
             header: "Punch In",
-            render: (r) => <PunchCell record={r.in} onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))} />,
+            render: (r) => (
+              <PunchCell
+                record={r.in}
+                onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))}
+                onDelete={handleDelete}
+              />
+            ),
           },
           {
             key: "out",
             header: "Punch Out",
-            render: (r) => <PunchCell record={r.out} onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))} />,
+            render: (r) => (
+              <PunchCell
+                record={r.out}
+                onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))}
+                onDelete={handleDelete}
+              />
+            ),
           },
           {
             key: "totalHours",

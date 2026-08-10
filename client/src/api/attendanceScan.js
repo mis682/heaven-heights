@@ -12,3 +12,5 @@ export const submitAttendanceScan = (data, photo) => {
 
 export const listAttendanceScanRecords = (params = {}) =>
   api.get("/attendance-scan/records", { params }).then((r) => r.data);
+
+export const deleteAttendanceScanRecord = (id) => api.delete(`/attendance-scan/${id}`).then((r) => r.data);

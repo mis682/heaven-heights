@@ -4,11 +4,19 @@ const AttendanceScan = require("../models/AttendanceScan");
 const { fileToUrl } = require("../middleware/upload");
 const { haversineMeters } = require("../utils/geo");
 
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 exports.lookup = async (req, res) => {
   const staff = await MaintenanceStaff.findOne({ employeeId: req.params.employeeId });
   if (!staff) return res.status(404).json({ message: "Yeh QR code kisi bhi staff se match nahi hua" });
 
-  const lastRecord = await AttendanceScan.findOne({ staff: staff._id }).sort({ timestamp: -1 });
+  const lastRecord = await AttendanceScan.findOne({ staff: staff._id, timestamp: { $gte: startOfToday() } }).sort({
+    timestamp: -1,
+  });
   const nextType = !lastRecord || lastRecord.type === "out" ? "in" : "out";
 
   res.json({
@@ -29,7 +37,9 @@ exports.scan = async (req, res) => {
   const staff = await MaintenanceStaff.findOne({ employeeId });
   if (!staff) return res.status(404).json({ message: "Yeh QR code kisi bhi staff se match nahi hua" });
 
-  const lastRecord = await AttendanceScan.findOne({ staff: staff._id }).sort({ timestamp: -1 });
+  const lastRecord = await AttendanceScan.findOne({ staff: staff._id, timestamp: { $gte: startOfToday() } }).sort({
+    timestamp: -1,
+  });
   const type = !lastRecord || lastRecord.type === "out" ? "in" : "out";
 
   const siteLocation = await SiteLocation.findOne({ siteName: staff.siteName });
@@ -88,4 +98,10 @@ exports.records = async (req, res) => {
   }
   const records = await AttendanceScan.find(filter).sort({ timestamp: -1 }).limit(500);
   res.json(records);
+};
+
+exports.remove = async (req, res) => {
+  const record = await AttendanceScan.findByIdAndDelete(req.params.id);
+  if (!record) return res.status(404).json({ message: "Record not found" });
+  res.json({ message: "Attendance record deleted" });
 };

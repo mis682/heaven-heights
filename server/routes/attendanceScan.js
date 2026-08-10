@@ -7,5 +7,6 @@ const { upload } = require("../middleware/upload");
 router.get("/records", asyncHandler(ctrl.records));
 router.get("/lookup/:employeeId", asyncHandler(ctrl.lookup));
 router.post("/", upload.single("photo"), asyncHandler(ctrl.scan));
+router.delete("/:id", asyncHandler(ctrl.remove));
 
 module.exports = router;
