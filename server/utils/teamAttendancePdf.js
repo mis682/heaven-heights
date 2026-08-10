@@ -11,10 +11,14 @@ const PAGE_HEIGHT = 620;
 
 function buildColumns(daysInMonth) {
   const fixed = [
-    { label: "Name", width: 110, key: "name" },
-    { label: "Emp ID", width: 55, key: "employeeId" },
-    { label: "Site", width: 100, key: "siteName" },
-    { label: "Present%", width: 45, key: "presentPercent" },
+    { label: "Name", width: 100, key: "name" },
+    { label: "Emp ID", width: 50, key: "employeeId" },
+    { label: "Site", width: 85, key: "siteName" },
+    { label: "Present%", width: 40, key: "presentPercent" },
+    { label: "Tot. P", width: 30, key: "totalPresent" },
+    { label: "Tot. A", width: 30, key: "totalAbsent" },
+    { label: "Tot. HD", width: 32, key: "totalHalfDay" },
+    { label: "Tot. SP", width: 32, key: "totalSinglePunch" },
   ];
   const dayCols = Array.from({ length: daysInMonth }, (_, i) => ({ label: String(i + 1), width: 17, key: `day${i + 1}` }));
   return [...fixed, ...dayCols];
@@ -40,6 +44,10 @@ function drawDataRow(doc, columns, row, x, y) {
     else if (col.key === "employeeId") text = row.employeeId;
     else if (col.key === "siteName") text = row.siteName;
     else if (col.key === "presentPercent") text = `${row.presentPercent}%`;
+    else if (col.key === "totalPresent") text = String(row.totalPresent);
+    else if (col.key === "totalAbsent") text = String(row.totalAbsent);
+    else if (col.key === "totalHalfDay") text = String(row.totalHalfDay);
+    else if (col.key === "totalSinglePunch") text = String(row.totalSinglePunch);
     else {
       const dayNum = Number(col.key.replace("day", ""));
       const d = row.days.find((x) => x.day === dayNum);

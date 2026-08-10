@@ -17,6 +17,15 @@ function presentPercent(days) {
   return Math.round((relevant.filter((d) => d.status === "P").length / relevant.length) * 100);
 }
 
+function statusTotals(days) {
+  return {
+    totalPresent: days.filter((d) => d.status === "P").length,
+    totalAbsent: days.filter((d) => d.status === "A").length,
+    totalHalfDay: days.filter((d) => d.status === "HD").length,
+    totalSinglePunch: days.filter((d) => d.status === "SP").length,
+  };
+}
+
 function startOfToday() {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
@@ -199,16 +208,23 @@ exports.exportTeamAttendanceExcel = async (req, res) => {
     { header: "Employee ID", key: "employeeId", width: 14 },
     { header: "Site", key: "siteName", width: 22 },
     { header: "Present %", key: "presentPercent", width: 10 },
+    { header: "Total Present", key: "totalPresent", width: 12 },
+    { header: "Total Absent", key: "totalAbsent", width: 12 },
+    { header: "Total Half Day", key: "totalHalfDay", width: 13 },
+    { header: "Total Single Punch", key: "totalSinglePunch", width: 15 },
   ];
+  const fixedColumnCount = columns.length;
   for (let d = 1; d <= daysInMonth; d += 1) columns.push({ header: String(d), key: `day${d}`, width: 5 });
   sheet.columns = columns;
 
   rows.forEach((row) => {
+    const totals = statusTotals(row.days);
     const rowData = {
       name: row.name,
       employeeId: row.employeeId,
       siteName: row.siteName,
       presentPercent: `${presentPercent(row.days)}%`,
+      ...totals,
     };
     row.days.forEach((d) => {
       rowData[`day${d.day}`] = d.status || "";
@@ -216,7 +232,7 @@ exports.exportTeamAttendanceExcel = async (req, res) => {
     const excelRow = sheet.addRow(rowData);
     row.days.forEach((d, idx) => {
       if (!d.status) return;
-      const cell = excelRow.getCell(5 + idx);
+      const cell = excelRow.getCell(fixedColumnCount + 1 + idx);
       cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: FILL[d.status] } };
       cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
       cell.alignment = { horizontal: "center" };
@@ -244,7 +260,7 @@ exports.exportTeamAttendancePdf = async (req, res) => {
 
   const doc = buildTeamAttendancePdf({
     daysInMonth,
-    rows: rows.map((r) => ({ ...r, presentPercent: presentPercent(r.days) })),
+    rows: rows.map((r) => ({ ...r, presentPercent: presentPercent(r.days), ...statusTotals(r.days) })),
     monthLabel: `${MONTH_NAMES[month - 1]} ${year}`,
   });
   doc.pipe(res);
