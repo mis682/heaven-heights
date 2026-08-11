@@ -26,10 +26,30 @@ function statusTotals(days) {
   };
 }
 
-function startOfToday() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
+// A shift open with an "in" scan is treated as still open (its next scan is
+// the matching "out") as long as it's within this many hours — covers night
+// shifts that punch in one evening and out the next morning. Past this, an
+// old unclosed "in" is treated as abandoned and the next scan starts fresh.
+const SHIFT_RESET_HOURS = 18;
+
+function toDateKey(date) {
+  return new Date(date).toISOString().slice(0, 10);
+}
+
+// Determines whether this scan is a punch-in or punch-out, and which day's
+// shift it belongs to. An "out" inherits the "in" scan's shiftDate, so a
+// night shift that crosses midnight still counts as one day's attendance —
+// the day the guard punched IN, not the day they punched out.
+function determineNextPunch(lastRecord) {
+  const now = new Date();
+  if (!lastRecord || lastRecord.type === "out") {
+    return { type: "in", shiftDate: toDateKey(now) };
+  }
+  const hoursSinceIn = (now - new Date(lastRecord.timestamp)) / 3600000;
+  if (hoursSinceIn > SHIFT_RESET_HOURS) {
+    return { type: "in", shiftDate: toDateKey(now) };
+  }
+  return { type: "out", shiftDate: lastRecord.shiftDate || toDateKey(lastRecord.timestamp) };
 }
 
 // Guards rotate between sites daily, so their assigned "home" site in the
@@ -44,10 +64,8 @@ exports.lookup = async (req, res) => {
   const staff = await MaintenanceStaff.findOne({ employeeId: req.params.employeeId });
   if (!staff) return res.status(404).json({ message: "Yeh QR code kisi bhi staff se match nahi hua" });
 
-  const lastRecord = await AttendanceScan.findOne({ staff: staff._id, timestamp: { $gte: startOfToday() } }).sort({
-    timestamp: -1,
-  });
-  const nextType = !lastRecord || lastRecord.type === "out" ? "in" : "out";
+  const lastRecord = await AttendanceScan.findOne({ staff: staff._id }).sort({ timestamp: -1 });
+  const { type: nextType } = determineNextPunch(lastRecord);
 
   res.json({
     staff: {
@@ -67,10 +85,8 @@ exports.scan = async (req, res) => {
   const staff = await MaintenanceStaff.findOne({ employeeId });
   if (!staff) return res.status(404).json({ message: "Yeh QR code kisi bhi staff se match nahi hua" });
 
-  const lastRecord = await AttendanceScan.findOne({ staff: staff._id, timestamp: { $gte: startOfToday() } }).sort({
-    timestamp: -1,
-  });
-  const type = !lastRecord || lastRecord.type === "out" ? "in" : "out";
+  const lastRecord = await AttendanceScan.findOne({ staff: staff._id }).sort({ timestamp: -1 });
+  const { type, shiftDate } = determineNextPunch(lastRecord);
 
   let distanceMeters = null;
   let withinGeofence = null;
@@ -96,6 +112,7 @@ exports.scan = async (req, res) => {
     name: staff.name,
     siteName: staff.siteName,
     type,
+    shiftDate,
     latitude: latitude != null && latitude !== "" ? Number(latitude) : undefined,
     longitude: longitude != null && longitude !== "" ? Number(longitude) : undefined,
     address,
@@ -150,11 +167,20 @@ async function computeMonthSummary({ month, year, search }) {
   }
   const staffList = await MaintenanceStaff.find(staffFilter).sort({ employeeId: 1 });
 
-  const scans = await AttendanceScan.find({ timestamp: { $gte: start, $lte: end } }).sort({ timestamp: 1 });
+  // Widen the raw query by a day on each side so a night shift that punches
+  // in on the last evening of one month and out early the next month (or
+  // vice versa) is still fetched — it's then bucketed by shiftDate below,
+  // not by the query window.
+  const queryStart = new Date(start.getTime() - 24 * 3600000);
+  const queryEnd = new Date(end.getTime() + 24 * 3600000);
+  const scans = await AttendanceScan.find({ timestamp: { $gte: queryStart, $lte: queryEnd } }).sort({ timestamp: 1 });
 
+  const monthPrefix = `${y}-${String(m).padStart(2, "0")}`;
   const byStaffDay = new Map();
   scans.forEach((s) => {
-    const day = new Date(s.timestamp).getDate();
+    const shiftDate = s.shiftDate || toDateKey(s.timestamp);
+    if (!shiftDate.startsWith(monthPrefix)) return;
+    const day = Number(shiftDate.slice(-2));
     const key = `${s.employeeId}__${day}`;
     if (!byStaffDay.has(key)) byStaffDay.set(key, []);
     byStaffDay.get(key).push(s);

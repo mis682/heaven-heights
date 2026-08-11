@@ -106,12 +106,14 @@ export default function AttendanceRecordsPage() {
     load();
   };
 
-  // Each scan is a single in/out event; group same staff + same day pairs
-  // into one row so Punch In and Punch Out show side by side.
+  // Each scan is a single in/out event; group same staff + same shift pairs
+  // into one row so Punch In and Punch Out show side by side. A night
+  // shift's "out" scan carries shiftDate copied from its "in" scan, so it
+  // groups with that day even though it happened after midnight.
   const rows = useMemo(() => {
     const byKey = new Map();
     records.forEach((r) => {
-      const dateKey = new Date(r.timestamp).toISOString().slice(0, 10);
+      const dateKey = r.shiftDate || new Date(r.timestamp).toISOString().slice(0, 10);
       const key = `${r.employeeId}__${dateKey}`;
       if (!byKey.has(key)) {
         byKey.set(key, {

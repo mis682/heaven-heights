@@ -7,6 +7,10 @@ const AttendanceScanSchema = new mongoose.Schema(
     name: { type: String, required: true },
     siteName: { type: String, required: true },
     type: { type: String, enum: ["in", "out"], required: true },
+    // Which day's shift this scan belongs to (YYYY-MM-DD) — for an "out"
+    // scan this is copied from the matching "in" scan, so a night shift
+    // that punches out after midnight still counts toward the punch-in day.
+    shiftDate: { type: String },
     timestamp: { type: Date, default: Date.now },
     latitude: Number,
     longitude: Number,
