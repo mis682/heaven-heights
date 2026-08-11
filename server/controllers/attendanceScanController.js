@@ -81,7 +81,7 @@ exports.lookup = async (req, res) => {
 };
 
 exports.scan = async (req, res) => {
-  const { employeeId, latitude, longitude, address } = req.body;
+  const { employeeId, latitude, longitude, address, shift } = req.body;
   const staff = await MaintenanceStaff.findOne({ employeeId });
   if (!staff) return res.status(404).json({ message: "Yeh QR code kisi bhi staff se match nahi hua" });
 
@@ -113,6 +113,7 @@ exports.scan = async (req, res) => {
     siteName: staff.siteName,
     type,
     shiftDate,
+    shift: shift === "day" || shift === "night" ? shift : null,
     latitude: latitude != null && latitude !== "" ? Number(latitude) : undefined,
     longitude: longitude != null && longitude !== "" ? Number(longitude) : undefined,
     address,

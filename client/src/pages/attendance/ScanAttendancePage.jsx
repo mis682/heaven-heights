@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
-import { CheckCircle2, XCircle, LogIn, LogOut } from "lucide-react";
+import { CheckCircle2, XCircle, LogIn, LogOut, Sun, Moon } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import CameraCapture from "../../components/CameraCapture";
 import { lookupStaffByEmployeeId, submitAttendanceScan } from "../../api/attendanceScan";
@@ -16,6 +16,7 @@ export default function ScanAttendancePage() {
   const [staff, setStaff] = useState(null);
   const [nextType, setNextType] = useState(null);
   const [capture, setCapture] = useState(null);
+  const [shift, setShift] = useState(null);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
   const scannerRef = useRef(null);
@@ -90,6 +91,7 @@ export default function ScanAttendancePage() {
     setStaff(null);
     setNextType(null);
     setCapture(null);
+    setShift(null);
     setError("");
     setResult(null);
     setPhase("scanning");
@@ -103,6 +105,7 @@ export default function ScanAttendancePage() {
         latitude: capture?.geoLocation?.lat ?? "",
         longitude: capture?.geoLocation?.lng ?? "",
         address: capture?.geoLocation?.address ?? "",
+        shift: shift ?? "",
       };
       const res = await submitAttendanceScan(data, capture?.file);
       setResult(res);
@@ -154,9 +157,34 @@ export default function ScanAttendancePage() {
             </div>
 
             {isSecurityGuard(staff.designation) && (
-              <p className="text-xs text-center text-subtext">
-                Guards ke liye location check nahi hota — site rotation ke karan.
-              </p>
+              <div className="space-y-2">
+                <p className="text-xs text-center text-subtext">
+                  Guards ke liye location check nahi hota — site rotation ke karan.
+                </p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5 text-center">Shift</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShift("day")}
+                      className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                        shift === "day" ? "border-primary bg-primary-light text-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Sun size={15} /> Day
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShift("night")}
+                      className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                        shift === "night" ? "border-primary bg-primary-light text-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Moon size={15} /> Night
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
 
             <CameraCapture label="Staff ki photo lein" onCapture={setCapture} />
@@ -167,7 +195,7 @@ export default function ScanAttendancePage() {
               </button>
               <button
                 onClick={submit}
-                disabled={!capture}
+                disabled={!capture || (isSecurityGuard(staff.designation) && !shift)}
                 className="flex-1 py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-40"
               >
                 Confirm

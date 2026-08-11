@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { User, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { User, CheckCircle2, XCircle, Trash2, Sun, Moon } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import FilterBar, { Select } from "../../components/FilterBar";
@@ -35,7 +35,11 @@ function PunchCell({ record, onPhotoClick, onDelete }) {
         </div>
       )}
       <div className="min-w-0">
-        <p className="text-sm font-medium text-heading">{new Date(record.timestamp).toLocaleTimeString()}</p>
+        <p className="text-sm font-medium text-heading flex items-center gap-1">
+          {new Date(record.timestamp).toLocaleTimeString()}
+          {record.shift === "day" && <Sun size={12} className="text-amber-500" />}
+          {record.shift === "night" && <Moon size={12} className="text-indigo-500" />}
+        </p>
         {record.latitude != null && (
           <a
             href={`https://www.google.com/maps?q=${record.latitude},${record.longitude}`}
