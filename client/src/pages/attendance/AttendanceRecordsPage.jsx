@@ -110,10 +110,12 @@ export default function AttendanceRecordsPage() {
     load();
   };
 
-  // Each scan is a single in/out event; group same staff + same shift pairs
-  // into one row so Punch In and Punch Out show side by side. A night
-  // shift's "out" scan carries shiftDate copied from its "in" scan, so it
-  // groups with that day even though it happened after midnight.
+  // Group scans by staff + shift day, then take the chronologically earliest
+  // scan as Punch In and the latest as Punch Out — any scans in between
+  // (e.g. someone checking again mid-shift) are ignored, same rule the
+  // Team Attendance grid uses. A night shift's later scans carry shiftDate
+  // copied from the original "in", so they group with that day even though
+  // they happened after midnight.
   const rows = useMemo(() => {
     const byKey = new Map();
     records.forEach((r) => {
@@ -126,13 +128,17 @@ export default function AttendanceRecordsPage() {
           name: r.name,
           siteName: r.siteName,
           dateKey,
-          in: null,
-          out: null,
+          scans: [],
         });
       }
-      byKey.get(key)[r.type] = r;
+      byKey.get(key).scans.push(r);
     });
-    return Array.from(byKey.values()).sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
+    return Array.from(byKey.values())
+      .map((row) => {
+        const sorted = [...row.scans].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        return { ...row, in: sorted[0] || null, out: sorted.length > 1 ? sorted[sorted.length - 1] : null };
+      })
+      .sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
   }, [records]);
 
   return (
