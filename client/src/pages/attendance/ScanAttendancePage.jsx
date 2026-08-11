@@ -7,6 +7,10 @@ import { lookupStaffByEmployeeId, submitAttendanceScan } from "../../api/attenda
 
 const SCANNER_ID = "qr-scanner-region";
 
+function isSecurityGuard(designation) {
+  return (designation || "").toLowerCase().replace(/\s+/g, "") === "securityguard";
+}
+
 export default function ScanAttendancePage() {
   const [phase, setPhase] = useState("scanning"); // scanning | identified | submitting | done | error
   const [staff, setStaff] = useState(null);
@@ -148,6 +152,12 @@ export default function ScanAttendancePage() {
               {nextType === "in" ? <LogIn size={16} /> : <LogOut size={16} />}
               {nextType === "in" ? "Punch In" : "Punch Out"}
             </div>
+
+            {isSecurityGuard(staff.designation) && (
+              <p className="text-xs text-center text-subtext">
+                Guards ke liye location check nahi hota — site rotation ke karan.
+              </p>
+            )}
 
             <CameraCapture label="Staff ki photo lein" onCapture={setCapture} />
 

@@ -32,6 +32,14 @@ function startOfToday() {
   return d;
 }
 
+// Guards rotate between sites daily, so their assigned "home" site in the
+// roster doesn't reflect where they're actually posted on a given day —
+// the geofence check is skipped for them, but stays enforced for everyone
+// else (housekeeping, gardeners, drivers, etc.) who work a fixed site.
+function isSecurityGuard(designation) {
+  return (designation || "").toLowerCase().replace(/\s+/g, "") === "securityguard";
+}
+
 exports.lookup = async (req, res) => {
   const staff = await MaintenanceStaff.findOne({ employeeId: req.params.employeeId });
   if (!staff) return res.status(404).json({ message: "Yeh QR code kisi bhi staff se match nahi hua" });
@@ -64,19 +72,21 @@ exports.scan = async (req, res) => {
   });
   const type = !lastRecord || lastRecord.type === "out" ? "in" : "out";
 
-  const siteLocation = await SiteLocation.findOne({ siteName: staff.siteName });
   let distanceMeters = null;
   let withinGeofence = null;
 
-  if (siteLocation && latitude != null && longitude != null && latitude !== "" && longitude !== "") {
-    distanceMeters = haversineMeters(Number(latitude), Number(longitude), siteLocation.latitude, siteLocation.longitude);
-    withinGeofence = distanceMeters <= siteLocation.radiusMeters;
-    if (!withinGeofence) {
-      return res.status(400).json({
-        message: `Aap site se ${Math.round(distanceMeters)}m door hain — attendance sirf ${siteLocation.radiusMeters}m ke andar capture hoti hai.`,
-        distanceMeters,
-        withinGeofence,
-      });
+  if (!isSecurityGuard(staff.designation)) {
+    const siteLocation = await SiteLocation.findOne({ siteName: staff.siteName });
+    if (siteLocation && latitude != null && longitude != null && latitude !== "" && longitude !== "") {
+      distanceMeters = haversineMeters(Number(latitude), Number(longitude), siteLocation.latitude, siteLocation.longitude);
+      withinGeofence = distanceMeters <= siteLocation.radiusMeters;
+      if (!withinGeofence) {
+        return res.status(400).json({
+          message: `Aap site se ${Math.round(distanceMeters)}m door hain — attendance sirf ${siteLocation.radiusMeters}m ke andar capture hoti hai.`,
+          distanceMeters,
+          withinGeofence,
+        });
+      }
     }
   }
 
