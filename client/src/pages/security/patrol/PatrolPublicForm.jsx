@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Building2, CheckCircle2 } from "lucide-react";
+import { Building2, CheckCircle2, RefreshCw } from "lucide-react";
 import { getProjectBySlug } from "../../../api/projects";
 import { listGuards } from "../../../api/guards";
 import { createPatrolSubmission } from "../../../api/patrol";
 import CameraCapture from "../../../components/CameraCapture";
+import { saveDraft, loadDraft, clearDraft } from "../../../utils/patrolDraft";
 
 export default function PatrolPublicForm() {
   const { project: slug } = useParams();
   const [data, setData] = useState(null);
+  const [draftChecked, setDraftChecked] = useState(false);
   const [guards, setGuards] = useState([]);
   const [guardName, setGuardName] = useState("");
   const [captures, setCaptures] = useState({});
+  const [restoredNotice, setRestoredNotice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -23,17 +26,35 @@ export default function PatrolPublicForm() {
         setData(d);
         const g = await listGuards({ siteName: d.project.name, module: "patrol_checkpoint" });
         setGuards(g);
+
+        const draft = loadDraft(slug);
+        if (draft && Object.keys(draft.captures).length > 0) {
+          setGuardName(draft.guardName);
+          setCaptures(draft.captures);
+          setRestoredNotice(true);
+        }
       } catch {
         setError("This patrol form could not be loaded.");
+      } finally {
+        setDraftChecked(true);
       }
     })();
   }, [slug]);
+
+  // Re-save the draft to localStorage after every capture, so a killed
+  // browser tab (e.g. the OS reclaiming memory while the native camera app
+  // is open) doesn't lose photos already taken earlier in the round.
+  useEffect(() => {
+    if (Object.keys(captures).length > 0) {
+      saveDraft(slug, guardName, captures);
+    }
+  }, [captures, guardName, slug]);
 
   if (error) {
     return <CenteredMessage title="Form unavailable" message={error} />;
   }
 
-  if (!data) {
+  if (!data || !draftChecked) {
     return <CenteredMessage title="Loading..." message="Fetching checkpoint details" />;
   }
 
@@ -67,6 +88,7 @@ export default function PatrolPublicForm() {
 
     try {
       await createPatrolSubmission(form);
+      clearDraft(slug);
       setDone(true);
     } catch {
       setError("Submission failed. Please try again.");
@@ -89,6 +111,13 @@ export default function PatrolPublicForm() {
         </div>
 
         <form onSubmit={submit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-5">
+          {restoredNotice && (
+            <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+              <RefreshCw size={13} />
+              Aapke pehle liye gaye photos restore ho gaye hain — bas baaki checkpoints puri karein.
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Guard Name</label>
             <select
@@ -114,6 +143,7 @@ export default function PatrolPublicForm() {
               <CameraCapture
                 key={cp.checkpointId}
                 label={cp.name}
+                initialCapture={captures[cp.checkpointId]}
                 onCapture={(cap) => setCaptures((prev) => ({ ...prev, [cp.checkpointId]: cap }))}
               />
             ))}

@@ -77,10 +77,10 @@ function stampImage(file, geo, timestamp) {
   });
 }
 
-export default function CameraCapture({ label, onCapture, disabled }) {
+export default function CameraCapture({ label, onCapture, disabled, initialCapture }) {
   const inputRef = useRef(null);
-  const [status, setStatus] = useState("idle"); // idle | processing | done
-  const [preview, setPreview] = useState(null);
+  const [status, setStatus] = useState(initialCapture ? "done" : "idle"); // idle | processing | done
+  const [preview, setPreview] = useState(initialCapture?.preview || null);
 
   const handleChange = async (e) => {
     const file = e.target.files?.[0];
