@@ -1,20 +1,48 @@
+const { v2: cloudinary } = require("cloudinary");
 const FireMockDrill = require("../models/FireMockDrill");
 const { fileToUrl } = require("../middleware/upload");
 
 const PROJECTS = ["Regal Garden", "Neo Meridian", "Milestone", "OBC", "Eden Garden"];
+const VIDEO_FOLDER = "heaven-heights/fire-mock-drill-videos";
 
 exports.meta = async (req, res) => {
   res.json({ projects: PROJECTS });
 };
 
+// Videos upload straight from the browser to Cloudinary (bypassing our
+// server) since they can be large — this endpoint just hands out a short-lived
+// signed upload authorization instead of relaying the file itself.
+exports.getUploadSignature = async (req, res) => {
+  const timestamp = Math.round(Date.now() / 1000);
+  const paramsToSign = { timestamp, folder: VIDEO_FOLDER };
+  const signature = cloudinary.utils.api_sign_request(paramsToSign, process.env.CLOUDINARY_API_SECRET);
+  res.json({
+    signature,
+    timestamp,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    folder: VIDEO_FOLDER,
+  });
+};
+
+function parseVideoUrls(raw) {
+  if (raw === undefined) return null;
+  try {
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.slice(0, 8) : [];
+  } catch {
+    return [];
+  }
+}
+
 exports.create = async (req, res) => {
-  const { projectName, date } = req.body;
+  const { projectName, date, videoUrls } = req.body;
   if (!projectName || !date) {
     return res.status(400).json({ message: "Project and date are required" });
   }
 
   const panelPhoto = req.files?.panelPhoto?.[0] ? fileToUrl(req.files.panelPhoto[0]) : "";
-  const videos = (req.files?.videos || []).map(fileToUrl);
+  const videos = parseVideoUrls(videoUrls) || [];
   const reportAttachment = req.files?.reportAttachment?.[0] ? fileToUrl(req.files.reportAttachment[0]) : "";
 
   const drill = await FireMockDrill.create({ projectName, date, panelPhoto, videos, reportAttachment });
@@ -49,18 +77,11 @@ exports.update = async (req, res) => {
   if (req.files?.panelPhoto?.[0]) body.panelPhoto = fileToUrl(req.files.panelPhoto[0]);
   if (req.files?.reportAttachment?.[0]) body.reportAttachment = fileToUrl(req.files.reportAttachment[0]);
 
-  // Videos to keep are sent explicitly (JSON array of existing URLs) so the
-  // admin can remove individual clips; newly uploaded videos are appended.
-  let keepVideos = existing.videos;
-  if (req.body.keepVideos !== undefined) {
-    try {
-      keepVideos = JSON.parse(req.body.keepVideos);
-    } catch {
-      keepVideos = existing.videos;
-    }
-  }
-  const newVideos = (req.files?.videos || []).map(fileToUrl);
-  body.videos = [...keepVideos, ...newVideos].slice(0, 8);
+  // The client sends the full desired list of video URLs each time (kept
+  // existing ones + newly direct-uploaded ones), since videos never pass
+  // through this server as files.
+  const videos = parseVideoUrls(req.body.videoUrls);
+  if (videos !== null) body.videos = videos;
 
   const drill = await FireMockDrill.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true });
   res.json(drill);

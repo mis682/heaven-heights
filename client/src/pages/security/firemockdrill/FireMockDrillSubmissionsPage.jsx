@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Eye, Pencil, Trash2, Video, FileText, Image as ImageIcon, X, Copy } from "lucide-react";
+import { Eye, Pencil, Trash2, Video, FileText, Image as ImageIcon, X, Copy, Loader2 } from "lucide-react";
 import PageHeader from "../../../components/PageHeader";
 import DataTable from "../../../components/DataTable";
 import FilterBar, { Select } from "../../../components/FilterBar";
@@ -12,6 +12,7 @@ import {
   updateFireMockDrill,
   deleteFireMockDrill,
 } from "../../../api/fireMockDrill";
+import { uploadVideoDirect } from "../../../api/cloudinaryDirectUpload";
 
 const PUBLIC_FORM_PATH = "/fire-mock-drill-form";
 
@@ -230,7 +231,31 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
 
   const addNewVideo = (file) => {
     if (!file) return;
-    setNewVideos((prev) => [...prev, file]);
+    const slot = { preview: URL.createObjectURL(file), progress: 0, uploading: true, url: null, failed: false };
+    setNewVideos((prev) => [...prev, slot]);
+    const idx = newVideos.length;
+
+    uploadVideoDirect(file, (progress) => {
+      setNewVideos((prev) => {
+        const next = [...prev];
+        if (next[idx]) next[idx] = { ...next[idx], progress };
+        return next;
+      });
+    })
+      .then((url) => {
+        setNewVideos((prev) => {
+          const next = [...prev];
+          if (next[idx]) next[idx] = { ...next[idx], url, uploading: false, progress: 1 };
+          return next;
+        });
+      })
+      .catch(() => {
+        setNewVideos((prev) => {
+          const next = [...prev];
+          if (next[idx]) next[idx] = { ...next[idx], uploading: false, failed: true };
+          return next;
+        });
+      });
   };
 
   const removeExistingVideo = (idx) => {
@@ -241,13 +266,16 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
     setNewVideos((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const videosStillUploading = newVideos.some((v) => v.uploading);
+
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
     const data = { projectName, date };
-    const files = { panelPhoto, videos: newVideos, reportAttachment };
+    const videoUrls = [...existingVideos, ...newVideos.filter((v) => v.url).map((v) => v.url)];
+    const files = { panelPhoto, reportAttachment, videoUrls };
     if (drill) {
-      await updateFireMockDrill(drill._id, data, files, existingVideos);
+      await updateFireMockDrill(drill._id, data, files);
     } else {
       await createFireMockDrill(data, files);
     }
@@ -304,7 +332,7 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
             ))}
             {newVideos.map((v, idx) => (
               <div key={`new-${idx}`} className="relative">
-                <video src={URL.createObjectURL(v)} className="w-full h-20 rounded-lg border border-gray-200 object-cover" />
+                <video src={v.preview} className="w-full h-20 rounded-lg border border-gray-200 object-cover" />
                 <button
                   type="button"
                   onClick={() => removeNewVideo(idx)}
@@ -312,6 +340,18 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
                 >
                   <X size={12} className="text-red-600" />
                 </button>
+                {v.uploading && (
+                  <div className="absolute inset-x-1 bottom-1">
+                    <div className="h-1 bg-white/60 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary transition-all" style={{ width: `${Math.round(v.progress * 100)}%` }} />
+                    </div>
+                  </div>
+                )}
+                {v.failed && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-red-50/90 text-red-600 text-[10px] font-medium rounded-lg">
+                    Upload failed
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -347,10 +387,11 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
         </Field>
 
         <button
-          disabled={saving}
-          className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 mt-2"
+          disabled={saving || videosStillUploading}
+          className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50 mt-2 flex items-center justify-center gap-2"
         >
-          {saving ? "Saving..." : "Save"}
+          {videosStillUploading && <Loader2 size={15} className="animate-spin" />}
+          {saving ? "Saving..." : videosStillUploading ? "Videos uploading..." : "Save"}
         </button>
       </form>
     </Modal>

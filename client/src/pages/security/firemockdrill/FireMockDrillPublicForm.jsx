@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { CheckCircle2, Building2 } from "lucide-react";
+import { CheckCircle2, Building2, Loader2, AlertCircle } from "lucide-react";
 import { getFireMockDrillMeta, createFireMockDrill } from "../../../api/fireMockDrill";
+import { uploadVideoDirect } from "../../../api/cloudinaryDirectUpload";
 
 export default function FireMockDrillPublicForm() {
   const [projects, setProjects] = useState([]);
@@ -17,23 +18,57 @@ export default function FireMockDrillPublicForm() {
     getFireMockDrillMeta().then((m) => setProjects(m.projects));
   }, []);
 
+  // Videos start uploading straight to Cloudinary the moment they're picked
+  // (not on final submit) so the transfer overlaps with the rest of the form
+  // being filled in, instead of adding to submit-time wait.
   const setVideoAt = (idx, file) => {
+    if (!file) {
+      setVideos((prev) => {
+        const next = [...prev];
+        next[idx] = null;
+        return next;
+      });
+      return;
+    }
+
     setVideos((prev) => {
       const next = [...prev];
-      next[idx] = file;
+      next[idx] = { name: file.name, progress: 0, uploading: true, url: null, failed: false };
       return next;
     });
+
+    uploadVideoDirect(file, (progress) => {
+      setVideos((prev) => {
+        const next = [...prev];
+        if (next[idx]) next[idx] = { ...next[idx], progress };
+        return next;
+      });
+    })
+      .then((url) => {
+        setVideos((prev) => {
+          const next = [...prev];
+          if (next[idx]) next[idx] = { ...next[idx], url, uploading: false, progress: 1 };
+          return next;
+        });
+      })
+      .catch(() => {
+        setVideos((prev) => {
+          const next = [...prev];
+          if (next[idx]) next[idx] = { ...next[idx], uploading: false, failed: true };
+          return next;
+        });
+      });
   };
+
+  const videosStillUploading = videos.some((v) => v?.uploading);
 
   const submit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
     try {
-      await createFireMockDrill(
-        { projectName, date },
-        { panelPhoto, videos: videos.filter(Boolean), reportAttachment }
-      );
+      const videoUrls = videos.filter((v) => v?.url).map((v) => v.url);
+      await createFireMockDrill({ projectName, date }, { panelPhoto, reportAttachment, videoUrls });
       setDone(true);
     } catch {
       setError("Submission failed. Please try again.");
@@ -95,9 +130,30 @@ export default function FireMockDrillPublicForm() {
                 <input
                   type="file"
                   accept="video/*"
-                  onChange={(e) => setVideoAt(idx, e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    setVideoAt(idx, e.target.files?.[0] || null);
+                    e.target.value = "";
+                  }}
                   className="input text-xs"
                 />
+                {v?.uploading && (
+                  <div className="mt-1">
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary transition-all" style={{ width: `${Math.round(v.progress * 100)}%` }} />
+                    </div>
+                    <p className="text-[10px] text-subtext mt-0.5">Uploading {Math.round(v.progress * 100)}%</p>
+                  </div>
+                )}
+                {v?.url && !v.uploading && (
+                  <p className="text-[10px] text-green-600 mt-0.5 flex items-center gap-1">
+                    <CheckCircle2 size={10} /> Uploaded
+                  </p>
+                )}
+                {v?.failed && (
+                  <p className="text-[10px] text-red-600 mt-0.5 flex items-center gap-1">
+                    <AlertCircle size={10} /> Upload failed — try again
+                  </p>
+                )}
               </Field>
             ))}
           </div>
@@ -109,10 +165,11 @@ export default function FireMockDrillPublicForm() {
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <button
-            disabled={submitting || !projectName || !date || !panelPhoto}
-            className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50"
+            disabled={submitting || videosStillUploading || !projectName || !date || !panelPhoto}
+            className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {submitting ? "Submitting..." : "Submit"}
+            {videosStillUploading && <Loader2 size={15} className="animate-spin" />}
+            {submitting ? "Submitting..." : videosStillUploading ? "Videos uploading..." : "Submit"}
           </button>
         </form>
       </div>
