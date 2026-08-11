@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Building2, CheckCircle2 } from "lucide-react";
+import { Building2, CheckCircle2, RefreshCw } from "lucide-react";
 import { getNightGuardMeta, createNightGuardSubmission } from "../../../api/nightguard";
 import { listGuards } from "../../../api/guards";
 import CameraCapture from "../../../components/CameraCapture";
+import { saveDraft, loadDraft, clearDraft } from "../../../utils/nightGuardDraft";
 
 export default function NightGuardPublicForm() {
   const [sites, setSites] = useState([]);
@@ -10,22 +11,45 @@ export default function NightGuardPublicForm() {
   const [guards, setGuards] = useState([]);
   const [guardName, setGuardName] = useState("");
   const [capture, setCapture] = useState(null);
+  const [restoredNotice, setRestoredNotice] = useState(false);
+  const [draftChecked, setDraftChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     getNightGuardMeta().then((m) => setSites(m.sites));
+
+    const draft = loadDraft();
+    if (draft && (draft.capture || draft.projectName)) {
+      setProjectName(draft.projectName);
+      setGuardName(draft.guardName);
+      setCapture(draft.capture);
+      setRestoredNotice(true);
+    }
+    setDraftChecked(true);
   }, []);
 
+  // Only fetches the guard list for whichever project is selected — does
+  // NOT reset guardName here, so a restored draft's guard selection isn't
+  // wiped out by this effect firing when projectName changes on load.
   useEffect(() => {
-    setGuardName("");
     if (!projectName) {
       setGuards([]);
       return;
     }
     listGuards({ siteName: projectName, module: "night_guard" }).then(setGuards);
   }, [projectName]);
+
+  useEffect(() => {
+    if (draftChecked) {
+      saveDraft(projectName, guardName, capture);
+    }
+  }, [projectName, guardName, capture, draftChecked]);
+
+  if (!draftChecked) {
+    return <CenteredMessage title="Loading..." message="Preparing the check-in form" />;
+  }
 
   if (done) {
     return (
@@ -50,6 +74,7 @@ export default function NightGuardPublicForm() {
 
     try {
       await createNightGuardSubmission(form);
+      clearDraft();
       setDone(true);
     } catch {
       setError("Submission failed. Please try again.");
@@ -72,9 +97,24 @@ export default function NightGuardPublicForm() {
         </div>
 
         <form onSubmit={submit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
+          {restoredNotice && (
+            <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+              <RefreshCw size={13} />
+              Aapki pehle bhari hui details restore ho gayi hain.
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
-            <select required value={projectName} onChange={(e) => setProjectName(e.target.value)} className="input">
+            <select
+              required
+              value={projectName}
+              onChange={(e) => {
+                setProjectName(e.target.value);
+                setGuardName("");
+              }}
+              className="input"
+            >
               <option value="">Select project</option>
               {sites.map((s) => <option key={s}>{s}</option>)}
             </select>
@@ -91,7 +131,7 @@ export default function NightGuardPublicForm() {
             )}
           </div>
 
-          <CameraCapture label="Your proof-of-presence photo" onCapture={setCapture} disabled={!guardName} />
+          <CameraCapture label="Your proof-of-presence photo" onCapture={setCapture} disabled={!guardName} initialCapture={capture} />
 
           {error && <p className="text-xs text-red-600">{error}</p>}
 
