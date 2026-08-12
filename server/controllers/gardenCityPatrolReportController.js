@@ -82,6 +82,18 @@ exports.listSubmitted = async (req, res) => {
   res.json(summarized);
 };
 
+const BAND_ARGB_COLORS = ["FFF4B6AA", "FFC7A6DD"];
+
+function getBandArgbColors(entries) {
+  const colors = [];
+  let blockIndex = 0;
+  entries.forEach((e, idx) => {
+    if (idx > 0 && e.time === "07:00:00 PM") blockIndex += 1;
+    colors.push(BAND_ARGB_COLORS[blockIndex % 2]);
+  });
+  return colors;
+}
+
 exports.exportExcel = async (req, res) => {
   const report = await GardenCityPatrolReport.findById(req.params.id);
   if (!report) return res.status(404).json({ message: "Report not found" });
@@ -89,20 +101,24 @@ exports.exportExcel = async (req, res) => {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet(`GardenCity_${report.reportDate}`);
   sheet.columns = [
-    { header: "Checkpoint", key: "checkpointLabel", width: 12 },
-    { header: "Time", key: "time", width: 14 },
+    { header: "Checkpoint & Time", key: "checkpointAndTime", width: 24 },
     { header: "Guard Name", key: "guardName", width: 24 },
     { header: "Date", key: "date", width: 14 },
     { header: "Status", key: "status", width: 16 },
   ];
-  report.entries.forEach((e) => {
-    sheet.addRow({
-      checkpointLabel: e.checkpointLabel,
-      time: e.time,
+  const bandColors = getBandArgbColors(report.entries);
+  report.entries.forEach((e, idx) => {
+    const row = sheet.addRow({
+      checkpointAndTime: `${e.checkpointLabel} ${e.time}`,
       guardName: e.guardName,
       date: report.reportDate,
       status: e.status,
     });
+    row.getCell("checkpointAndTime").fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: bandColors[idx] },
+    };
   });
   sheet.getRow(1).font = { bold: true };
 

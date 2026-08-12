@@ -9,13 +9,24 @@ const HEADER_HEIGHT = 22;
 const MARGIN = 24;
 const PAGE_HEIGHT = 780;
 
+const BAND_COLORS = ["#F4B6AA", "#C7A6DD"];
+
 const COLUMNS = [
-  { label: "Checkpoint", width: 80 },
-  { label: "Time", width: 90 },
+  { label: "Checkpoint & Time", width: 170 },
   { label: "Guard Name", width: 150 },
   { label: "Date", width: 80 },
   { label: "Status", width: 100 },
 ];
+
+function getBandColors(entries) {
+  const colors = [];
+  let blockIndex = 0;
+  entries.forEach((e, idx) => {
+    if (idx > 0 && e.time === "07:00:00 PM") blockIndex += 1;
+    colors.push(BAND_COLORS[blockIndex % 2]);
+  });
+  return colors;
+}
 
 function drawHeaderRow(doc, x, y) {
   let cx = x;
@@ -27,11 +38,15 @@ function drawHeaderRow(doc, x, y) {
   });
 }
 
-function drawDataRow(doc, values, x, y) {
+function drawDataRow(doc, values, x, y, bandColor) {
   let cx = x;
   doc.font("Helvetica").fontSize(CELL_FONT_SIZE);
   COLUMNS.forEach((col, idx) => {
-    doc.rect(cx, y, col.width, ROW_HEIGHT).stroke(BORDER_COLOR);
+    if (idx === 0) {
+      doc.rect(cx, y, col.width, ROW_HEIGHT).fillAndStroke(bandColor, BORDER_COLOR);
+    } else {
+      doc.rect(cx, y, col.width, ROW_HEIGHT).stroke(BORDER_COLOR);
+    }
     doc.fillColor("#000000").text(String(values[idx] ?? ""), cx + 4, y + ROW_HEIGHT / 2 - 4, { width: col.width - 8, align: "center" });
     cx += col.width;
   });
@@ -42,6 +57,7 @@ function buildGardenCityReportPdf(report) {
   const pageSize = [totalWidth, PAGE_HEIGHT];
   const doc = new PDFDocument({ size: pageSize, margin: MARGIN });
   const bottomLimit = PAGE_HEIGHT - MARGIN;
+  const bandColors = getBandColors(report.entries);
 
   doc.font("Helvetica-Bold").fontSize(12).fillColor("#111827").text(`Garden City Guard Checkpoint Report — ${report.reportDate}`, MARGIN, MARGIN - 10);
 
@@ -49,14 +65,14 @@ function buildGardenCityReportPdf(report) {
   drawHeaderRow(doc, MARGIN, y);
   y += HEADER_HEIGHT;
 
-  report.entries.forEach((e) => {
+  report.entries.forEach((e, idx) => {
     if (y + ROW_HEIGHT > bottomLimit) {
       doc.addPage({ size: pageSize, margin: MARGIN });
       y = MARGIN;
       drawHeaderRow(doc, MARGIN, y);
       y += HEADER_HEIGHT;
     }
-    drawDataRow(doc, [e.checkpointLabel, e.time, e.guardName || "—", report.reportDate, e.status || "—"], MARGIN, y);
+    drawDataRow(doc, [`${e.checkpointLabel} ${e.time}`, e.guardName || "—", report.reportDate, e.status || "—"], MARGIN, y, bandColors[idx]);
     y += ROW_HEIGHT;
   });
 

@@ -13,6 +13,18 @@ import {
   gardenCityReportExportPdfUrl,
 } from "../../../api/gardenCityPatrolReport";
 
+const BAND_COLORS = ["#F4B6AA", "#C7A6DD"];
+
+function getBandColors(entries) {
+  const colors = [];
+  let blockIndex = 0;
+  entries.forEach((e, idx) => {
+    if (idx > 0 && e.time === "07:00:00 PM") blockIndex += 1;
+    colors.push(BAND_COLORS[blockIndex % 2]);
+  });
+  return colors;
+}
+
 export default function GardenCityAdminReportPage() {
   const { user } = useAuth();
   const [reports, setReports] = useState([]);
@@ -20,6 +32,7 @@ export default function GardenCityAdminReportPage() {
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState(null);
+  const viewingBandColors = viewing ? getBandColors(viewing.entries) : [];
 
   const load = async () => {
     setLoading(true);
@@ -88,8 +101,7 @@ export default function GardenCityAdminReportPage() {
             <table className="text-sm mb-4 border-collapse w-full">
               <thead className="sticky top-0">
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 whitespace-nowrap">Checkpoint</th>
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 whitespace-nowrap">Time</th>
+                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 whitespace-nowrap">Checkpoint & Time</th>
                   <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 whitespace-nowrap">Guard Name</th>
                   <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 whitespace-nowrap">{viewing.reportDate}</th>
                 </tr>
@@ -97,8 +109,9 @@ export default function GardenCityAdminReportPage() {
               <tbody>
                 {viewing.entries.map((e, idx) => (
                   <tr key={idx} className="border-b border-gray-100 last:border-b-0">
-                    <td className="px-3 py-2 whitespace-nowrap font-medium text-heading">{e.checkpointLabel}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-gray-600">{e.time}</td>
+                    <td className="px-3 py-2 whitespace-nowrap font-medium text-heading" style={{ backgroundColor: viewingBandColors[idx] }}>
+                      {e.checkpointLabel} {e.time}
+                    </td>
                     <td className="px-3 py-2 whitespace-nowrap">{e.guardName || <span className="text-gray-300">—</span>}</td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       {e.status ? <StatusPill status={e.status} /> : <span className="text-gray-300">—</span>}

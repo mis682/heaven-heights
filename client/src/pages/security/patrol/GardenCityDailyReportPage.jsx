@@ -17,6 +17,18 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+const BAND_COLORS = ["#F4B6AA", "#C7A6DD"];
+
+function getBandColors(entries) {
+  const colors = [];
+  let blockIndex = 0;
+  entries.forEach((e, idx) => {
+    if (idx > 0 && e.time === "07:00:00 PM") blockIndex += 1;
+    colors.push(BAND_COLORS[blockIndex % 2]);
+  });
+  return colors;
+}
+
 export default function GardenCityDailyReportPage() {
   const { user } = useAuth();
   const [meta, setMeta] = useState({ statusOptions: [], schedule: [] });
@@ -45,6 +57,7 @@ export default function GardenCityDailyReportPage() {
   }, [date, meta.schedule]);
 
   const isLocked = report?.status === "submitted";
+  const bandColors = getBandColors(entries);
 
   const updateEntry = (idx, patch) => setEntries((prev) => prev.map((e, i) => (i === idx ? { ...e, ...patch } : e)));
 
@@ -94,8 +107,7 @@ export default function GardenCityDailyReportPage() {
           <table className="text-sm border-collapse w-full">
             <thead className="sticky top-0 z-10">
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">Checkpoint</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">Time</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">Checkpoint & Time</th>
                 <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">Guard Name</th>
                 <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">{date}</th>
               </tr>
@@ -103,8 +115,9 @@ export default function GardenCityDailyReportPage() {
             <tbody>
               {entries.map((entry, idx) => (
                 <tr key={idx} className="border-b border-gray-100 last:border-b-0">
-                  <td className="px-4 py-2 whitespace-nowrap font-medium text-heading">{entry.checkpointLabel}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-gray-600">{entry.time}</td>
+                  <td className="px-4 py-2 whitespace-nowrap font-medium text-heading" style={{ backgroundColor: bandColors[idx] }}>
+                    {entry.checkpointLabel} {entry.time}
+                  </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <select
                       disabled={isLocked}
