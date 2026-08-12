@@ -12,9 +12,9 @@ const DARK = "#4a4635";
 const DESIGN_WIDTH = 243;
 const DESIGN_HEIGHT = 153;
 
-// ~75mm x 48mm — fits a small (~60x90mm) laminating pouch with margin.
-const CARD_WIDTH = 213;
-const CARD_HEIGHT = 136;
+// 90mm x 60mm — fits a 65x95mm laminating pouch with ~2.5mm margin per side.
+const CARD_WIDTH = 255;
+const CARD_HEIGHT = 170;
 
 const SCALE_X = CARD_WIDTH / DESIGN_WIDTH;
 const SCALE_Y = CARD_HEIGHT / DESIGN_HEIGHT;
