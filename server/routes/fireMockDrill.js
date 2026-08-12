@@ -7,6 +7,7 @@ const { uploadMixed } = require("../middleware/upload");
 const fields = uploadMixed.fields([
   { name: "panelPhoto", maxCount: 1 },
   { name: "reportAttachment", maxCount: 1 },
+  { name: "checklistAttachments", maxCount: 5 },
 ]);
 
 router.get("/meta", asyncHandler(ctrl.meta));

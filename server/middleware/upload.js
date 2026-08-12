@@ -40,6 +40,7 @@ const FIELD_RESOURCE_TYPES = {
   panelPhoto: "image",
   videos: "video",
   reportAttachment: "raw",
+  checklistAttachments: "raw",
 };
 
 class MixedCloudinaryStorage {

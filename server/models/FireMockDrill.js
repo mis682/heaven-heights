@@ -7,6 +7,7 @@ const FireMockDrillSchema = new mongoose.Schema(
     panelPhoto: { type: String, default: "" },
     videos: [{ type: String }],
     reportAttachment: { type: String, default: "" },
+    checklistAttachments: [{ type: String }],
   },
   { timestamps: true }
 );

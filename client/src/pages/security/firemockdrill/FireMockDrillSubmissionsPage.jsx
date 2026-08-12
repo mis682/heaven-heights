@@ -113,6 +113,15 @@ export default function FireMockDrillSubmissionsPage() {
               ),
           },
           {
+            key: "checklistAttachments",
+            header: "Checklist",
+            render: (r) => (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-600">
+                <FileText size={13} /> {r.checklistAttachments?.length || 0}
+              </span>
+            ),
+          },
+          {
             key: "actions",
             header: "Actions",
             render: (r) => (
@@ -203,6 +212,25 @@ function ViewModal({ drill, onClose }) {
             </a>
           </div>
         )}
+
+        {drill.checklistAttachments?.length > 0 && (
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-1.5">Checklist Attachments ({drill.checklistAttachments.length})</p>
+            <div className="flex flex-wrap gap-3">
+              {drill.checklistAttachments.map((url, idx) => (
+                <a
+                  key={idx}
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                >
+                  <FileText size={16} /> Page {idx + 1}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   );
@@ -217,6 +245,8 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
   const [newVideos, setNewVideos] = useState([]);
   const [reportAttachment, setReportAttachment] = useState(null);
   const [existingReport, setExistingReport] = useState(drill?.reportAttachment || "");
+  const [existingChecklist, setExistingChecklist] = useState(drill?.checklistAttachments || []);
+  const [newChecklist, setNewChecklist] = useState([]);
   const [saving, setSaving] = useState(false);
 
   const totalVideoSlots = existingVideos.length + newVideos.length;
@@ -273,7 +303,7 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
     setSaving(true);
     const data = { projectName, date };
     const videoUrls = [...existingVideos, ...newVideos.filter((v) => v.url).map((v) => v.url)];
-    const files = { panelPhoto, reportAttachment, videoUrls };
+    const files = { panelPhoto, reportAttachment, checklistAttachments: newChecklist.length ? newChecklist : undefined, videoUrls };
     if (drill) {
       await updateFireMockDrill(drill._id, data, files);
     } else {
@@ -382,6 +412,28 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
             <label className="cursor-pointer text-sm font-medium text-primary hover:underline">
               {existingReport || reportAttachment ? "Replace file" : "Upload file"}
               <input type="file" onChange={(e) => setReportAttachment(e.target.files?.[0] || null)} className="hidden" />
+            </label>
+          </div>
+        </Field>
+
+        <Field label={`Checklist Attachment (up to 5 pages)`}>
+          <div className="flex flex-wrap items-center gap-3">
+            {newChecklist.length === 0 &&
+              existingChecklist.map((url, idx) => (
+                <a key={idx} href={url} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                  <FileText size={14} /> Page {idx + 1}
+                </a>
+              ))}
+            {newChecklist.length > 0 && <span className="text-sm text-gray-600">{newChecklist.length} new file(s) selected</span>}
+            <label className="cursor-pointer text-sm font-medium text-primary hover:underline">
+              {existingChecklist.length ? "Replace files" : "Upload files"}
+              <input
+                type="file"
+                multiple
+                accept="image/*,.pdf,application/pdf"
+                onChange={(e) => setNewChecklist(Array.from(e.target.files || []).slice(0, 5))}
+                className="hidden"
+              />
             </label>
           </div>
         </Field>

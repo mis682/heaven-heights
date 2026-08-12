@@ -10,6 +10,7 @@ export default function FireMockDrillPublicForm() {
   const [panelPhoto, setPanelPhoto] = useState(null);
   const [videos, setVideos] = useState(Array(8).fill(null));
   const [reportAttachment, setReportAttachment] = useState(null);
+  const [checklistAttachments, setChecklistAttachments] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -68,7 +69,7 @@ export default function FireMockDrillPublicForm() {
     setError("");
     try {
       const videoUrls = videos.filter((v) => v?.url).map((v) => v.url);
-      await createFireMockDrill({ projectName, date }, { panelPhoto, reportAttachment, videoUrls });
+      await createFireMockDrill({ projectName, date }, { panelPhoto, reportAttachment, checklistAttachments, videoUrls });
       setDone(true);
     } catch {
       setError("Submission failed. Please try again.");
@@ -160,6 +161,19 @@ export default function FireMockDrillPublicForm() {
 
           <Field label="Report Attachment">
             <input type="file" onChange={(e) => setReportAttachment(e.target.files?.[0] || null)} className="input" />
+          </Field>
+
+          <Field label="Checklist Attachment (up to 5 pages)">
+            <input
+              type="file"
+              multiple
+              accept="image/*,.pdf,application/pdf"
+              onChange={(e) => setChecklistAttachments(Array.from(e.target.files || []).slice(0, 5))}
+              className="input"
+            />
+            {checklistAttachments.length > 0 && (
+              <p className="text-[11px] text-subtext mt-1">{checklistAttachments.length} file(s) selected</p>
+            )}
           </Field>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

@@ -44,8 +44,9 @@ exports.create = async (req, res) => {
   const panelPhoto = req.files?.panelPhoto?.[0] ? fileToUrl(req.files.panelPhoto[0]) : "";
   const videos = parseVideoUrls(videoUrls) || [];
   const reportAttachment = req.files?.reportAttachment?.[0] ? fileToUrl(req.files.reportAttachment[0]) : "";
+  const checklistAttachments = (req.files?.checklistAttachments || []).map(fileToUrl);
 
-  const drill = await FireMockDrill.create({ projectName, date, panelPhoto, videos, reportAttachment });
+  const drill = await FireMockDrill.create({ projectName, date, panelPhoto, videos, reportAttachment, checklistAttachments });
   res.status(201).json(drill);
 };
 
@@ -76,6 +77,7 @@ exports.update = async (req, res) => {
   if (req.body.date) body.date = req.body.date;
   if (req.files?.panelPhoto?.[0]) body.panelPhoto = fileToUrl(req.files.panelPhoto[0]);
   if (req.files?.reportAttachment?.[0]) body.reportAttachment = fileToUrl(req.files.reportAttachment[0]);
+  if (req.files?.checklistAttachments?.length) body.checklistAttachments = req.files.checklistAttachments.map(fileToUrl);
 
   // The client sends the full desired list of video URLs each time (kept
   // existing ones + newly direct-uploaded ones), since videos never pass
