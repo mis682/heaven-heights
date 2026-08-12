@@ -23,6 +23,7 @@ import FireMockDrillSubmissionsPage from "./pages/security/firemockdrill/FireMoc
 
 import AttendancePage from "./pages/attendance/AttendancePage";
 import ScanAttendancePage from "./pages/attendance/ScanAttendancePage";
+import PublicScanAttendancePage from "./pages/attendance/PublicScanAttendancePage";
 import AttendanceRecordsPage from "./pages/attendance/AttendanceRecordsPage";
 import SiteLocationsPage from "./pages/attendance/SiteLocationsPage";
 import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
@@ -37,6 +38,7 @@ export default function App() {
       <Route path="/patrol-form/:project" element={<PatrolPublicForm />} />
       <Route path="/night-guard-form" element={<NightGuardPublicForm />} />
       <Route path="/fire-mock-drill-form" element={<FireMockDrillPublicForm />} />
+      <Route path="/scan-attendance-form" element={<PublicScanAttendancePage />} />
 
       <Route path="/login" element={<Login />} />
 
