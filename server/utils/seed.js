@@ -10,7 +10,7 @@ const Employee = require("../models/Employee");
 const MaintenanceStaff = require("../models/MaintenanceStaff");
 
 const PATROL_PROJECTS = [
-  { name: "Garden City", slug: "garden-city", checkpointCount: 20 },
+  { name: "Garden City", slug: "garden-city", checkpointCount: 14 },
   { name: "Regal Garden", slug: "regal-garden", checkpointCount: 10 },
   { name: "Nature Park", slug: "nature-park", checkpointCount: 10 },
   { name: "School", slug: "school", checkpointCount: 6 },
