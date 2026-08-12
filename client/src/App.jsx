@@ -28,6 +28,7 @@ import ScanAttendancePage from "./pages/attendance/ScanAttendancePage";
 import PublicScanAttendancePage from "./pages/attendance/PublicScanAttendancePage";
 import AttendanceRecordsPage from "./pages/attendance/AttendanceRecordsPage";
 import SiteLocationsPage from "./pages/attendance/SiteLocationsPage";
+import PublicSiteLocationsPage from "./pages/attendance/PublicSiteLocationsPage";
 import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
@@ -41,6 +42,7 @@ export default function App() {
       <Route path="/night-guard-form" element={<NightGuardPublicForm />} />
       <Route path="/fire-mock-drill-form" element={<FireMockDrillPublicForm />} />
       <Route path="/scan-attendance-form" element={<PublicScanAttendancePage />} />
+      <Route path="/site-location-form" element={<PublicSiteLocationsPage />} />
 
       <Route path="/login" element={<Login />} />
 
