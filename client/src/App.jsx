@@ -12,6 +12,8 @@ import PatrolPublicForm from "./pages/security/patrol/PatrolPublicForm";
 import PatrolSitePage from "./pages/security/patrol/PatrolSitePage";
 import PatrolDailyReportBuilderPage from "./pages/security/patrol/PatrolDailyReportBuilderPage";
 import PatrolAdminReportPage from "./pages/security/patrol/PatrolAdminReportPage";
+import GardenCityDailyReportPage from "./pages/security/patrol/GardenCityDailyReportPage";
+import GardenCityAdminReportPage from "./pages/security/patrol/GardenCityAdminReportPage";
 
 import NightGuardPublicForm from "./pages/security/nightguard/NightGuardPublicForm";
 import NightGuardSubmissionsPage from "./pages/security/nightguard/NightGuardSubmissionsPage";
@@ -54,6 +56,10 @@ export default function App() {
         <Route path="/housekeeping" element={<HousekeepingPage />} />
 
         <Route path="/security/patrol/:project/submissions" element={<PatrolSitePage />} />
+        {/* Garden City uses a fixed checkpoint+time schedule report format; every
+            other patrol site keeps the generic hourly-slot builder below. */}
+        <Route path="/security/patrol/garden-city/daily-report" element={<GardenCityDailyReportPage />} />
+        <Route path="/security/patrol/garden-city/admin-report" element={<GardenCityAdminReportPage />} />
         <Route path="/security/patrol/:project/daily-report" element={<PatrolDailyReportBuilderPage />} />
         <Route path="/security/patrol/:project/admin-report" element={<PatrolAdminReportPage />} />
 
