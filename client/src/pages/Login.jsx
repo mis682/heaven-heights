@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Building2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const ROLES = ["Admin", "Manager", "Coordinator"];
+const ROLES = ["Admin", "Security Manager", "Coordinator"];
 
 export default function Login() {
   const [name, setName] = useState("");
