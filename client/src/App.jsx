@@ -33,6 +33,7 @@ import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
+import { NON_COORDINATOR_ROLES } from "./layouts/navConfig";
 
 export default function App() {
   return (
@@ -55,7 +56,14 @@ export default function App() {
       >
         <Route path="/" element={<Home />} />
 
-        <Route path="/housekeeping" element={<HousekeepingPage />} />
+        <Route
+          path="/housekeeping"
+          element={
+            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+              <HousekeepingPage />
+            </RequireAuth>
+          }
+        />
 
         <Route path="/security/patrol/:project/submissions" element={<PatrolSitePage />} />
         {/* Garden City uses a fixed checkpoint+time schedule report format; every
@@ -71,14 +79,63 @@ export default function App() {
 
         <Route path="/security/fire-mock-drill/submissions" element={<FireMockDrillSubmissionsPage />} />
 
-        <Route path="/attendance" element={<AttendancePage />} />
-        <Route path="/attendance/scan" element={<ScanAttendancePage />} />
-        <Route path="/attendance/records" element={<AttendanceRecordsPage />} />
-        <Route path="/attendance/sites" element={<SiteLocationsPage />} />
-        <Route path="/attendance/team" element={<TeamAttendancePage />} />
+        <Route
+          path="/attendance"
+          element={
+            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+              <AttendancePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/attendance/scan"
+          element={
+            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+              <ScanAttendancePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/attendance/records"
+          element={
+            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+              <AttendanceRecordsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/attendance/sites"
+          element={
+            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+              <SiteLocationsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/attendance/team"
+          element={
+            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+              <TeamAttendancePage />
+            </RequireAuth>
+          }
+        />
 
-        <Route path="/admin/maintenance-staff" element={<MaintenanceStaffPage />} />
-        <Route path="/admin/guards" element={<GuardMasterDataPage />} />
+        <Route
+          path="/admin/maintenance-staff"
+          element={
+            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+              <MaintenanceStaffPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/guards"
+          element={
+            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+              <GuardMasterDataPage />
+            </RequireAuth>
+          }
+        />
       </Route>
 
       <Route path="*" element={<ComingSoon title="Page not found" />} />

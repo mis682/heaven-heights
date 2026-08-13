@@ -17,11 +17,16 @@ function patrolSiteNavItem({ label, slug }) {
   };
 }
 
+// Coordinator only needs the Security module — every other item here is
+// restricted to Admin / Security Manager so it drops out of the sidebar
+// (and the matching routes in App.jsx) for that role.
+export const NON_COORDINATOR_ROLES = ["Admin", "Security Manager"];
+
 export const NAV_SECTIONS = [
   {
     id: "operations",
     items: [
-      { label: "Housekeeping", path: "/housekeeping" },
+      { label: "Housekeeping", path: "/housekeeping", roles: NON_COORDINATOR_ROLES },
       {
         label: "Security",
         children: [
@@ -39,6 +44,7 @@ export const NAV_SECTIONS = [
       },
       {
         label: "Attendance",
+        roles: NON_COORDINATOR_ROLES,
         children: [
           { label: "Daily Attendance", path: "/attendance" },
           { label: "Scan Attendance", path: "/attendance/scan" },
@@ -47,8 +53,8 @@ export const NAV_SECTIONS = [
           { label: "Site Locations", path: "/attendance/sites" },
         ],
       },
-      { label: "Maintenance Staff", path: "/admin/maintenance-staff" },
-      { label: "Guard Master Data", path: "/admin/guards" },
+      { label: "Maintenance Staff", path: "/admin/maintenance-staff", roles: NON_COORDINATOR_ROLES },
+      { label: "Guard Master Data", path: "/admin/guards", roles: NON_COORDINATOR_ROLES },
     ],
   },
 ];

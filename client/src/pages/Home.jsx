@@ -3,15 +3,18 @@ import { Link } from "react-router-dom";
 import { Sparkles, Shield, Clock, Building2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
+const NON_COORDINATOR_ROLES = ["Admin", "Security Manager"];
+
 const TILES = [
-  { label: "Housekeeping", path: "/housekeeping", icon: Sparkles, color: "bg-primary-light text-primary" },
+  { label: "Housekeeping", path: "/housekeeping", icon: Sparkles, color: "bg-primary-light text-primary", roles: NON_COORDINATOR_ROLES },
   { label: "Patrol Checkpoints", path: "/security/patrol/garden-city/submissions", icon: Shield, color: "bg-blue-100 text-blue-600" },
   { label: "Night Guard", path: "/security/night-guard/daily-report", icon: Shield, color: "bg-gray-100 text-gray-600" },
-  { label: "Attendance", path: "/attendance", icon: Clock, color: "bg-green-100 text-green-600" },
+  { label: "Attendance", path: "/attendance", icon: Clock, color: "bg-green-100 text-green-600", roles: NON_COORDINATOR_ROLES },
 ];
 
 export default function Home() {
   const { user } = useAuth();
+  const tiles = TILES.filter((t) => !t.roles || t.roles.includes(user?.role));
 
   return (
     <div>
@@ -19,7 +22,7 @@ export default function Home() {
       <p className="text-sm text-subtext mt-1">Logged in as {user?.role}. Jump into a module below.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        {TILES.map((tile) => (
+        {tiles.map((tile) => (
           <Link
             key={tile.path}
             to={tile.path}

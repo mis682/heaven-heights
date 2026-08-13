@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDown, Building2 } from "lucide-react";
 import { NAV_SECTIONS } from "../layouts/navConfig";
+import { useAuth } from "../context/AuthContext";
 
 function pathsOf(item) {
   if (item.path) return [item.path];
@@ -63,6 +64,9 @@ function NavItem({ item, collapsed, depth = 0, onNavigate }) {
 }
 
 export default function Sidebar({ collapsed, mobileOpen, onClose }) {
+  const { user } = useAuth();
+  const visible = (item) => !item.roles || item.roles.includes(user?.role);
+
   return (
     <>
       {mobileOpen && <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={onClose} />}
@@ -93,7 +97,7 @@ export default function Sidebar({ collapsed, mobileOpen, onClose }) {
                 </p>
               )}
               <div className="space-y-0.5">
-                {section.items.map((item) => (
+                {section.items.filter(visible).map((item) => (
                   <NavItem key={item.label} item={item} collapsed={collapsed} onNavigate={onClose} />
                 ))}
               </div>
