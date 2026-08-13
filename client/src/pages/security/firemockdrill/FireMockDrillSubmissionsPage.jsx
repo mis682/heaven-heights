@@ -91,18 +91,21 @@ export default function FireMockDrillSubmissionsPage() {
                 </div>
               ),
           },
-          {
-            key: "videos",
-            header: "Videos",
-            render: (r) => (
-              <span className="inline-flex items-center gap-1 text-xs text-gray-600">
-                <Video size={13} /> {r.videos?.length || 0}
-              </span>
-            ),
-          },
+          ...Array.from({ length: 8 }, (_, i) => ({
+            key: `video${i + 1}`,
+            header: `Video ${i + 1}`,
+            render: (r) =>
+              r.videos?.[i] ? (
+                <a href={r.videos[i]} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-primary">
+                  <Video size={16} />
+                </a>
+              ) : (
+                <span className="text-xs text-gray-300">—</span>
+              ),
+          })),
           {
             key: "reportAttachment",
-            header: "Report",
+            header: "Report Attachment",
             render: (r) =>
               r.reportAttachment ? (
                 <a href={r.reportAttachment} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-primary">
@@ -112,15 +115,18 @@ export default function FireMockDrillSubmissionsPage() {
                 <span className="text-xs text-gray-300">—</span>
               ),
           },
-          {
-            key: "checklistAttachments",
-            header: "Checklist",
-            render: (r) => (
-              <span className="inline-flex items-center gap-1 text-xs text-gray-600">
-                <FileText size={13} /> {r.checklistAttachments?.length || 0}
-              </span>
-            ),
-          },
+          ...Array.from({ length: 5 }, (_, i) => ({
+            key: `checklistPage${i + 1}`,
+            header: `Checklist Page ${i + 1}`,
+            render: (r) =>
+              r.checklistAttachments?.[i] ? (
+                <a href={r.checklistAttachments[i]} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-primary">
+                  <FileText size={16} />
+                </a>
+              ) : (
+                <span className="text-xs text-gray-300">—</span>
+              ),
+          })),
           {
             key: "actions",
             header: "Actions",
