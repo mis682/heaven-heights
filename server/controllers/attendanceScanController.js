@@ -93,7 +93,16 @@ exports.scan = async (req, res) => {
 
   if (!isSecurityGuard(staff.designation)) {
     const siteLocation = await SiteLocation.findOne({ siteName: staff.siteName });
-    if (siteLocation && latitude != null && longitude != null && latitude !== "" && longitude !== "") {
+    if (siteLocation) {
+      const hasCoords = latitude != null && longitude != null && latitude !== "" && longitude !== "";
+      if (!hasCoords) {
+        // A site with a configured lock must not silently skip the geofence
+        // just because the device failed to hand back a location — that would
+        // let anyone punch in/out from anywhere by denying location access.
+        return res.status(400).json({
+          message: "Location capture nahi ho payi — device ki location ON karke dobara try karein.",
+        });
+      }
       distanceMeters = haversineMeters(Number(latitude), Number(longitude), siteLocation.latitude, siteLocation.longitude);
       withinGeofence = distanceMeters <= siteLocation.radiusMeters;
       if (!withinGeofence) {
