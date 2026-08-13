@@ -7,7 +7,7 @@ router.get("/meta", asyncHandler(ctrl.meta));
 router.get("/proof", asyncHandler(ctrl.getCheckpointProof));
 
 router.get("/submitted", asyncHandler(ctrl.listSubmittedReports));
-router.get("/by-date", asyncHandler(ctrl.getReportByDate));
+router.get("/open-draft", asyncHandler(ctrl.getOpenDraft));
 router.post("/draft", asyncHandler(ctrl.saveDraft));
 router.post("/:id/submit", asyncHandler(ctrl.submitReport));
 router.post("/:id/unlock", asyncHandler(ctrl.unlockReport));

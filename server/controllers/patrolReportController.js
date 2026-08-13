@@ -44,31 +44,32 @@ exports.getCheckpointProof = async (req, res) => {
   res.json(photos);
 };
 
-exports.getReportByDate = async (req, res) => {
-  const { projectId, date } = req.query;
-  if (!projectId || !date) return res.status(400).json({ message: "projectId and date are required" });
-  const report = await PatrolDailyReport.findOne({ projectId, reportDate: date });
+// A site's report is an open-ended log, not scoped to one day — at most one
+// draft is ever open per project. Entries within it each carry their own date.
+exports.getOpenDraft = async (req, res) => {
+  const { projectId } = req.query;
+  if (!projectId) return res.status(400).json({ message: "projectId is required" });
+  const report = await PatrolDailyReport.findOne({ projectId, status: "draft" });
   res.json(report || null);
 };
 
 exports.saveDraft = async (req, res) => {
-  const { projectId, projectName, reportDate, entries, preparedBy } = req.body;
-  if (!projectId || !projectName || !reportDate) {
-    return res.status(400).json({ message: "projectId, projectName and reportDate are required" });
+  const { projectId, projectName, entries } = req.body;
+  if (!projectId || !projectName) {
+    return res.status(400).json({ message: "projectId and projectName are required" });
   }
 
   const project = await Project.findById(projectId);
   if (!project) return res.status(404).json({ message: "Project not found" });
 
   const report = await PatrolDailyReport.findOneAndUpdate(
-    { projectId, reportDate, status: "draft" },
+    { projectId, status: "draft" },
     {
       projectId,
       projectName,
-      reportDate,
       checkpointCount: project.checkpointCount,
       entries: entries || [],
-      preparedBy: preparedBy || "",
+      preparedBy: req.body.preparedBy || "",
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
@@ -106,17 +107,27 @@ exports.getReport = async (req, res) => {
   res.json(report);
 };
 
+// Entries can span several dates now, so reports are filtered/sorted by
+// submittedAt (always present) rather than a single report-level date.
+function dateRangeLabel(report) {
+  const dates = report.entries.map((e) => e.date).filter(Boolean).sort();
+  if (dates.length === 0) return report.reportDate || "";
+  const min = dates[0];
+  const max = dates[dates.length - 1];
+  return min === max ? min : `${min} to ${max}`;
+}
+
 exports.listSubmittedReports = async (req, res) => {
   const { dateFrom, dateTo, projectId } = req.query;
   const filter = { status: "submitted" };
   if (projectId) filter.projectId = projectId;
   if (dateFrom || dateTo) {
-    filter.reportDate = {};
-    if (dateFrom) filter.reportDate.$gte = dateFrom;
-    if (dateTo) filter.reportDate.$lte = dateTo;
+    filter.submittedAt = {};
+    if (dateFrom) filter.submittedAt.$gte = new Date(`${dateFrom}T00:00:00`);
+    if (dateTo) filter.submittedAt.$lte = new Date(`${dateTo}T23:59:59.999`);
   }
 
-  const reports = await PatrolDailyReport.find(filter).sort({ reportDate: -1 });
+  const reports = await PatrolDailyReport.find(filter).sort({ submittedAt: -1 });
 
   const summarized = reports.map((r) => {
     const guards = [...new Set(r.entries.map((e) => e.guardName))];
@@ -125,7 +136,7 @@ exports.listSubmittedReports = async (req, res) => {
     const absent = allStatuses.filter((s) => s === "Absent").length;
     return {
       _id: r._id,
-      reportDate: r.reportDate,
+      dateRange: dateRangeLabel(r),
       projectName: r.projectName,
       preparedBy: r.preparedBy,
       guards,
@@ -142,8 +153,9 @@ exports.exportReport = async (req, res) => {
   const report = await PatrolDailyReport.findById(req.params.id);
   if (!report) return res.status(404).json({ message: "Report not found" });
 
+  const filenameDate = dateRangeLabel(report).replace(/\s+/g, "");
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet(`Patrol_${report.reportDate}`);
+  const sheet = workbook.addWorksheet(`Patrol_${filenameDate}`.slice(0, 31));
   const checkpointRange = report.checkpointCount > 0 ? `C1 TO C${report.checkpointCount}` : "";
   const columns = [
     { header: "Date", key: "date", width: 14 },
@@ -157,7 +169,7 @@ exports.exportReport = async (req, res) => {
   sheet.columns = columns;
 
   report.entries.forEach((e) => {
-    const row = { date: report.reportDate, guardName: e.guardName, timeSlot: e.timeSlot, checkpointRange };
+    const row = { date: e.date || report.reportDate, guardName: e.guardName, timeSlot: e.timeSlot, checkpointRange };
     e.checkpointStatuses.forEach((status, idx) => {
       row[`cp${idx + 1}`] = status;
     });
@@ -166,7 +178,7 @@ exports.exportReport = async (req, res) => {
   sheet.getRow(1).font = { bold: true };
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", `attachment; filename=patrol-report-${report.projectName}-${report.reportDate}.xlsx`);
+  res.setHeader("Content-Disposition", `attachment; filename=patrol-report-${report.projectName}-${filenameDate}.xlsx`);
   await workbook.xlsx.write(res);
   res.end();
 };
@@ -175,8 +187,9 @@ exports.exportReportPdf = async (req, res) => {
   const report = await PatrolDailyReport.findById(req.params.id);
   if (!report) return res.status(404).json({ message: "Report not found" });
 
+  const filenameDate = dateRangeLabel(report).replace(/\s+/g, "");
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename=patrol-report-${report.projectName}-${report.reportDate}.pdf`);
+  res.setHeader("Content-Disposition", `attachment; filename=patrol-report-${report.projectName}-${filenameDate}.pdf`);
 
   const doc = buildCheckpointReportPdf(report);
   doc.pipe(res);

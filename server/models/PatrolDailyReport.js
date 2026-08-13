@@ -30,6 +30,9 @@ const TIME_SLOTS = [
 
 const PatrolReportEntrySchema = new mongoose.Schema(
   {
+    // Each entry picks its own date (a report is an open-ended log of rounds,
+    // not scoped to a single day) — this was previously a report-level field.
+    date: { type: String, required: true },
     guardName: { type: String, required: true },
     // Not enum-restricted to TIME_SLOTS: some sites (e.g. Nature Park) use a
     // custom set of irregular time ranges instead of the default hourly grid.
@@ -41,7 +44,9 @@ const PatrolReportEntrySchema = new mongoose.Schema(
 
 const PatrolDailyReportSchema = new mongoose.Schema(
   {
-    reportDate: { type: String, required: true },
+    // Deprecated — older submitted reports (before per-entry dates) still
+    // carry this; new reports leave it unset and use entries[].date instead.
+    reportDate: { type: String },
     projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project", required: true },
     projectName: { type: String, required: true },
     checkpointCount: { type: Number, required: true },

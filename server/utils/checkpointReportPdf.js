@@ -68,7 +68,7 @@ function buildCheckpointReportPdf(report) {
       y += HEADER_HEIGHT;
     }
     const values = [
-      report.reportDate,
+      entry.date || report.reportDate,
       entry.guardName,
       entry.timeSlot,
       checkpointRange,

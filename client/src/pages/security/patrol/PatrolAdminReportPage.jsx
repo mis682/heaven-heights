@@ -16,6 +16,14 @@ import {
 import { useAuth } from "../../../context/AuthContext";
 import { apiOrigin as API_BASE } from "../../../api/client";
 
+function dateRangeLabel(report) {
+  const dates = report.entries.map((e) => e.date).filter(Boolean).sort();
+  if (dates.length === 0) return report.reportDate || "";
+  const min = dates[0];
+  const max = dates[dates.length - 1];
+  return min === max ? min : `${min} to ${max}`;
+}
+
 export default function PatrolAdminReportPage() {
   const { project: slug } = useParams();
   const { user } = useAuth();
@@ -64,14 +72,15 @@ export default function PatrolAdminReportPage() {
       <PageHeader title={`${project.name} — Admin Report View`} subtitle="Submitted daily reports for this site, read-only." />
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
+        <span className="text-sm text-subtext">Submitted between</span>
         <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input max-w-[160px]" />
-        <span className="text-sm text-subtext">to</span>
+        <span className="text-sm text-subtext">and</span>
         <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input max-w-[160px]" />
       </div>
 
       <DataTable
         columns={[
-          { key: "reportDate", header: "Date" },
+          { key: "dateRange", header: "Date" },
           { key: "preparedBy", header: "Prepared By" },
           { key: "guards", header: "Guards Covered", render: (r) => r.guards.join(", ") },
           { key: "present", header: "Present" },
@@ -101,7 +110,7 @@ export default function PatrolAdminReportPage() {
       />
 
       {viewing && (
-        <Modal title={`${viewing.projectName} — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
+        <Modal title={`${viewing.projectName} — ${dateRangeLabel(viewing)}`} onClose={() => setViewing(null)} wide>
           <div className="overflow-x-auto">
             <table className="text-sm mb-4 border-collapse">
               <thead>
@@ -122,7 +131,7 @@ export default function PatrolAdminReportPage() {
               <tbody>
                 {viewing.entries.map((e) => (
                   <tr key={e._id} className="border-b border-gray-100 last:border-b-0">
-                    <td className="px-3 py-2 sticky left-0 bg-white whitespace-nowrap">{viewing.reportDate}</td>
+                    <td className="px-3 py-2 sticky left-0 bg-white whitespace-nowrap">{e.date || viewing.reportDate}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{e.guardName}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{e.timeSlot}</td>
                     <td className="px-3 py-2 whitespace-nowrap">C1 TO C{viewing.checkpointCount}</td>

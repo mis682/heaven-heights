@@ -12,7 +12,7 @@ import { apiOrigin as API_BASE } from "../../../api/client";
 import {
   getPatrolReportMeta,
   getPatrolCheckpointProof,
-  getPatrolReportByDate,
+  getOpenPatrolReportDraft,
   savePatrolReportDraft,
   submitPatrolReport,
   exportPatrolReportUrl,
@@ -24,7 +24,7 @@ function today() {
 }
 
 function emptyRow(checkpointCount) {
-  return { guardName: "", timeSlot: "", checkpointStatuses: Array(checkpointCount).fill("") };
+  return { date: today(), guardName: "", timeSlot: "", checkpointStatuses: Array(checkpointCount).fill("") };
 }
 
 export default function PatrolDailyReportBuilderPage() {
@@ -32,7 +32,6 @@ export default function PatrolDailyReportBuilderPage() {
   const { user } = useAuth();
   const [meta, setMeta] = useState({ statusOptions: [], timeSlots: [] });
   const [project, setProject] = useState(null);
-  const [date, setDate] = useState(today());
   const [report, setReport] = useState(null);
   const [rows, setRows] = useState([]);
   const [guards, setGuards] = useState([]);
@@ -57,17 +56,17 @@ export default function PatrolDailyReportBuilderPage() {
   }, [project]);
 
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId || !project) return;
     (async () => {
-      const r = await getPatrolReportByDate(projectId, date);
+      const r = await getOpenPatrolReportDraft(projectId);
       setReport(r);
-      if (r) {
+      if (r && r.entries.length > 0) {
         setRows(r.entries.map((e) => ({ ...e, checkpointStatuses: [...e.checkpointStatuses] })));
-      } else if (project) {
+      } else {
         setRows([emptyRow(project.checkpointCount)]);
       }
     })();
-  }, [projectId, date, project]);
+  }, [projectId, project]);
 
   const isLocked = report?.status === "submitted";
   const checkpointCount = report?.checkpointCount || project?.checkpointCount || 0;
@@ -87,25 +86,25 @@ export default function PatrolDailyReportBuilderPage() {
   const removeRow = (idx) => setRows((prev) => prev.filter((_, i) => i !== idx));
 
   const openProof = async (row) => {
-    if (!row.guardName || !row.timeSlot) return;
+    if (!row.guardName || !row.timeSlot || !row.date) return;
     setProofRow(row);
     setLightboxIndex(null);
     const slotIndex = meta.timeSlots.indexOf(row.timeSlot);
-    const photos = await getPatrolCheckpointProof({ projectId, guardName: row.guardName, date, slotIndex });
+    const photos = await getPatrolCheckpointProof({ projectId, guardName: row.guardName, date: row.date, slotIndex });
     setProofPhotos(photos);
   };
 
   const persist = async (targetStatus) => {
-    const cleanRows = rows.filter((r) => r.guardName && r.timeSlot);
+    const cleanRows = rows.filter((r) => r.guardName && r.timeSlot && r.date);
     const droppedCount = rows.length - cleanRows.length;
 
     if (rows.length > 0 && cleanRows.length === 0) {
-      alert("Every row is missing a Guard Name or Time — nothing was saved. Select both before saving.");
+      alert("Every row is missing a Date, Guard Name or Time — nothing was saved. Fill all three before saving.");
       return;
     }
     if (droppedCount > 0) {
       const proceed = window.confirm(
-        `${droppedCount} row(s) are missing a Guard Name or Time and will NOT be saved. Continue anyway?`
+        `${droppedCount} row(s) are missing a Date, Guard Name or Time and will NOT be saved. Continue anyway?`
       );
       if (!proceed) return;
     }
@@ -114,7 +113,6 @@ export default function PatrolDailyReportBuilderPage() {
     const saved = await savePatrolReportDraft({
       projectId,
       projectName: project.name,
-      reportDate: date,
       entries: cleanRows,
       preparedBy: user?.name || "",
     });
@@ -136,21 +134,20 @@ export default function PatrolDailyReportBuilderPage() {
     <div>
       <PageHeader
         title={`${project.name} — Daily Report Builder`}
-        subtitle="Cross-check checkpoint photos before recording status per checkpoint, per hour."
+        subtitle="Cross-check checkpoint photos before recording status per checkpoint, per round."
         secondaryActions={isLocked ? [] : [{ label: "Add Row", icon: <Plus size={16} />, onClick: addRow }]}
         primaryAction={
           isLocked ? undefined : { label: saving ? "Saving..." : "Submit Report", icon: <Send size={16} />, onClick: () => persist("submitted") }
         }
       />
 
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <input type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} className="input max-w-[180px]" />
-        {isLocked && (
+      {isLocked && (
+        <div className="mb-4">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
             <Lock size={12} /> Submitted — read only (ask Admin to unlock)
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -175,7 +172,16 @@ export default function PatrolDailyReportBuilderPage() {
             <tbody>
               {rows.map((row, rowIdx) => (
                 <tr key={rowIdx} className="border-b border-gray-100 last:border-b-0">
-                  <td className="px-4 py-2 sticky left-0 bg-white whitespace-nowrap text-gray-600">{date}</td>
+                  <td className="px-4 py-2 sticky left-0 bg-white whitespace-nowrap">
+                    <input
+                      type="date"
+                      disabled={isLocked}
+                      value={row.date || ""}
+                      max={today()}
+                      onChange={(e) => updateRow(rowIdx, { date: e.target.value })}
+                      className="input min-w-[150px]"
+                    />
+                  </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <select
                       disabled={isLocked}
