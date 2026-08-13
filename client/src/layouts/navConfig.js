@@ -6,27 +6,31 @@ const PATROL_SITES = [
   { label: "School", slug: "school" },
 ];
 
+// Daily Report is prepared by coordinators, not security managers, so it's
+// hidden from Security Manager while every other security submodule stays
+// visible to all three roles.
+export const DAILY_REPORT_ROLES = ["Admin", "Coordinator"];
+
 function patrolSiteNavItem({ label, slug }) {
   return {
     label,
     children: [
       { label: "Submissions", path: `/security/patrol/${slug}/submissions` },
-      { label: "Daily Report", path: `/security/patrol/${slug}/daily-report` },
+      { label: "Daily Report", path: `/security/patrol/${slug}/daily-report`, roles: DAILY_REPORT_ROLES },
       { label: "Admin Report View", path: `/security/patrol/${slug}/admin-report` },
     ],
   };
 }
 
-// Coordinator only needs the Security module — every other item here is
-// restricted to Admin / Security Manager so it drops out of the sidebar
-// (and the matching routes in App.jsx) for that role.
-export const NON_COORDINATOR_ROLES = ["Admin", "Security Manager"];
+// Only Admin needs Housekeeping, Attendance and the staff/guard master data
+// pages — both Security Manager and Coordinator are scoped to Security only.
+export const ADMIN_ONLY_ROLES = ["Admin"];
 
 export const NAV_SECTIONS = [
   {
     id: "operations",
     items: [
-      { label: "Housekeeping", path: "/housekeeping", roles: NON_COORDINATOR_ROLES },
+      { label: "Housekeeping", path: "/housekeeping", roles: ADMIN_ONLY_ROLES },
       {
         label: "Security",
         children: [
@@ -35,7 +39,7 @@ export const NAV_SECTIONS = [
             label: "Night Guard",
             children: [
               { label: "Submissions", path: "/security/night-guard/submissions" },
-              { label: "Daily Report", path: "/security/night-guard/daily-report" },
+              { label: "Daily Report", path: "/security/night-guard/daily-report", roles: DAILY_REPORT_ROLES },
               { label: "Admin Report View", path: "/security/night-guard/admin-report" },
             ],
           },
@@ -44,7 +48,7 @@ export const NAV_SECTIONS = [
       },
       {
         label: "Attendance",
-        roles: NON_COORDINATOR_ROLES,
+        roles: ADMIN_ONLY_ROLES,
         children: [
           { label: "Daily Attendance", path: "/attendance" },
           { label: "Scan Attendance", path: "/attendance/scan" },
@@ -53,8 +57,8 @@ export const NAV_SECTIONS = [
           { label: "Site Locations", path: "/attendance/sites" },
         ],
       },
-      { label: "Maintenance Staff", path: "/admin/maintenance-staff", roles: NON_COORDINATOR_ROLES },
-      { label: "Guard Master Data", path: "/admin/guards", roles: NON_COORDINATOR_ROLES },
+      { label: "Maintenance Staff", path: "/admin/maintenance-staff", roles: ADMIN_ONLY_ROLES },
+      { label: "Guard Master Data", path: "/admin/guards", roles: ADMIN_ONLY_ROLES },
     ],
   },
 ];

@@ -10,13 +10,20 @@ function pathsOf(item) {
   return [];
 }
 
-function NavItem({ item, collapsed, depth = 0, onNavigate }) {
+function isVisible(item, role) {
+  return !item.roles || item.roles.includes(role);
+}
+
+function NavItem({ item, collapsed, depth = 0, onNavigate, role }) {
   const location = useLocation();
   const descendantPaths = pathsOf(item);
   const isActiveBranch = descendantPaths.some((p) => location.pathname.startsWith(p));
   const [open, setOpen] = useState(isActiveBranch);
 
   if (item.children) {
+    const visibleChildren = item.children.filter((child) => isVisible(child, role));
+    if (visibleChildren.length === 0) return null;
+
     return (
       <div>
         <button
@@ -36,8 +43,8 @@ function NavItem({ item, collapsed, depth = 0, onNavigate }) {
         </button>
         {open && !collapsed && (
           <div className="mt-0.5 space-y-0.5">
-            {item.children.map((child) => (
-              <NavItem key={child.label} item={child} collapsed={collapsed} depth={depth + 1} onNavigate={onNavigate} />
+            {visibleChildren.map((child) => (
+              <NavItem key={child.label} item={child} collapsed={collapsed} depth={depth + 1} onNavigate={onNavigate} role={role} />
             ))}
           </div>
         )}
@@ -65,7 +72,6 @@ function NavItem({ item, collapsed, depth = 0, onNavigate }) {
 
 export default function Sidebar({ collapsed, mobileOpen, onClose }) {
   const { user } = useAuth();
-  const visible = (item) => !item.roles || item.roles.includes(user?.role);
 
   return (
     <>
@@ -97,9 +103,11 @@ export default function Sidebar({ collapsed, mobileOpen, onClose }) {
                 </p>
               )}
               <div className="space-y-0.5">
-                {section.items.filter(visible).map((item) => (
-                  <NavItem key={item.label} item={item} collapsed={collapsed} onNavigate={onClose} />
-                ))}
+                {section.items
+                  .filter((item) => isVisible(item, user?.role))
+                  .map((item) => (
+                    <NavItem key={item.label} item={item} collapsed={collapsed} onNavigate={onClose} role={user?.role} />
+                  ))}
               </div>
             </div>
           ))}

@@ -2,14 +2,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Sparkles, Shield, Clock, Building2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-
-const NON_COORDINATOR_ROLES = ["Admin", "Security Manager"];
+import { ADMIN_ONLY_ROLES } from "../layouts/navConfig";
 
 const TILES = [
-  { label: "Housekeeping", path: "/housekeeping", icon: Sparkles, color: "bg-primary-light text-primary", roles: NON_COORDINATOR_ROLES },
+  { label: "Housekeeping", path: "/housekeeping", icon: Sparkles, color: "bg-primary-light text-primary", roles: ADMIN_ONLY_ROLES },
   { label: "Patrol Checkpoints", path: "/security/patrol/garden-city/submissions", icon: Shield, color: "bg-blue-100 text-blue-600" },
-  { label: "Night Guard", path: "/security/night-guard/daily-report", icon: Shield, color: "bg-gray-100 text-gray-600" },
-  { label: "Attendance", path: "/attendance", icon: Clock, color: "bg-green-100 text-green-600", roles: NON_COORDINATOR_ROLES },
+  { label: "Night Guard", path: "/security/night-guard/submissions", icon: Shield, color: "bg-gray-100 text-gray-600" },
+  { label: "Attendance", path: "/attendance", icon: Clock, color: "bg-green-100 text-green-600", roles: ADMIN_ONLY_ROLES },
 ];
 
 export default function Home() {

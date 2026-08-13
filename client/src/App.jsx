@@ -33,7 +33,7 @@ import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
-import { NON_COORDINATOR_ROLES } from "./layouts/navConfig";
+import { ADMIN_ONLY_ROLES, DAILY_REPORT_ROLES } from "./layouts/navConfig";
 
 export default function App() {
   return (
@@ -59,7 +59,7 @@ export default function App() {
         <Route
           path="/housekeeping"
           element={
-            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+            <RequireAuth roles={ADMIN_ONLY_ROLES}>
               <HousekeepingPage />
             </RequireAuth>
           }
@@ -68,13 +68,34 @@ export default function App() {
         <Route path="/security/patrol/:project/submissions" element={<PatrolSitePage />} />
         {/* Garden City uses a fixed checkpoint+time schedule report format; every
             other patrol site keeps the generic hourly-slot builder below. */}
-        <Route path="/security/patrol/garden-city/daily-report" element={<GardenCityDailyReportPage />} />
+        <Route
+          path="/security/patrol/garden-city/daily-report"
+          element={
+            <RequireAuth roles={DAILY_REPORT_ROLES}>
+              <GardenCityDailyReportPage />
+            </RequireAuth>
+          }
+        />
         <Route path="/security/patrol/garden-city/admin-report" element={<GardenCityAdminReportPage />} />
-        <Route path="/security/patrol/:project/daily-report" element={<PatrolDailyReportBuilderPage />} />
+        <Route
+          path="/security/patrol/:project/daily-report"
+          element={
+            <RequireAuth roles={DAILY_REPORT_ROLES}>
+              <PatrolDailyReportBuilderPage />
+            </RequireAuth>
+          }
+        />
         <Route path="/security/patrol/:project/admin-report" element={<PatrolAdminReportPage />} />
 
         <Route path="/security/night-guard/submissions" element={<NightGuardSubmissionsPage />} />
-        <Route path="/security/night-guard/daily-report" element={<NightGuardDailyReportPage />} />
+        <Route
+          path="/security/night-guard/daily-report"
+          element={
+            <RequireAuth roles={DAILY_REPORT_ROLES}>
+              <NightGuardDailyReportPage />
+            </RequireAuth>
+          }
+        />
         <Route path="/security/night-guard/admin-report" element={<NightGuardAdminReportPage />} />
 
         <Route path="/security/fire-mock-drill/submissions" element={<FireMockDrillSubmissionsPage />} />
@@ -82,7 +103,7 @@ export default function App() {
         <Route
           path="/attendance"
           element={
-            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+            <RequireAuth roles={ADMIN_ONLY_ROLES}>
               <AttendancePage />
             </RequireAuth>
           }
@@ -90,7 +111,7 @@ export default function App() {
         <Route
           path="/attendance/scan"
           element={
-            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+            <RequireAuth roles={ADMIN_ONLY_ROLES}>
               <ScanAttendancePage />
             </RequireAuth>
           }
@@ -98,7 +119,7 @@ export default function App() {
         <Route
           path="/attendance/records"
           element={
-            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+            <RequireAuth roles={ADMIN_ONLY_ROLES}>
               <AttendanceRecordsPage />
             </RequireAuth>
           }
@@ -106,7 +127,7 @@ export default function App() {
         <Route
           path="/attendance/sites"
           element={
-            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+            <RequireAuth roles={ADMIN_ONLY_ROLES}>
               <SiteLocationsPage />
             </RequireAuth>
           }
@@ -114,7 +135,7 @@ export default function App() {
         <Route
           path="/attendance/team"
           element={
-            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+            <RequireAuth roles={ADMIN_ONLY_ROLES}>
               <TeamAttendancePage />
             </RequireAuth>
           }
@@ -123,7 +144,7 @@ export default function App() {
         <Route
           path="/admin/maintenance-staff"
           element={
-            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+            <RequireAuth roles={ADMIN_ONLY_ROLES}>
               <MaintenanceStaffPage />
             </RequireAuth>
           }
@@ -131,7 +152,7 @@ export default function App() {
         <Route
           path="/admin/guards"
           element={
-            <RequireAuth roles={NON_COORDINATOR_ROLES}>
+            <RequireAuth roles={ADMIN_ONLY_ROLES}>
               <GuardMasterDataPage />
             </RequireAuth>
           }
