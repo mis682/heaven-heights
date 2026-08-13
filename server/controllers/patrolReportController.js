@@ -4,10 +4,24 @@ const PatrolSubmission = require("../models/PatrolSubmission");
 const Project = require("../models/Project");
 const { buildCheckpointReportPdf } = require("../utils/checkpointReportPdf");
 
+// Every patrol site uses the default hourly grid except where noted here —
+// Nature Park's actual patrol round runs on irregular, non-hourly time ranges.
+const SITE_TIME_SLOTS = {
+  "nature-park": [
+    "9:00 PM TO 10:30 PM",
+    "10:30 PM TO 11:55 PM",
+    "12:30 AM TO 2:00 AM",
+    "2:00 AM TO 3:30 AM",
+    "3:30 AM TO 5:00 AM",
+    "5:30 AM TO 7:00 AM",
+  ],
+};
+
 exports.meta = async (req, res) => {
+  const { projectSlug } = req.query;
   res.json({
     statusOptions: PatrolDailyReport.STATUS_OPTIONS,
-    timeSlots: PatrolDailyReport.TIME_SLOTS,
+    timeSlots: SITE_TIME_SLOTS[projectSlug] || PatrolDailyReport.TIME_SLOTS,
   });
 };
 

@@ -31,7 +31,9 @@ const TIME_SLOTS = [
 const PatrolReportEntrySchema = new mongoose.Schema(
   {
     guardName: { type: String, required: true },
-    timeSlot: { type: String, enum: TIME_SLOTS, required: true },
+    // Not enum-restricted to TIME_SLOTS: some sites (e.g. Nature Park) use a
+    // custom set of irregular time ranges instead of the default hourly grid.
+    timeSlot: { type: String, required: true },
     checkpointStatuses: [{ type: String, enum: [...STATUS_OPTIONS, ""], default: "" }],
   },
   { _id: true }

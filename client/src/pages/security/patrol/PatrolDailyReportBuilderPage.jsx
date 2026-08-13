@@ -42,8 +42,8 @@ export default function PatrolDailyReportBuilderPage() {
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   useEffect(() => {
-    getPatrolReportMeta().then(setMeta);
-  }, []);
+    getPatrolReportMeta(slug).then(setMeta);
+  }, [slug]);
 
   useEffect(() => {
     getProjectBySlug(slug).then((d) => setProject(d.project));
