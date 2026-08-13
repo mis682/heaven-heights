@@ -246,7 +246,7 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
   const [reportAttachment, setReportAttachment] = useState(null);
   const [existingReport, setExistingReport] = useState(drill?.reportAttachment || "");
   const [existingChecklist, setExistingChecklist] = useState(drill?.checklistAttachments || []);
-  const [newChecklist, setNewChecklist] = useState([]);
+  const [newChecklistPages, setNewChecklistPages] = useState(Array(5).fill(null));
   const [saving, setSaving] = useState(false);
 
   const totalVideoSlots = existingVideos.length + newVideos.length;
@@ -303,6 +303,7 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
     setSaving(true);
     const data = { projectName, date };
     const videoUrls = [...existingVideos, ...newVideos.filter((v) => v.url).map((v) => v.url)];
+    const newChecklist = newChecklistPages.filter(Boolean);
     const files = { panelPhoto, reportAttachment, checklistAttachments: newChecklist.length ? newChecklist : undefined, videoUrls };
     if (drill) {
       await updateFireMockDrill(drill._id, data, files);
@@ -416,25 +417,35 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
           </div>
         </Field>
 
-        <Field label={`Checklist Attachment (up to 5 pages)`}>
-          <div className="flex flex-wrap items-center gap-3">
-            {newChecklist.length === 0 &&
-              existingChecklist.map((url, idx) => (
+        <Field label="Checklist Attachment (5 pages)">
+          {newChecklistPages.every((f) => !f) && existingChecklist.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              {existingChecklist.map((url, idx) => (
                 <a key={idx} href={url} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
                   <FileText size={14} /> Page {idx + 1}
                 </a>
               ))}
-            {newChecklist.length > 0 && <span className="text-sm text-gray-600">{newChecklist.length} new file(s) selected</span>}
-            <label className="cursor-pointer text-sm font-medium text-primary hover:underline">
-              {existingChecklist.length ? "Replace files" : "Upload files"}
-              <input
-                type="file"
-                multiple
-                accept="image/*,.pdf,application/pdf"
-                onChange={(e) => setNewChecklist(Array.from(e.target.files || []).slice(0, 5))}
-                className="hidden"
-              />
-            </label>
+              <span className="text-xs text-gray-400">(pick new files below to replace)</span>
+            </div>
+          )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {newChecklistPages.map((file, idx) => (
+              <label key={idx} className="cursor-pointer text-xs font-medium text-primary hover:underline border border-gray-300 rounded-lg px-2 py-1.5 text-center">
+                {file ? file.name : `+ Page ${idx + 1}`}
+                <input
+                  type="file"
+                  accept="image/*,.pdf,application/pdf"
+                  onChange={(e) =>
+                    setNewChecklistPages((prev) => {
+                      const next = [...prev];
+                      next[idx] = e.target.files?.[0] || null;
+                      return next;
+                    })
+                  }
+                  className="hidden"
+                />
+              </label>
+            ))}
           </div>
         </Field>
 

@@ -10,7 +10,7 @@ export default function FireMockDrillPublicForm() {
   const [panelPhoto, setPanelPhoto] = useState(null);
   const [videos, setVideos] = useState(Array(8).fill(null));
   const [reportAttachment, setReportAttachment] = useState(null);
-  const [checklistAttachments, setChecklistAttachments] = useState([]);
+  const [checklistPages, setChecklistPages] = useState(Array(5).fill(null));
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -63,12 +63,20 @@ export default function FireMockDrillPublicForm() {
 
   const videosStillUploading = videos.some((v) => v?.uploading);
 
+  const setChecklistPageAt = (idx, file) =>
+    setChecklistPages((prev) => {
+      const next = [...prev];
+      next[idx] = file;
+      return next;
+    });
+
   const submit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
     try {
       const videoUrls = videos.filter((v) => v?.url).map((v) => v.url);
+      const checklistAttachments = checklistPages.filter(Boolean);
       await createFireMockDrill({ projectName, date }, { panelPhoto, reportAttachment, checklistAttachments, videoUrls });
       setDone(true);
     } catch {
@@ -163,18 +171,26 @@ export default function FireMockDrillPublicForm() {
             <input type="file" onChange={(e) => setReportAttachment(e.target.files?.[0] || null)} className="input" />
           </Field>
 
-          <Field label="Checklist Attachment (up to 5 pages)">
-            <input
-              type="file"
-              multiple
-              accept="image/*,.pdf,application/pdf"
-              onChange={(e) => setChecklistAttachments(Array.from(e.target.files || []).slice(0, 5))}
-              className="input"
-            />
-            {checklistAttachments.length > 0 && (
-              <p className="text-[11px] text-subtext mt-1">{checklistAttachments.length} file(s) selected</p>
-            )}
-          </Field>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Checklist Attachment (5 pages)</label>
+            <div className="grid grid-cols-2 gap-3">
+              {checklistPages.map((file, idx) => (
+                <Field key={idx} label={`Page ${idx + 1}`}>
+                  <input
+                    type="file"
+                    accept="image/*,.pdf,application/pdf"
+                    onChange={(e) => setChecklistPageAt(idx, e.target.files?.[0] || null)}
+                    className="input text-xs"
+                  />
+                  {file && (
+                    <p className="text-[10px] text-green-600 mt-0.5 flex items-center gap-1 truncate">
+                      <CheckCircle2 size={10} /> {file.name}
+                    </p>
+                  )}
+                </Field>
+              ))}
+            </div>
+          </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
