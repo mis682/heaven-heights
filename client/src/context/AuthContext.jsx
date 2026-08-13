@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { loginRequest } from "../api/auth";
 
 const AuthContext = createContext(null);
 
@@ -18,7 +19,11 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  const login = (name, role) => setUser({ name, role });
+  const login = async (name, role, password) => {
+    const data = await loginRequest(name, role, password);
+    setUser(data);
+    return data;
+  };
   const logout = () => setUser(null);
 
   return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;

@@ -9,6 +9,12 @@ const api = axios.create({ baseURL: `${baseURL}/api` });
 
 api.interceptors.request.use((config) => {
   trackRequestStart();
+  try {
+    const stored = JSON.parse(localStorage.getItem("hh_auth_user") || "null");
+    if (stored?.token) config.headers.Authorization = `Bearer ${stored.token}`;
+  } catch {
+    /* ignore malformed storage */
+  }
   return config;
 });
 api.interceptors.response.use(

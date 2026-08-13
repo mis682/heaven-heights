@@ -8,16 +8,27 @@ const ROLES = ["Admin", "Security Manager", "Coordinator"];
 export default function Login() {
   const [name, setName] = useState("");
   const [role, setRole] = useState("Coordinator");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim()) return;
-    login(name.trim(), role);
-    const redirectTo = location.state?.from || "/";
-    navigate(redirectTo, { replace: true });
+    if (!name.trim() || !password) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      await login(name.trim(), role, password);
+      const redirectTo = location.state?.from || "/";
+      navigate(redirectTo, { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -61,11 +72,25 @@ export default function Login() {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Role ka password"
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+          </div>
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
           <button
             type="submit"
-            className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600"
+            disabled={submitting}
+            className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50"
           >
-            Continue
+            {submitting ? "Logging in..." : "Continue"}
           </button>
         </form>
       </div>
