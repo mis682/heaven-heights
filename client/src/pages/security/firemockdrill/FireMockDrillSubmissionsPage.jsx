@@ -13,10 +13,13 @@ import {
   deleteFireMockDrill,
 } from "../../../api/fireMockDrill";
 import { uploadVideoDirect } from "../../../api/cloudinaryDirectUpload";
+import { useAuth } from "../../../context/AuthContext";
 
 const PUBLIC_FORM_PATH = "/fire-mock-drill-form";
 
 export default function FireMockDrillSubmissionsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
   const [drills, setDrills] = useState([]);
   const [projects, setProjects] = useState([]);
   const [projectFilter, setProjectFilter] = useState("");
@@ -135,19 +138,23 @@ export default function FireMockDrillSubmissionsPage() {
                 <button onClick={() => setViewing(r)} className="text-gray-500 hover:text-primary" title="View">
                   <Eye size={16} />
                 </button>
-                <button
-                  onClick={() => {
-                    setEditing(r);
-                    setShowForm(true);
-                  }}
-                  className="text-gray-500 hover:text-primary"
-                  title="Edit"
-                >
-                  <Pencil size={16} />
-                </button>
-                <button onClick={() => remove(r._id)} className="text-gray-500 hover:text-red-600" title="Delete">
-                  <Trash2 size={16} />
-                </button>
+                {isAdmin && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setEditing(r);
+                        setShowForm(true);
+                      }}
+                      className="text-gray-500 hover:text-primary"
+                      title="Edit"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button onClick={() => remove(r._id)} className="text-gray-500 hover:text-red-600" title="Delete">
+                      <Trash2 size={16} />
+                    </button>
+                  </>
+                )}
               </div>
             ),
           },
