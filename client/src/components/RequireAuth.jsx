@@ -6,7 +6,9 @@ export default function RequireAuth({ roles, children }) {
   const { user } = useAuth();
   const location = useLocation();
 
-  if (!user) {
+  // Sessions created before password-protected login was added have no
+  // token — treat them as logged out so everyone re-authenticates once.
+  if (!user || !user.token) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
