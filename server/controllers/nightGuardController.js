@@ -35,6 +35,16 @@ exports.createSubmission = async (req, res) => {
     geoLocation: geo,
   });
 
+  const blocks = [
+    { type: "section", text: { type: "mrkdwn", text: `🌙 *${guardName}* checked in for Night Guard at *${projectName}*` } },
+    {
+      type: "image",
+      image_url: submission.guardPhotoUrl,
+      alt_text: "Proof of presence",
+      title: { type: "plain_text", text: "Proof of presence" },
+    },
+  ];
+
   notifyWebhook({
     type: "night_guard",
     guardName,
@@ -42,6 +52,8 @@ exports.createSubmission = async (req, res) => {
     guardPhotoUrl: submission.guardPhotoUrl,
     capturedAt: submission.capturedAt,
     message: `🌙 *${guardName}* checked in for Night Guard at *${projectName}*\n\n${submission.guardPhotoUrl}`,
+    blocks,
+    blocksJson: JSON.stringify(blocks),
   });
 
   res.status(201).json(submission);

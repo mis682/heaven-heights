@@ -49,6 +49,19 @@ exports.createSubmission = async (req, res) => {
     ...checkpoints.map((c) => `${c.name}: ${c.photoUrl}`),
   ];
 
+  // Slack only renders an inline, already-expanded image for bot-posted
+  // messages via Block Kit's "image" block — a plain-text URL just gets a
+  // generic collapsed link preview, not a visible thumbnail.
+  const blocks = [
+    { type: "section", text: { type: "mrkdwn", text: `🛡️ *${guardName}* submitted a Patrol Checkpoint form for *${projectName}*` } },
+    ...checkpoints.map((c) => ({
+      type: "image",
+      image_url: c.photoUrl,
+      alt_text: c.name,
+      title: { type: "plain_text", text: c.name },
+    })),
+  ];
+
   notifyWebhook({
     type: "patrol_checkpoint",
     guardName,
@@ -57,6 +70,8 @@ exports.createSubmission = async (req, res) => {
     checkpoints,
     submittedAt: submission.submittedAt,
     message: messageLines.join("\n"),
+    blocks,
+    blocksJson: JSON.stringify(blocks),
   });
 
   res.status(201).json(submission);
