@@ -1,7 +1,7 @@
 const PatrolSubmission = require("../models/PatrolSubmission");
 const Project = require("../models/Project");
 const { fileToUrl } = require("../middleware/upload");
-const { sendSlackMessage } = require("../utils/slack");
+const { notifyWebhook } = require("../utils/webhook");
 
 exports.createSubmission = async (req, res) => {
   const { guardName, projectId, projectName } = req.body;
@@ -34,9 +34,15 @@ exports.createSubmission = async (req, res) => {
     photos,
   });
 
-  sendSlackMessage(
-    `🛡️ *${guardName}* submitted a Patrol Checkpoint form for *${projectName}* — ${photos.length} checkpoint photo(s) — ${new Date().toLocaleString()}`
-  );
+  notifyWebhook({
+    type: "patrol_checkpoint",
+    guardName,
+    projectName,
+    checkpointsCovered: photos.length,
+    photoUrls: photos.map((p) => p.photoUrl),
+    submittedAt: submission.submittedAt,
+    message: `🛡️ ${guardName} submitted a Patrol Checkpoint form for ${projectName} — ${photos.length} checkpoint photo(s)`,
+  });
 
   res.status(201).json(submission);
 };

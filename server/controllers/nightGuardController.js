@@ -2,7 +2,7 @@ const ExcelJS = require("exceljs");
 const NightGuardSubmission = require("../models/NightGuardSubmission");
 const NightGuardDailyReport = require("../models/NightGuardDailyReport");
 const { fileToUrl } = require("../middleware/upload");
-const { sendSlackMessage } = require("../utils/slack");
+const { notifyWebhook } = require("../utils/webhook");
 
 exports.meta = async (req, res) => {
   res.json({
@@ -35,7 +35,14 @@ exports.createSubmission = async (req, res) => {
     geoLocation: geo,
   });
 
-  sendSlackMessage(`🌙 *${guardName}* checked in for Night Guard at *${projectName}* — ${new Date().toLocaleString()}`);
+  notifyWebhook({
+    type: "night_guard",
+    guardName,
+    projectName,
+    guardPhotoUrl: submission.guardPhotoUrl,
+    capturedAt: submission.capturedAt,
+    message: `🌙 ${guardName} checked in for Night Guard at ${projectName}`,
+  });
 
   res.status(201).json(submission);
 };
