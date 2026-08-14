@@ -70,6 +70,9 @@ exports.createSubmission = async (req, res) => {
     checkpoints,
     submittedAt: submission.submittedAt,
     message: messageLines.join("\n"),
+    // Short, link-free line for Slack's fallback/notification text — the
+    // full message (with URLs) is redundant once blocks render the images.
+    summary: `🛡️ ${guardName} submitted a Patrol Checkpoint form for ${projectName} — ${photos.length} checkpoint photo(s)`,
     blocks,
     blocksJson: JSON.stringify(blocks),
   });

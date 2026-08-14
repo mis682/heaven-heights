@@ -52,6 +52,7 @@ exports.createSubmission = async (req, res) => {
     guardPhotoUrl: submission.guardPhotoUrl,
     capturedAt: submission.capturedAt,
     message: `🌙 *${guardName}* checked in for Night Guard at *${projectName}*\n\n${submission.guardPhotoUrl}`,
+    summary: `🌙 ${guardName} checked in for Night Guard at ${projectName}`,
     blocks,
     blocksJson: JSON.stringify(blocks),
   });
