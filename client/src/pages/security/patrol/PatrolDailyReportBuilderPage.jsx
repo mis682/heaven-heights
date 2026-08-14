@@ -7,7 +7,7 @@ import Modal from "../../../components/Modal";
 import PhotoLightbox from "../../../components/PhotoLightbox";
 import { useAuth } from "../../../context/AuthContext";
 import { getProjectBySlug } from "../../../api/projects";
-import { listGuards } from "../../../api/guards";
+import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
 import { apiOrigin as API_BASE } from "../../../api/client";
 import {
   getPatrolReportMeta,
@@ -51,8 +51,9 @@ export default function PatrolDailyReportBuilderPage() {
   const projectId = project?._id;
 
   useEffect(() => {
-    // Not filtered by site — guards rotate between sites daily.
-    listGuards({ module: "patrol_checkpoint" }).then(setGuards);
+    // Sourced from Maintenance Staff (Security Guard designation), not
+    // filtered by site — guards rotate between sites daily.
+    listMaintenanceStaff({ designation: "Security Guard" }).then(setGuards);
   }, []);
 
   useEffect(() => {

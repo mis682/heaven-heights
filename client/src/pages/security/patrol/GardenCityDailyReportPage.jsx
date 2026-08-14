@@ -3,7 +3,7 @@ import { Save, Send, Lock, FileText, Download } from "lucide-react";
 import PageHeader from "../../../components/PageHeader";
 import StatusPill from "../../../components/StatusPill";
 import { useAuth } from "../../../context/AuthContext";
-import { listGuards } from "../../../api/guards";
+import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
 import {
   getGardenCityReportMeta,
   getGardenCityReportByDate,
@@ -40,8 +40,9 @@ export default function GardenCityDailyReportPage() {
 
   useEffect(() => {
     getGardenCityReportMeta().then(setMeta);
-    // Not filtered by site — guards rotate between sites daily.
-    listGuards({ module: "patrol_checkpoint" }).then(setGuards);
+    // Sourced from Maintenance Staff (Security Guard designation), not
+    // filtered by site — guards rotate between sites daily.
+    listMaintenanceStaff({ designation: "Security Guard" }).then(setGuards);
   }, []);
 
   useEffect(() => {

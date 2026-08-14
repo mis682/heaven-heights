@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Building2, CheckCircle2, RefreshCw } from "lucide-react";
 import { getNightGuardMeta, createNightGuardSubmission } from "../../../api/nightguard";
-import { listGuards } from "../../../api/guards";
+import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
 import CameraCapture from "../../../components/CameraCapture";
 import { saveDraft, loadDraft, clearDraft } from "../../../utils/nightGuardDraft";
 
@@ -19,9 +19,9 @@ export default function NightGuardPublicForm() {
 
   useEffect(() => {
     getNightGuardMeta().then((m) => setSites(m.sites));
-    // Not filtered by site — guards rotate between sites daily, so the
-    // full roster is shown regardless of which site is selected above.
-    listGuards({ module: "night_guard" }).then(setGuards);
+    // Sourced from Maintenance Staff (Security Guard designation), not
+    // filtered by site — guards rotate between sites daily.
+    listMaintenanceStaff({ designation: "Security Guard" }).then(setGuards);
 
     const draft = loadDraft();
     if (draft && (draft.capture || draft.projectName)) {

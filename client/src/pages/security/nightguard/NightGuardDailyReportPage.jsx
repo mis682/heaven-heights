@@ -12,7 +12,7 @@ import {
   submitReport,
   listNightGuardSubmissions,
 } from "../../../api/nightguard";
-import { listGuards } from "../../../api/guards";
+import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -41,8 +41,9 @@ export default function NightGuardDailyReportPage() {
 
   useEffect(() => {
     getNightGuardMeta().then(setMeta);
-    // Not filtered by site — guards rotate between sites daily.
-    listGuards({ module: "night_guard" }).then(setGuards);
+    // Sourced from Maintenance Staff (Security Guard designation), not
+    // filtered by site — guards rotate between sites daily.
+    listMaintenanceStaff({ designation: "Security Guard" }).then(setGuards);
   }, []);
 
   useEffect(() => {

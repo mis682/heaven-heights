@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Building2, CheckCircle2, RefreshCw } from "lucide-react";
 import { getProjectBySlug } from "../../../api/projects";
-import { listGuards } from "../../../api/guards";
+import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
 import { createPatrolSubmission } from "../../../api/patrol";
 import CameraCapture from "../../../components/CameraCapture";
 import { saveDraft, loadDraft, clearDraft } from "../../../utils/patrolDraft";
@@ -24,9 +24,9 @@ export default function PatrolPublicForm() {
       try {
         const d = await getProjectBySlug(slug);
         setData(d);
-        // Not filtered by site — guards rotate between sites daily, so the
-        // full roster is shown regardless of which site's form this is.
-        const g = await listGuards({ module: "patrol_checkpoint" });
+        // Sourced from Maintenance Staff (Security Guard designation), not
+        // filtered by site — guards rotate between sites daily.
+        const g = await listMaintenanceStaff({ designation: "Security Guard" });
         setGuards(g);
 
         const draft = loadDraft(slug);
