@@ -18,8 +18,12 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function emptyRow(site, timeSlot) {
-  return { date: today(), site: site || "", timeSlot: timeSlot || "", guardName: "", status: "", linkedSubmissionId: null };
+// One row now covers the whole overnight shift — Time is a fixed label
+// (matches server's NightGuardDailyReport TIME_SLOTS), not a per-row choice.
+const NIGHT_SHIFT_LABEL = "9:00 PM to 6:00 AM";
+
+function emptyRow(site) {
+  return { date: today(), site: site || "", timeSlot: NIGHT_SHIFT_LABEL, guardName: "", status: "", linkedSubmissionId: null };
 }
 
 export default function NightGuardDailyReportPage() {
@@ -61,7 +65,7 @@ export default function NightGuardDailyReportPage() {
     if (!row.site || !row.date) return;
     setProofRow(row);
     setLightboxIndex(null);
-    const subs = await listNightGuardSubmissions({ site: row.site, date: row.date, hour: row.timeSlot || undefined });
+    const subs = await listNightGuardSubmissions({ site: row.site, date: row.date });
     setProofSubmissions(subs);
   };
 
@@ -96,7 +100,7 @@ export default function NightGuardDailyReportPage() {
     <div>
       <PageHeader
         title="Night Guard — Daily Report Builder"
-        subtitle="Cross-check guard proof photos before recording status per time slot."
+        subtitle="Cross-check guard proof photos before recording status for the night shift."
         secondaryActions={
           isLocked
             ? []
@@ -153,12 +157,7 @@ export default function NightGuardDailyReportPage() {
                       {meta.sites.map((s) => <option key={s}>{s}</option>)}
                     </select>
                   </td>
-                  <td className="px-4 py-2">
-                    <select disabled={isLocked} value={row.timeSlot} onChange={(e) => updateRow(idx, { timeSlot: e.target.value })} className="input">
-                      <option value="">Time</option>
-                      {meta.timeSlots.map((t) => <option key={t}>{t}</option>)}
-                    </select>
-                  </td>
+                  <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{row.timeSlot || NIGHT_SHIFT_LABEL}</td>
                   <td className="px-4 py-2">
                     <select disabled={isLocked} value={row.status} onChange={(e) => updateRow(idx, { status: e.target.value })} className="input">
                       <option value="">Status</option>

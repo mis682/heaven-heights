@@ -1,18 +1,10 @@
 const mongoose = require("mongoose");
 const { STATUS_OPTIONS } = require("../constants/reportStatus");
 
-const TIME_SLOTS = [
-  "9:00 PM",
-  "10:00 PM",
-  "11:00 PM",
-  "12:00 AM",
-  "1:00 AM",
-  "2:00 AM",
-  "3:00 AM",
-  "4:00 AM",
-  "5:00 AM",
-  "6:00 AM",
-];
+// A row now covers the whole overnight shift as one entry (Project, Date,
+// Status, Guard Name) instead of one row per hour — Time is a fixed label,
+// not a coordinator-selected value.
+const TIME_SLOTS = ["9:00 PM to 6:00 AM"];
 
 const NightGuardReportEntrySchema = new mongoose.Schema(
   {
@@ -20,7 +12,11 @@ const NightGuardReportEntrySchema = new mongoose.Schema(
     // not scoped to a single day) — this was previously a report-level field.
     date: { type: String, required: true },
     site: { type: String, required: true },
-    timeSlot: { type: String, enum: TIME_SLOTS, required: true },
+    // No longer constrained to an enum: older submitted reports have
+    // per-hour values (e.g. "9:00 PM") that must stay valid on re-save
+    // (e.g. after an admin unlock) even though new rows only ever use
+    // the single TIME_SLOTS value.
+    timeSlot: { type: String, required: true },
     guardName: { type: String, required: true },
     status: { type: String, enum: STATUS_OPTIONS, required: true },
     linkedSubmissionId: { type: mongoose.Schema.Types.ObjectId, ref: "NightGuardSubmission", default: null },
