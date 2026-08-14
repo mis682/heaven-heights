@@ -3,6 +3,7 @@ import { Link as LinkIcon, ExternalLink } from "lucide-react";
 import PageHeader from "../../../components/PageHeader";
 import FilterBar, { Select } from "../../../components/FilterBar";
 import DataTable from "../../../components/DataTable";
+import PhotoLightbox from "../../../components/PhotoLightbox";
 import { getNightGuardMeta, listNightGuardSubmissions } from "../../../api/nightguard";
 
 export default function NightGuardSubmissionsPage() {
@@ -12,6 +13,7 @@ export default function NightGuardSubmissionsPage() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
 
   useEffect(() => {
     getNightGuardMeta().then((m) => setSites(m.sites));
@@ -64,7 +66,14 @@ export default function NightGuardSubmissionsPage() {
           {
             key: "guardPhotoUrl",
             header: "Photo",
-            render: (r) => <img src={r.guardPhotoUrl} alt={r.guardName} className="w-14 h-14 rounded-lg object-cover border border-gray-200" />,
+            render: (r) => (
+              <img
+                src={r.guardPhotoUrl}
+                alt={r.guardName}
+                onClick={() => setLightboxIndex(submissions.indexOf(r))}
+                className="w-14 h-14 rounded-lg object-cover border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+              />
+            ),
           },
           { key: "guardName", header: "Guard Name" },
           { key: "projectName", header: "Project" },
@@ -79,6 +88,17 @@ export default function NightGuardSubmissionsPage() {
         emptyMessage={loading ? "Loading..." : "No records found"}
         emptyHint={loading ? "" : "No guard proof submissions match these filters"}
       />
+
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={submissions}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={setLightboxIndex}
+          caption={(p) => `${p.guardName} — ${p.projectName} — ${new Date(p.capturedAt).toLocaleString()}`}
+          downloadName={(p) => `${p.guardName}-${p.projectName}-${new Date(p.capturedAt).toISOString().slice(0, 10)}`}
+        />
+      )}
     </div>
   );
 }
