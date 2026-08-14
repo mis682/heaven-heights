@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link as LinkIcon, ExternalLink } from "lucide-react";
 import PageHeader from "../../../components/PageHeader";
 import FilterBar, { Select } from "../../../components/FilterBar";
@@ -10,6 +10,7 @@ export default function NightGuardSubmissionsPage() {
   const [sites, setSites] = useState([]);
   const [site, setSite] = useState("");
   const [date, setDate] = useState("");
+  const [guardFilter, setGuardFilter] = useState("");
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -26,6 +27,16 @@ export default function NightGuardSubmissionsPage() {
       setLoading(false);
     });
   }, [site, date]);
+
+  const guardOptions = useMemo(
+    () => [...new Set(submissions.map((s) => s.guardName))].sort(),
+    [submissions]
+  );
+
+  const filteredSubmissions = useMemo(
+    () => (guardFilter ? submissions.filter((s) => s.guardName === guardFilter) : submissions),
+    [submissions, guardFilter]
+  );
 
   const formUrl = `${window.location.origin}/night-guard-form`;
 
@@ -56,6 +67,7 @@ export default function NightGuardSubmissionsPage() {
         filters={
           <>
             <Select value={site} onChange={setSite} options={sites} placeholder="All sites" />
+            <Select value={guardFilter} onChange={setGuardFilter} options={guardOptions} placeholder="All guards" />
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input max-w-[160px]" />
           </>
         }
@@ -70,7 +82,7 @@ export default function NightGuardSubmissionsPage() {
               <img
                 src={r.guardPhotoUrl}
                 alt={r.guardName}
-                onClick={() => setLightboxIndex(submissions.indexOf(r))}
+                onClick={() => setLightboxIndex(filteredSubmissions.indexOf(r))}
                 className="w-14 h-14 rounded-lg object-cover border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
               />
             ),
@@ -84,14 +96,14 @@ export default function NightGuardSubmissionsPage() {
             render: (r) => r.geoLocation?.address || (r.geoLocation?.lat ? `${r.geoLocation.lat.toFixed(4)}, ${r.geoLocation.lng.toFixed(4)}` : "—"),
           },
         ]}
-        rows={loading ? [] : submissions}
+        rows={loading ? [] : filteredSubmissions}
         emptyMessage={loading ? "Loading..." : "No records found"}
         emptyHint={loading ? "" : "No guard proof submissions match these filters"}
       />
 
       {lightboxIndex !== null && (
         <PhotoLightbox
-          photos={submissions}
+          photos={filteredSubmissions}
           index={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onNavigate={setLightboxIndex}
