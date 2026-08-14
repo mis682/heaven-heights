@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { Camera, CheckCircle2, RotateCcw } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Camera, CheckCircle2, RotateCcw, Maximize2, X } from "lucide-react";
 
 async function getGeoLocation() {
   if (!navigator.geolocation) return { lat: null, lng: null, address: "" };
@@ -81,6 +81,16 @@ export default function CameraCapture({ label, onCapture, disabled, initialCaptu
   const inputRef = useRef(null);
   const [status, setStatus] = useState(initialCapture ? "done" : "idle"); // idle | processing | done
   const [preview, setPreview] = useState(initialCapture?.preview || null);
+  const [zoomed, setZoomed] = useState(false);
+
+  useEffect(() => {
+    if (!zoomed) return;
+    const handleKey = (e) => {
+      if (e.key === "Escape") setZoomed(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [zoomed]);
 
   const handleChange = async (e) => {
     const file = e.target.files?.[0];
@@ -121,7 +131,12 @@ export default function CameraCapture({ label, onCapture, disabled, initialCaptu
 
       {status === "done" ? (
         <div className="relative w-full">
-          <img src={preview} alt={label} className="w-full h-28 object-cover rounded-xl border border-gray-200" />
+          <button type="button" onClick={() => setZoomed(true)} className="w-full block" title="Tap to zoom">
+            <img src={preview} alt={label} className="w-full h-28 object-cover rounded-xl border border-gray-200 cursor-zoom-in" />
+          </button>
+          <div className="absolute top-1.5 left-1.5 bg-white/90 rounded-full p-1 shadow pointer-events-none">
+            <Maximize2 size={12} className="text-gray-600" />
+          </div>
           <div className="absolute top-1.5 right-1.5 bg-white rounded-full p-0.5 shadow">
             <CheckCircle2 size={18} className="text-green-600" />
           </div>
@@ -150,6 +165,23 @@ export default function CameraCapture({ label, onCapture, disabled, initialCaptu
         </button>
       )}
       <p className="text-xs text-subtext text-center">{label}</p>
+
+      {zoomed && preview && (
+        <div
+          className="fixed inset-0 z-[70] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setZoomed(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setZoomed(false)}
+            className="absolute top-4 right-4 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+            title="Close"
+          >
+            <X size={22} />
+          </button>
+          <img src={preview} alt={label} className="max-h-full max-w-full object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
     </div>
   );
 }
