@@ -41,7 +41,7 @@ exports.createSubmission = async (req, res) => {
     projectName,
     guardPhotoUrl: submission.guardPhotoUrl,
     capturedAt: submission.capturedAt,
-    message: `🌙 ${guardName} checked in for Night Guard at ${projectName}`,
+    message: `🌙 *${guardName}* checked in for Night Guard at *${projectName}*\n\n${submission.guardPhotoUrl}`,
   });
 
   res.status(201).json(submission);

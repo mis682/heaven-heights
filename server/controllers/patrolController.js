@@ -1,5 +1,6 @@
 const PatrolSubmission = require("../models/PatrolSubmission");
 const Project = require("../models/Project");
+const Checkpoint = require("../models/Checkpoint");
 const { fileToUrl } = require("../middleware/upload");
 const { notifyWebhook } = require("../utils/webhook");
 
@@ -34,14 +35,28 @@ exports.createSubmission = async (req, res) => {
     photos,
   });
 
+  const checkpointDocs = await Checkpoint.find({ projectId, checkpointId: { $in: photos.map((p) => p.checkpointId) } });
+  const checkpointNameById = new Map(checkpointDocs.map((c) => [c.checkpointId, c.name]));
+  const checkpoints = photos.map((p) => ({
+    name: checkpointNameById.get(p.checkpointId) || `Checkpoint ${p.checkpointId}`,
+    photoUrl: p.photoUrl,
+    capturedAt: p.capturedAt,
+  }));
+
+  const messageLines = [
+    `🛡️ *${guardName}* submitted a Patrol Checkpoint form for *${projectName}*`,
+    "",
+    ...checkpoints.map((c) => `${c.name}: ${c.photoUrl}`),
+  ];
+
   notifyWebhook({
     type: "patrol_checkpoint",
     guardName,
     projectName,
     checkpointsCovered: photos.length,
-    photoUrls: photos.map((p) => p.photoUrl),
+    checkpoints,
     submittedAt: submission.submittedAt,
-    message: `🛡️ ${guardName} submitted a Patrol Checkpoint form for ${projectName} — ${photos.length} checkpoint photo(s)`,
+    message: messageLines.join("\n"),
   });
 
   res.status(201).json(submission);
