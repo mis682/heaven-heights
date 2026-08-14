@@ -75,20 +75,19 @@ function formatHour(date) {
 
 // --- Coordinator daily report builder ---
 
-exports.getReportByDate = async (req, res) => {
-  const { date } = req.query;
-  if (!date) return res.status(400).json({ message: "date query param is required" });
-  const report = await NightGuardDailyReport.findOne({ reportDate: date });
+// A report is an open-ended log, not scoped to one day — at most one draft
+// is ever open. Entries within it each carry their own date.
+exports.getOpenDraft = async (req, res) => {
+  const report = await NightGuardDailyReport.findOne({ status: "draft" });
   res.json(report || null);
 };
 
 exports.saveDraft = async (req, res) => {
-  const { reportDate, entries, preparedBy } = req.body;
-  if (!reportDate) return res.status(400).json({ message: "reportDate is required" });
+  const { entries, preparedBy } = req.body;
 
   const report = await NightGuardDailyReport.findOneAndUpdate(
-    { reportDate, status: "draft" },
-    { reportDate, entries: entries || [], preparedBy: preparedBy || "" },
+    { status: "draft" },
+    { entries: entries || [], preparedBy: preparedBy || "" },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
 
@@ -127,17 +126,27 @@ exports.getReport = async (req, res) => {
 
 // --- Admin dashboard ---
 
+// Entries can span several dates now, so reports are filtered/sorted by
+// submittedAt (always present) rather than a single report-level date.
+function dateRangeLabel(report) {
+  const dates = report.entries.map((e) => e.date).filter(Boolean).sort();
+  if (dates.length === 0) return report.reportDate || "";
+  const min = dates[0];
+  const max = dates[dates.length - 1];
+  return min === max ? min : `${min} to ${max}`;
+}
+
 exports.listSubmittedReports = async (req, res) => {
   const { dateFrom, dateTo, site } = req.query;
   const filter = { status: "submitted" };
   if (dateFrom || dateTo) {
-    filter.reportDate = {};
-    if (dateFrom) filter.reportDate.$gte = dateFrom;
-    if (dateTo) filter.reportDate.$lte = dateTo;
+    filter.submittedAt = {};
+    if (dateFrom) filter.submittedAt.$gte = new Date(`${dateFrom}T00:00:00`);
+    if (dateTo) filter.submittedAt.$lte = new Date(`${dateTo}T23:59:59.999`);
   }
   if (site) filter["entries.site"] = site;
 
-  const reports = await NightGuardDailyReport.find(filter).sort({ reportDate: -1 });
+  const reports = await NightGuardDailyReport.find(filter).sort({ submittedAt: -1 });
 
   const summarized = reports.map((r) => {
     const sites = [...new Set(r.entries.map((e) => e.site))];
@@ -145,7 +154,7 @@ exports.listSubmittedReports = async (req, res) => {
     const absent = r.entries.filter((e) => e.status === "Absent").length;
     return {
       _id: r._id,
-      reportDate: r.reportDate,
+      dateRange: dateRangeLabel(r),
       preparedBy: r.preparedBy,
       sites,
       present,
@@ -161,28 +170,28 @@ exports.exportReport = async (req, res) => {
   const report = await NightGuardDailyReport.findById(req.params.id);
   if (!report) return res.status(404).json({ message: "Report not found" });
 
-  const [y, m, d] = report.reportDate.split("-").map(Number);
-  const dateHeader = `${m}/${d}/${y}`;
+  const filenameDate = dateRangeLabel(report).replace(/\s+/g, "");
 
   const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet(`NightGuard_${report.reportDate}`);
+  const sheet = workbook.addWorksheet(`NightGuard_${filenameDate}`.slice(0, 31));
   sheet.columns = [
+    { header: "Date", key: "date", width: 14 },
     { header: "Site", key: "site", width: 22 },
     { header: "Time", key: "timeSlot", width: 12 },
-    { header: dateHeader, key: "status", width: 18 },
+    { header: "Status", key: "status", width: 18 },
     { header: "Guard Name", key: "guardName", width: 24 },
   ];
   report.entries.forEach((e) => {
-    sheet.addRow({ site: e.site, timeSlot: e.timeSlot, status: e.status, guardName: e.guardName });
+    sheet.addRow({ date: e.date || report.reportDate, site: e.site, timeSlot: e.timeSlot, status: e.status, guardName: e.guardName });
   });
 
   const headerRow = sheet.getRow(1);
   headerRow.font = { bold: true };
-  headerRow.getCell(3).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFBFBFBF" } };
-  headerRow.getCell(4).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFF00" } };
+  headerRow.getCell(4).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFBFBFBF" } };
+  headerRow.getCell(5).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFF00" } };
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", `attachment; filename=night-guard-report-${report.reportDate}.xlsx`);
+  res.setHeader("Content-Disposition", `attachment; filename=night-guard-report-${filenameDate}.xlsx`);
   await workbook.xlsx.write(res);
   res.end();
 };

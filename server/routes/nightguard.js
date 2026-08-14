@@ -10,7 +10,7 @@ router.post("/submissions", upload.single("guardPhoto"), asyncHandler(ctrl.creat
 router.get("/submissions", asyncHandler(ctrl.listSubmissions));
 
 router.get("/reports/submitted", asyncHandler(ctrl.listSubmittedReports));
-router.get("/reports/by-date", asyncHandler(ctrl.getReportByDate));
+router.get("/reports/open-draft", asyncHandler(ctrl.getOpenDraft));
 router.post("/reports/draft", asyncHandler(ctrl.saveDraft));
 router.post("/reports/:id/submit", asyncHandler(ctrl.submitReport));
 router.post("/reports/:id/unlock", asyncHandler(ctrl.unlockReport));

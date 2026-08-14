@@ -10,9 +10,12 @@ import { getNightGuardMeta } from "../../../api/nightguard";
 import { apiOrigin as API_BASE } from "../../../api/client";
 import { useAuth } from "../../../context/AuthContext";
 
-function formatDateHeader(dateStr) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return `${m}/${d}/${y}`;
+function dateRangeLabel(report) {
+  const dates = report.entries.map((e) => e.date).filter(Boolean).sort();
+  if (dates.length === 0) return report.reportDate || "";
+  const min = dates[0];
+  const max = dates[dates.length - 1];
+  return min === max ? min : `${min} to ${max}`;
 }
 
 export default function NightGuardAdminReportPage() {
@@ -54,14 +57,15 @@ export default function NightGuardAdminReportPage() {
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <Select value={site} onChange={setSite} options={sites} placeholder="All sites" />
+        <span className="text-sm text-subtext">Submitted between</span>
         <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input max-w-[160px]" />
-        <span className="text-sm text-subtext">to</span>
+        <span className="text-sm text-subtext">and</span>
         <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input max-w-[160px]" />
       </div>
 
       <DataTable
         columns={[
-          { key: "reportDate", header: "Date" },
+          { key: "dateRange", header: "Date" },
           { key: "preparedBy", header: "Prepared By" },
           { key: "sites", header: "Sites Covered", render: (r) => r.sites.join(", ") },
           { key: "present", header: "Present" },
@@ -88,12 +92,12 @@ export default function NightGuardAdminReportPage() {
       />
 
       {viewing && (
-        <Modal title={`Report — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
+        <Modal title={`Report — ${dateRangeLabel(viewing)}`} onClose={() => setViewing(null)} wide>
           <div className="overflow-x-auto">
             <table className="w-full text-sm mb-4">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  {["Site", "Time", formatDateHeader(viewing.reportDate), "Guard Name"].map((h) => (
+                  {["Date", "Site", "Time", "Status", "Guard Name"].map((h) => (
                     <th key={h} className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500">{h}</th>
                   ))}
                 </tr>
@@ -101,6 +105,7 @@ export default function NightGuardAdminReportPage() {
               <tbody>
                 {viewing.entries.map((e) => (
                   <tr key={e._id} className="border-b border-gray-100 last:border-b-0">
+                    <td className="px-3 py-2">{e.date || viewing.reportDate}</td>
                     <td className="px-3 py-2">{e.site}</td>
                     <td className="px-3 py-2">{e.timeSlot}</td>
                     <td className="px-3 py-2"><StatusPill status={e.status} /></td>

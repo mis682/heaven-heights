@@ -8,7 +8,7 @@ export const createNightGuardSubmission = (formData) =>
 export const listNightGuardSubmissions = (params = {}) =>
   api.get("/nightguard/submissions", { params }).then((r) => r.data);
 
-export const getReportByDate = (date) => api.get("/nightguard/reports/by-date", { params: { date } }).then((r) => r.data);
+export const getOpenDraft = () => api.get("/nightguard/reports/open-draft").then((r) => r.data);
 export const saveDraftReport = (data) => api.post("/nightguard/reports/draft", data).then((r) => r.data);
 export const submitReport = (id) => api.post(`/nightguard/reports/${id}/submit`).then((r) => r.data);
 export const unlockReport = (id) => api.post(`/nightguard/reports/${id}/unlock`).then((r) => r.data);

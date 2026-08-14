@@ -7,7 +7,7 @@ import PhotoLightbox from "../../../components/PhotoLightbox";
 import { useAuth } from "../../../context/AuthContext";
 import {
   getNightGuardMeta,
-  getReportByDate,
+  getOpenDraft,
   saveDraftReport,
   submitReport,
   listNightGuardSubmissions,
@@ -18,19 +18,13 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function formatDateHeader(dateStr) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return `${m}/${d}/${y}`;
-}
-
 function emptyRow(site, timeSlot) {
-  return { site: site || "", timeSlot: timeSlot || "", guardName: "", status: "", linkedSubmissionId: null };
+  return { date: today(), site: site || "", timeSlot: timeSlot || "", guardName: "", status: "", linkedSubmissionId: null };
 }
 
 export default function NightGuardDailyReportPage() {
   const { user } = useAuth();
   const [meta, setMeta] = useState({ sites: [], statusOptions: [], timeSlots: [] });
-  const [date, setDate] = useState(today());
   const [report, setReport] = useState(null);
   const [rows, setRows] = useState([]);
   const [guards, setGuards] = useState([]);
@@ -48,11 +42,11 @@ export default function NightGuardDailyReportPage() {
 
   useEffect(() => {
     (async () => {
-      const r = await getReportByDate(date);
+      const r = await getOpenDraft();
       setReport(r);
-      setRows(r ? r.entries.map((e) => ({ ...e })) : [emptyRow()]);
+      setRows(r && r.entries.length > 0 ? r.entries.map((e) => ({ ...e })) : [emptyRow()]);
     })();
-  }, [date]);
+  }, []);
 
   const isLocked = report?.status === "submitted";
 
@@ -64,30 +58,30 @@ export default function NightGuardDailyReportPage() {
   const removeRow = (idx) => setRows((prev) => prev.filter((_, i) => i !== idx));
 
   const openProof = async (row) => {
-    if (!row.site) return;
+    if (!row.site || !row.date) return;
     setProofRow(row);
     setLightboxIndex(null);
-    const subs = await listNightGuardSubmissions({ site: row.site, date, hour: row.timeSlot || undefined });
+    const subs = await listNightGuardSubmissions({ site: row.site, date: row.date, hour: row.timeSlot || undefined });
     setProofSubmissions(subs);
   };
 
   const persist = async (targetStatus) => {
-    const cleanRows = rows.filter((r) => r.site && r.timeSlot && r.guardName && r.status);
+    const cleanRows = rows.filter((r) => r.date && r.site && r.timeSlot && r.guardName && r.status);
     const droppedCount = rows.length - cleanRows.length;
 
     if (rows.length > 0 && cleanRows.length === 0) {
-      alert("Every row is missing a Site, Time, Guard Name or Status — nothing was saved. Fill in all fields before saving.");
+      alert("Every row is missing a Date, Site, Time, Guard Name or Status — nothing was saved. Fill in all fields before saving.");
       return;
     }
     if (droppedCount > 0) {
       const proceed = window.confirm(
-        `${droppedCount} row(s) are incomplete (missing Site/Time/Guard Name/Status) and will NOT be saved. Continue anyway?`
+        `${droppedCount} row(s) are incomplete (missing Date/Site/Time/Guard Name/Status) and will NOT be saved. Continue anyway?`
       );
       if (!proceed) return;
     }
 
     setSaving(true);
-    const saved = await saveDraftReport({ reportDate: date, entries: cleanRows, preparedBy: user?.name || "" });
+    const saved = await saveDraftReport({ entries: cleanRows, preparedBy: user?.name || "" });
     if (targetStatus === "submitted") {
       const submitted = await submitReport(saved._id);
       setReport(submitted);
@@ -115,22 +109,20 @@ export default function NightGuardDailyReportPage() {
         }
       />
 
-      <div className="flex items-center gap-3 mb-4">
-        <label className="text-sm font-medium text-gray-700">Report Date</label>
-        <input type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} className="input max-w-[180px]" />
-        {isLocked && (
+      {isLocked && (
+        <div className="mb-4">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
             <Lock size={12} /> Submitted — read only (ask Admin to unlock)
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                {["Site", "Time", formatDateHeader(date), "Guard Name", "Proof", ""].map((h) => (
+                {["Date", "Site", "Time", "Status", "Guard Name", "Proof", ""].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
                     {h}
                   </th>
@@ -140,6 +132,16 @@ export default function NightGuardDailyReportPage() {
             <tbody>
               {rows.map((row, idx) => (
                 <tr key={idx} className="border-b border-gray-100 last:border-b-0">
+                  <td className="px-4 py-2">
+                    <input
+                      type="date"
+                      disabled={isLocked}
+                      value={row.date || ""}
+                      max={today()}
+                      onChange={(e) => updateRow(idx, { date: e.target.value })}
+                      className="input min-w-[150px]"
+                    />
+                  </td>
                   <td className="px-4 py-2">
                     <select
                       disabled={isLocked}
