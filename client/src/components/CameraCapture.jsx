@@ -175,7 +175,7 @@ export default function CameraCapture({ label, onCapture, disabled, initialCaptu
           <button
             type="button"
             onClick={() => setZoomed(false)}
-            className="absolute top-4 right-4 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+            className="absolute top-4 right-4 z-10 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
             title="Close"
           >
             <X size={22} />

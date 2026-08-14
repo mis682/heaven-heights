@@ -46,7 +46,7 @@ export default function PhotoLightbox({ photos, index, onClose, onNavigate, capt
         {photos.length > 1 && (
           <button
             onClick={() => onNavigate((index - 1 + photos.length) % photos.length)}
-            className="absolute left-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white"
+            className="absolute left-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white"
             title="Previous"
           >
             <ChevronLeft size={24} />
@@ -56,7 +56,7 @@ export default function PhotoLightbox({ photos, index, onClose, onNavigate, capt
         {photos.length > 1 && (
           <button
             onClick={() => onNavigate((index + 1) % photos.length)}
-            className="absolute right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white"
+            className="absolute right-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white"
             title="Next"
           >
             <ChevronRight size={24} />
