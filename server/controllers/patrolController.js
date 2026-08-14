@@ -1,6 +1,7 @@
 const PatrolSubmission = require("../models/PatrolSubmission");
 const Project = require("../models/Project");
 const { fileToUrl } = require("../middleware/upload");
+const { sendSlackMessage } = require("../utils/slack");
 
 exports.createSubmission = async (req, res) => {
   const { guardName, projectId, projectName } = req.body;
@@ -32,6 +33,10 @@ exports.createSubmission = async (req, res) => {
     projectName,
     photos,
   });
+
+  sendSlackMessage(
+    `🛡️ *${guardName}* submitted a Patrol Checkpoint form for *${projectName}* — ${photos.length} checkpoint photo(s) — ${new Date().toLocaleString()}`
+  );
 
   res.status(201).json(submission);
 };
