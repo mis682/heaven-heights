@@ -43,23 +43,12 @@ exports.createSubmission = async (req, res) => {
     capturedAt: p.capturedAt,
   }));
 
+  // Plain text with each image URL on its own line — Slack auto-unfurls a
+  // direct image link into a full inline preview, even for bot-posted messages.
   const messageLines = [
     `🛡️ *${guardName}* submitted a Patrol Checkpoint form for *${projectName}*`,
     "",
     ...checkpoints.map((c) => `${c.name}: ${c.photoUrl}`),
-  ];
-
-  // Slack only renders an inline, already-expanded image for bot-posted
-  // messages via Block Kit's "image" block — a plain-text URL just gets a
-  // generic collapsed link preview, not a visible thumbnail.
-  const blocks = [
-    { type: "section", text: { type: "mrkdwn", text: `🛡️ *${guardName}* submitted a Patrol Checkpoint form for *${projectName}*` } },
-    ...checkpoints.map((c) => ({
-      type: "image",
-      image_url: c.photoUrl,
-      alt_text: c.name,
-      title: { type: "plain_text", text: c.name },
-    })),
   ];
 
   notifyWebhook({
@@ -70,11 +59,6 @@ exports.createSubmission = async (req, res) => {
     checkpoints,
     submittedAt: submission.submittedAt,
     message: messageLines.join("\n"),
-    // Short, link-free line for Slack's fallback/notification text — the
-    // full message (with URLs) is redundant once blocks render the images.
-    summary: `🛡️ ${guardName} submitted a Patrol Checkpoint form for ${projectName} — ${photos.length} checkpoint photo(s)`,
-    blocks,
-    blocksJson: JSON.stringify(blocks),
   });
 
   res.status(201).json(submission);
