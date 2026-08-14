@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { X, Download, ChevronLeft, ChevronRight } from "lucide-react";
 import { cloudinaryDownloadUrl } from "../utils/cloudinary";
+import ZoomableImage from "./ZoomableImage";
 
 export default function PhotoLightbox({ photos, index, onClose, onNavigate, caption, downloadName }) {
   const photo = photos[index];
@@ -51,7 +52,7 @@ export default function PhotoLightbox({ photos, index, onClose, onNavigate, capt
             <ChevronLeft size={24} />
           </button>
         )}
-        <img src={url} alt="" className="max-h-full max-w-full object-contain rounded-lg" />
+        <ZoomableImage src={url} alt="" />
         {photos.length > 1 && (
           <button
             onClick={() => onNavigate((index + 1) % photos.length)}

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Camera, CheckCircle2, RotateCcw, Maximize2, X } from "lucide-react";
+import ZoomableImage from "./ZoomableImage";
 
 async function getGeoLocation() {
   if (!navigator.geolocation) return { lat: null, lng: null, address: "" };
@@ -179,7 +180,7 @@ export default function CameraCapture({ label, onCapture, disabled, initialCaptu
           >
             <X size={22} />
           </button>
-          <img src={preview} alt={label} className="max-h-full max-w-full object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
+          <ZoomableImage src={preview} alt={label} />
         </div>
       )}
     </div>
