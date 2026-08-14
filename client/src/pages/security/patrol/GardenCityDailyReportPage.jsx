@@ -40,7 +40,8 @@ export default function GardenCityDailyReportPage() {
 
   useEffect(() => {
     getGardenCityReportMeta().then(setMeta);
-    listGuards({ siteName: "Garden City", module: "patrol_checkpoint" }).then(setGuards);
+    // Not filtered by site — guards rotate between sites daily.
+    listGuards({ module: "patrol_checkpoint" }).then(setGuards);
   }, []);
 
   useEffect(() => {

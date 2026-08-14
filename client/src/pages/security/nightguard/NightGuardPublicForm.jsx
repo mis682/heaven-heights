@@ -19,6 +19,9 @@ export default function NightGuardPublicForm() {
 
   useEffect(() => {
     getNightGuardMeta().then((m) => setSites(m.sites));
+    // Not filtered by site — guards rotate between sites daily, so the
+    // full roster is shown regardless of which site is selected above.
+    listGuards({ module: "night_guard" }).then(setGuards);
 
     const draft = loadDraft();
     if (draft && (draft.capture || draft.projectName)) {
@@ -29,17 +32,6 @@ export default function NightGuardPublicForm() {
     }
     setDraftChecked(true);
   }, []);
-
-  // Only fetches the guard list for whichever project is selected — does
-  // NOT reset guardName here, so a restored draft's guard selection isn't
-  // wiped out by this effect firing when projectName changes on load.
-  useEffect(() => {
-    if (!projectName) {
-      setGuards([]);
-      return;
-    }
-    listGuards({ siteName: projectName, module: "night_guard" }).then(setGuards);
-  }, [projectName]);
 
   useEffect(() => {
     if (draftChecked) {
@@ -122,12 +114,12 @@ export default function NightGuardPublicForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Guard Name</label>
-            <select required disabled={!projectName} value={guardName} onChange={(e) => setGuardName(e.target.value)} className="input">
+            <select required value={guardName} onChange={(e) => setGuardName(e.target.value)} className="input">
               <option value="">Select your name</option>
               {guards.map((g) => <option key={g._id} value={g.name}>{g.name}</option>)}
             </select>
-            {projectName && guards.length === 0 && (
-              <p className="text-xs text-amber-600 mt-1">No guards found for this site — contact your coordinator.</p>
+            {guards.length === 0 && (
+              <p className="text-xs text-amber-600 mt-1">No guards found — contact your coordinator.</p>
             )}
           </div>
 

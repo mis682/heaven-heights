@@ -33,7 +33,7 @@ export default function NightGuardDailyReportPage() {
   const [date, setDate] = useState(today());
   const [report, setReport] = useState(null);
   const [rows, setRows] = useState([]);
-  const [guardsBySite, setGuardsBySite] = useState({});
+  const [guards, setGuards] = useState([]);
   const [proofRow, setProofRow] = useState(null);
   const [proofSubmissions, setProofSubmissions] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -41,6 +41,8 @@ export default function NightGuardDailyReportPage() {
 
   useEffect(() => {
     getNightGuardMeta().then(setMeta);
+    // Not filtered by site — guards rotate between sites daily.
+    listGuards({ module: "night_guard" }).then(setGuards);
   }, []);
 
   useEffect(() => {
@@ -48,21 +50,10 @@ export default function NightGuardDailyReportPage() {
       const r = await getReportByDate(date);
       setReport(r);
       setRows(r ? r.entries.map((e) => ({ ...e })) : [emptyRow()]);
-      if (r) {
-        const sites = [...new Set(r.entries.map((e) => e.site))];
-        sites.forEach(ensureGuardsLoaded);
-      }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
   const isLocked = report?.status === "submitted";
-
-  const ensureGuardsLoaded = async (site) => {
-    if (!site || guardsBySite[site]) return;
-    const g = await listGuards({ siteName: site, module: "night_guard" });
-    setGuardsBySite((prev) => ({ ...prev, [site]: g }));
-  };
 
   const updateRow = (idx, patch) => {
     setRows((prev) => prev.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
@@ -152,10 +143,7 @@ export default function NightGuardDailyReportPage() {
                     <select
                       disabled={isLocked}
                       value={row.site}
-                      onChange={(e) => {
-                        updateRow(idx, { site: e.target.value, guardName: "" });
-                        ensureGuardsLoaded(e.target.value);
-                      }}
+                      onChange={(e) => updateRow(idx, { site: e.target.value, guardName: "" })}
                       className="input"
                     >
                       <option value="">Select site</option>
@@ -177,13 +165,13 @@ export default function NightGuardDailyReportPage() {
                   </td>
                   <td className="px-4 py-2">
                     <select
-                      disabled={isLocked || !row.site}
+                      disabled={isLocked}
                       value={row.guardName}
                       onChange={(e) => updateRow(idx, { guardName: e.target.value })}
                       className="input"
                     >
                       <option value="">Select guard</option>
-                      {(guardsBySite[row.site] || []).map((g) => <option key={g._id} value={g.name}>{g.name}</option>)}
+                      {guards.map((g) => <option key={g._id} value={g.name}>{g.name}</option>)}
                     </select>
                   </td>
                   <td className="px-4 py-2">

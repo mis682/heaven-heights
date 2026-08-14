@@ -51,9 +51,9 @@ export default function PatrolDailyReportBuilderPage() {
   const projectId = project?._id;
 
   useEffect(() => {
-    if (!project) return;
-    listGuards({ siteName: project.name, module: "patrol_checkpoint" }).then(setGuards);
-  }, [project]);
+    // Not filtered by site — guards rotate between sites daily.
+    listGuards({ module: "patrol_checkpoint" }).then(setGuards);
+  }, []);
 
   useEffect(() => {
     if (!projectId || !project) return;

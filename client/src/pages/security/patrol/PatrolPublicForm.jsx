@@ -24,7 +24,9 @@ export default function PatrolPublicForm() {
       try {
         const d = await getProjectBySlug(slug);
         setData(d);
-        const g = await listGuards({ siteName: d.project.name, module: "patrol_checkpoint" });
+        // Not filtered by site — guards rotate between sites daily, so the
+        // full roster is shown regardless of which site's form this is.
+        const g = await listGuards({ module: "patrol_checkpoint" });
         setGuards(g);
 
         const draft = loadDraft(slug);
@@ -134,7 +136,7 @@ export default function PatrolPublicForm() {
               ))}
             </select>
             {guards.length === 0 && (
-              <p className="text-xs text-amber-600 mt-1">No guards found for this site yet — contact your coordinator.</p>
+              <p className="text-xs text-amber-600 mt-1">No guards found yet — contact your coordinator.</p>
             )}
           </div>
 
