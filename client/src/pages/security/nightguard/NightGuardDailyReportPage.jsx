@@ -18,12 +18,15 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-// One row now covers the whole overnight shift — Time is a fixed label
-// (matches server's NightGuardDailyReport TIME_SLOTS), not a per-row choice.
-const NIGHT_SHIFT_LABEL = "9:00 PM to 6:00 AM";
+function emptyRow(site, timeSlot) {
+  return { date: today(), site: site || "", timeSlot: timeSlot || "", guardName: "", status: "", linkedSubmissionId: null };
+}
 
-function emptyRow(site) {
-  return { date: today(), site: site || "", timeSlot: NIGHT_SHIFT_LABEL, guardName: "", status: "", linkedSubmissionId: null };
+// A full night's shift is 10 hourly rows (9 PM through 6 AM). Time is
+// auto-assigned per row in sequence — the coordinator only fills in
+// Date, Site, Status and Guard Name.
+function makeShiftSet(timeSlots) {
+  return timeSlots.map((t) => emptyRow("", t));
 }
 
 export default function NightGuardDailyReportPage() {
@@ -38,7 +41,6 @@ export default function NightGuardDailyReportPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    getNightGuardMeta().then(setMeta);
     // Sourced from Maintenance Staff (Security Guard designation), not
     // filtered by site — guards rotate between sites daily.
     listMaintenanceStaff({ designation: "Security Guard" }).then(setGuards);
@@ -46,9 +48,10 @@ export default function NightGuardDailyReportPage() {
 
   useEffect(() => {
     (async () => {
-      const r = await getOpenDraft();
+      const [m, r] = await Promise.all([getNightGuardMeta(), getOpenDraft()]);
+      setMeta(m);
       setReport(r);
-      setRows(r && r.entries.length > 0 ? r.entries.map((e) => ({ ...e })) : [emptyRow()]);
+      setRows(r && r.entries.length > 0 ? r.entries.map((e) => ({ ...e })) : makeShiftSet(m.timeSlots));
     })();
   }, []);
 
@@ -58,14 +61,14 @@ export default function NightGuardDailyReportPage() {
     setRows((prev) => prev.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
   };
 
-  const addRow = () => setRows((prev) => [...prev, emptyRow()]);
+  const addRow = () => setRows((prev) => [...prev, ...makeShiftSet(meta.timeSlots)]);
   const removeRow = (idx) => setRows((prev) => prev.filter((_, i) => i !== idx));
 
   const openProof = async (row) => {
     if (!row.site || !row.date) return;
     setProofRow(row);
     setLightboxIndex(null);
-    const subs = await listNightGuardSubmissions({ site: row.site, date: row.date });
+    const subs = await listNightGuardSubmissions({ site: row.site, date: row.date, hour: row.timeSlot || undefined });
     setProofSubmissions(subs);
   };
 
@@ -100,11 +103,11 @@ export default function NightGuardDailyReportPage() {
     <div>
       <PageHeader
         title="Night Guard — Daily Report Builder"
-        subtitle="Cross-check guard proof photos before recording status for the night shift."
+        subtitle="Cross-check guard proof photos before recording status per time slot."
         secondaryActions={
           isLocked
             ? []
-            : [{ label: "Add Row", icon: <Plus size={16} />, onClick: addRow }]
+            : [{ label: "Add Shift Set", icon: <Plus size={16} />, onClick: addRow }]
         }
         primaryAction={
           isLocked
@@ -157,7 +160,7 @@ export default function NightGuardDailyReportPage() {
                       {meta.sites.map((s) => <option key={s}>{s}</option>)}
                     </select>
                   </td>
-                  <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{row.timeSlot || NIGHT_SHIFT_LABEL}</td>
+                  <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{row.timeSlot}</td>
                   <td className="px-4 py-2">
                     <select disabled={isLocked} value={row.status} onChange={(e) => updateRow(idx, { status: e.target.value })} className="input">
                       <option value="">Status</option>
