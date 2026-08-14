@@ -15,6 +15,7 @@ router.post("/reports/draft", asyncHandler(ctrl.saveDraft));
 router.post("/reports/:id/submit", asyncHandler(ctrl.submitReport));
 router.post("/reports/:id/unlock", asyncHandler(ctrl.unlockReport));
 router.get("/reports/:id/export", asyncHandler(ctrl.exportReport));
+router.get("/reports/:id/export-pdf", asyncHandler(ctrl.exportPdf));
 router.get("/reports/:id", asyncHandler(ctrl.getReport));
 
 module.exports = router;

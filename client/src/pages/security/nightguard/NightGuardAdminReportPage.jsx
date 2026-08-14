@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Download, Unlock } from "lucide-react";
+import { Download, FileText, Unlock } from "lucide-react";
 import PageHeader from "../../../components/PageHeader";
 import DataTable from "../../../components/DataTable";
 import StatusPill from "../../../components/StatusPill";
 import Modal from "../../../components/Modal";
 import { Select } from "../../../components/FilterBar";
-import { listSubmittedReports, getReport, unlockReport, exportReportUrl } from "../../../api/nightguard";
+import { listSubmittedReports, getReport, unlockReport, exportReportUrl, exportReportPdfUrl } from "../../../api/nightguard";
 import { getNightGuardMeta } from "../../../api/nightguard";
 import { apiOrigin as API_BASE } from "../../../api/client";
 import { useAuth } from "../../../context/AuthContext";
@@ -80,7 +80,10 @@ export default function NightGuardAdminReportPage() {
                   View
                 </button>
                 <a href={exportReportUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 hover:underline inline-flex items-center gap-1">
-                  <Download size={12} /> Export
+                  <Download size={12} /> Excel
+                </a>
+                <a href={exportReportPdfUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 hover:underline inline-flex items-center gap-1">
+                  <FileText size={12} /> PDF
                 </a>
               </div>
             ),
@@ -115,14 +118,28 @@ export default function NightGuardAdminReportPage() {
               </tbody>
             </table>
           </div>
-          {user?.role === "Admin" && (
-            <button
-              onClick={() => handleUnlock(viewing._id)}
+          <div className="flex items-center gap-2">
+            <a
+              href={exportReportPdfUrl(viewing._id, API_BASE)}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              <Unlock size={16} /> Unlock for correction
-            </button>
-          )}
+              <FileText size={16} /> Download PDF
+            </a>
+            <a
+              href={exportReportUrl(viewing._id, API_BASE)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <Download size={16} /> Download Excel
+            </a>
+            {user?.role === "Admin" && (
+              <button
+                onClick={() => handleUnlock(viewing._id)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                <Unlock size={16} /> Unlock for correction
+              </button>
+            )}
+          </div>
         </Modal>
       )}
     </div>

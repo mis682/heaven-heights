@@ -15,3 +15,4 @@ export const unlockReport = (id) => api.post(`/nightguard/reports/${id}/unlock`)
 export const getReport = (id) => api.get(`/nightguard/reports/${id}`).then((r) => r.data);
 export const listSubmittedReports = (params = {}) => api.get("/nightguard/reports/submitted", { params }).then((r) => r.data);
 export const exportReportUrl = (id, baseURL) => `${baseURL}/api/nightguard/reports/${id}/export`;
+export const exportReportPdfUrl = (id, baseURL) => `${baseURL}/api/nightguard/reports/${id}/export-pdf`;

@@ -3,6 +3,7 @@ const NightGuardSubmission = require("../models/NightGuardSubmission");
 const NightGuardDailyReport = require("../models/NightGuardDailyReport");
 const { fileToUrl } = require("../middleware/upload");
 const { notifyWebhook } = require("../utils/webhook");
+const { buildNightGuardReportPdf } = require("../utils/nightGuardReportPdf");
 
 exports.meta = async (req, res) => {
   res.json({
@@ -194,4 +195,19 @@ exports.exportReport = async (req, res) => {
   res.setHeader("Content-Disposition", `attachment; filename=night-guard-report-${filenameDate}.xlsx`);
   await workbook.xlsx.write(res);
   res.end();
+};
+
+exports.exportPdf = async (req, res) => {
+  const report = await NightGuardDailyReport.findById(req.params.id);
+  if (!report) return res.status(404).json({ message: "Report not found" });
+
+  const rangeLabel = dateRangeLabel(report);
+  const filenameDate = rangeLabel.replace(/\s+/g, "");
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename=night-guard-report-${filenameDate}.pdf`);
+
+  const doc = buildNightGuardReportPdf(report, rangeLabel);
+  doc.pipe(res);
+  doc.end();
 };
