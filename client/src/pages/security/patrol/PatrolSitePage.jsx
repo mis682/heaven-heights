@@ -13,6 +13,7 @@ export default function PatrolSitePage() {
   const { project: slug } = useParams();
   const [data, setData] = useState(null);
   const [date, setDate] = useState("");
+  const [guardFilter, setGuardFilter] = useState("");
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState(null);
@@ -34,11 +35,21 @@ export default function PatrolSitePage() {
 
   const formUrl = `${window.location.origin}/patrol-form/${slug}`;
 
+  const guardOptions = useMemo(
+    () => [...new Set(submissions.map((s) => s.guardName))].sort(),
+    [submissions]
+  );
+
+  const filteredSubmissions = useMemo(
+    () => (guardFilter ? submissions.filter((s) => s.guardName === guardFilter) : submissions),
+    [submissions, guardFilter]
+  );
+
   const avgCoveragePct = useMemo(() => {
-    if (!submissions.length) return 0;
-    const total = submissions.reduce((sum, s) => sum + (s.checkpointCount ? s.checkpointsCovered / s.checkpointCount : 0), 0);
-    return Math.round((total / submissions.length) * 100);
-  }, [submissions]);
+    if (!filteredSubmissions.length) return 0;
+    const total = filteredSubmissions.reduce((sum, s) => sum + (s.checkpointCount ? s.checkpointsCovered / s.checkpointCount : 0), 0);
+    return Math.round((total / filteredSubmissions.length) * 100);
+  }, [filteredSubmissions]);
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(formUrl);
@@ -68,13 +79,21 @@ export default function PatrolSitePage() {
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
-        <StatCard label="Total Submissions" value={submissions.length} icon={<ListChecks size={16} />} color="blue" />
+        <StatCard label="Total Submissions" value={filteredSubmissions.length} icon={<ListChecks size={16} />} color="blue" />
         <StatCard label="Checkpoints" value={project.checkpointCount} icon={<ShieldCheck size={16} />} color="orange" />
         <StatCard label="Avg. Coverage" value={`${avgCoveragePct}%`} icon={<ShieldCheck size={16} />} color="green" />
       </div>
 
       <div className="flex items-center gap-2 mb-4">
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input max-w-[160px]" />
+        <select value={guardFilter} onChange={(e) => setGuardFilter(e.target.value)} className="input max-w-[220px]">
+          <option value="">All guards</option>
+          {guardOptions.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <DataTable
@@ -99,7 +118,7 @@ export default function PatrolSitePage() {
             ),
           },
         ]}
-        rows={loading ? [] : submissions}
+        rows={loading ? [] : filteredSubmissions}
         emptyMessage={loading ? "Loading..." : "No records found"}
         emptyHint={loading ? "" : "No patrol submissions yet for this site"}
       />
