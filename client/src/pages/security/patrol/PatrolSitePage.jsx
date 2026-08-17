@@ -12,7 +12,8 @@ import { listPatrolSubmissions, getPatrolSubmission } from "../../../api/patrol"
 export default function PatrolSitePage() {
   const { project: slug } = useParams();
   const [data, setData] = useState(null);
-  const [date, setDate] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [guardFilter, setGuardFilter] = useState("");
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,11 +28,11 @@ export default function PatrolSitePage() {
   useEffect(() => {
     if (!data) return;
     setLoading(true);
-    listPatrolSubmissions({ projectId: data.project._id, date: date || undefined }).then((rows) => {
+    listPatrolSubmissions({ projectId: data.project._id, dateFrom: dateFrom || undefined, dateTo: dateTo || undefined }).then((rows) => {
       setSubmissions(rows);
       setLoading(false);
     });
-  }, [data, date]);
+  }, [data, dateFrom, dateTo]);
 
   const formUrl = `${window.location.origin}/patrol-form/${slug}`;
 
@@ -84,8 +85,11 @@ export default function PatrolSitePage() {
         <StatCard label="Avg. Coverage" value={`${avgCoveragePct}%`} icon={<ShieldCheck size={16} />} color="green" />
       </div>
 
-      <div className="flex items-center gap-2 mb-4">
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input max-w-[160px]" />
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <span className="text-sm text-subtext">Submitted between</span>
+        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input max-w-[160px]" />
+        <span className="text-sm text-subtext">and</span>
+        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input max-w-[160px]" />
         <select value={guardFilter} onChange={(e) => setGuardFilter(e.target.value)} className="input max-w-[220px]">
           <option value="">All guards</option>
           {guardOptions.map((name) => (

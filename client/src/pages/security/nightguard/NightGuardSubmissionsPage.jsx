@@ -9,7 +9,8 @@ import { getNightGuardMeta, listNightGuardSubmissions } from "../../../api/night
 export default function NightGuardSubmissionsPage() {
   const [sites, setSites] = useState([]);
   const [site, setSite] = useState("");
-  const [date, setDate] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [guardFilter, setGuardFilter] = useState("");
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,11 +23,11 @@ export default function NightGuardSubmissionsPage() {
 
   useEffect(() => {
     setLoading(true);
-    listNightGuardSubmissions({ site: site || undefined, date: date || undefined }).then((data) => {
+    listNightGuardSubmissions({ site: site || undefined, dateFrom: dateFrom || undefined, dateTo: dateTo || undefined }).then((data) => {
       setSubmissions(data);
       setLoading(false);
     });
-  }, [site, date]);
+  }, [site, dateFrom, dateTo]);
 
   const guardOptions = useMemo(
     () => [...new Set(submissions.map((s) => s.guardName))].sort(),
@@ -68,7 +69,10 @@ export default function NightGuardSubmissionsPage() {
           <>
             <Select value={site} onChange={setSite} options={sites} placeholder="All sites" />
             <Select value={guardFilter} onChange={setGuardFilter} options={guardOptions} placeholder="All guards" />
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input max-w-[160px]" />
+            <span className="text-sm text-subtext">Captured between</span>
+            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input max-w-[160px]" />
+            <span className="text-sm text-subtext">and</span>
+            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input max-w-[160px]" />
           </>
         }
       />

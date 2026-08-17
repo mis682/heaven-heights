@@ -3,6 +3,7 @@ const Project = require("../models/Project");
 const Checkpoint = require("../models/Checkpoint");
 const { fileToUrl } = require("../middleware/upload");
 const { notifyWebhook } = require("../utils/webhook");
+const { buildIstDateRangeFilter } = require("../utils/istDateRange");
 
 exports.createSubmission = async (req, res) => {
   const { guardName, projectId, projectName } = req.body;
@@ -65,15 +66,11 @@ exports.createSubmission = async (req, res) => {
 };
 
 exports.listSubmissions = async (req, res) => {
-  const { projectId, date } = req.query;
+  const { projectId, dateFrom, dateTo } = req.query;
   const filter = {};
   if (projectId) filter.projectId = projectId;
-  if (date) {
-    const start = new Date(date);
-    const end = new Date(date);
-    end.setDate(end.getDate() + 1);
-    filter.submittedAt = { $gte: start, $lt: end };
-  }
+  const dateFilter = buildIstDateRangeFilter(dateFrom, dateTo);
+  if (dateFilter) filter.submittedAt = dateFilter;
 
   const submissions = await PatrolSubmission.find(filter).sort({ submittedAt: -1 });
   const withCounts = await Promise.all(

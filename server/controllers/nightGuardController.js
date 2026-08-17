@@ -4,6 +4,7 @@ const NightGuardDailyReport = require("../models/NightGuardDailyReport");
 const { fileToUrl } = require("../middleware/upload");
 const { notifyWebhook } = require("../utils/webhook");
 const { buildNightGuardReportPdf } = require("../utils/nightGuardReportPdf");
+const { buildIstDateRangeFilter } = require("../utils/istDateRange");
 
 exports.meta = async (req, res) => {
   res.json({
@@ -49,15 +50,11 @@ exports.createSubmission = async (req, res) => {
 };
 
 exports.listSubmissions = async (req, res) => {
-  const { site, date, hour } = req.query;
+  const { site, date, dateFrom, dateTo, hour } = req.query;
   const filter = {};
   if (site) filter.projectName = site;
-  if (date) {
-    const start = new Date(date);
-    const end = new Date(date);
-    end.setDate(end.getDate() + 1);
-    filter.capturedAt = { $gte: start, $lt: end };
-  }
+  const dateFilter = buildIstDateRangeFilter(dateFrom || date, dateTo || date);
+  if (dateFilter) filter.capturedAt = dateFilter;
   let submissions = await NightGuardSubmission.find(filter).sort({ capturedAt: -1 });
   if (hour) {
     submissions = submissions.filter((s) => formatHour(s.capturedAt) === hour);
