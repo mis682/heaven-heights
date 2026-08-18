@@ -6,6 +6,7 @@ import FilterBar, { Select } from "../../components/FilterBar";
 import PhotoLightbox from "../../components/PhotoLightbox";
 import { listAttendanceScanRecords, deleteAttendanceScanRecord } from "../../api/attendanceScan";
 import { listSiteLocations } from "../../api/siteLocations";
+import { useAuth } from "../../context/AuthContext";
 
 function formatTotalHours(inRecord, outRecord) {
   if (!inRecord || !outRecord) return "—";
@@ -17,7 +18,7 @@ function formatTotalHours(inRecord, outRecord) {
   return `${hours}h ${minutes}m`;
 }
 
-function PunchCell({ record, onPhotoClick, onDelete }) {
+function PunchCell({ record, onPhotoClick, onDelete, canDelete }) {
   if (!record) return <span className="text-xs text-gray-400">—</span>;
 
   return (
@@ -62,18 +63,22 @@ function PunchCell({ record, onPhotoClick, onDelete }) {
             </span>
           ))}
       </div>
-      <button
-        onClick={() => onDelete(record)}
-        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 shrink-0"
-        title="Delete this punch"
-      >
-        <Trash2 size={14} />
-      </button>
+      {canDelete && (
+        <button
+          onClick={() => onDelete(record)}
+          className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 shrink-0"
+          title="Delete this punch"
+        >
+          <Trash2 size={14} />
+        </button>
+      )}
     </div>
   );
 }
 
 export default function AttendanceRecordsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
   const [records, setRecords] = useState([]);
   const [sites, setSites] = useState([]);
   const [siteFilter, setSiteFilter] = useState("");
@@ -175,6 +180,7 @@ export default function AttendanceRecordsPage() {
                 record={r.in}
                 onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))}
                 onDelete={handleDelete}
+                canDelete={isAdmin}
               />
             ),
           },
@@ -186,6 +192,7 @@ export default function AttendanceRecordsPage() {
                 record={r.out}
                 onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))}
                 onDelete={handleDelete}
+                canDelete={isAdmin}
               />
             ),
           },

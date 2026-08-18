@@ -33,7 +33,7 @@ import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
-import { ADMIN_ONLY_ROLES, DAILY_REPORT_ROLES } from "./layouts/navConfig";
+import { ADMIN_ONLY_ROLES, DAILY_REPORT_ROLES, ATTENDANCE_VIEW_ROLES } from "./layouts/navConfig";
 
 export default function App() {
   return (
@@ -119,7 +119,7 @@ export default function App() {
         <Route
           path="/attendance/records"
           element={
-            <RequireAuth roles={ADMIN_ONLY_ROLES}>
+            <RequireAuth roles={ATTENDANCE_VIEW_ROLES}>
               <AttendanceRecordsPage />
             </RequireAuth>
           }
@@ -135,7 +135,7 @@ export default function App() {
         <Route
           path="/attendance/team"
           element={
-            <RequireAuth roles={ADMIN_ONLY_ROLES}>
+            <RequireAuth roles={ATTENDANCE_VIEW_ROLES}>
               <TeamAttendancePage />
             </RequireAuth>
           }

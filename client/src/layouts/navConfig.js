@@ -22,9 +22,14 @@ function patrolSiteNavItem({ label, slug }) {
   };
 }
 
-// Only Admin needs Housekeeping, Attendance and the staff/guard master data
-// pages — both Security Manager and Coordinator are scoped to Security only.
+// Only Admin needs Housekeeping and the staff/guard master data pages —
+// both Security Manager and Coordinator are scoped to Security only.
 export const ADMIN_ONLY_ROLES = ["Admin"];
+
+// Security Manager additionally gets read access to Team Attendance and
+// Attendance Records (to check their own guards' attendance) — every other
+// Attendance submodule stays Admin-only.
+export const ATTENDANCE_VIEW_ROLES = ["Admin", "Security Manager"];
 
 export const NAV_SECTIONS = [
   {
@@ -48,13 +53,12 @@ export const NAV_SECTIONS = [
       },
       {
         label: "Attendance",
-        roles: ADMIN_ONLY_ROLES,
         children: [
-          { label: "Daily Attendance", path: "/attendance" },
-          { label: "Scan Attendance", path: "/attendance/scan" },
-          { label: "Attendance Records", path: "/attendance/records" },
-          { label: "Team Attendance", path: "/attendance/team" },
-          { label: "Site Locations", path: "/attendance/sites" },
+          { label: "Daily Attendance", path: "/attendance", roles: ADMIN_ONLY_ROLES },
+          { label: "Scan Attendance", path: "/attendance/scan", roles: ADMIN_ONLY_ROLES },
+          { label: "Attendance Records", path: "/attendance/records", roles: ATTENDANCE_VIEW_ROLES },
+          { label: "Team Attendance", path: "/attendance/team", roles: ATTENDANCE_VIEW_ROLES },
+          { label: "Site Locations", path: "/attendance/sites", roles: ADMIN_ONLY_ROLES },
         ],
       },
       { label: "Maintenance Staff", path: "/admin/maintenance-staff", roles: ADMIN_ONLY_ROLES },
