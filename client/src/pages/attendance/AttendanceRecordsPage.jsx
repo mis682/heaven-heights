@@ -144,13 +144,17 @@ export default function AttendanceRecordsPage() {
     return Array.from(byKey.values())
       .map((row) => {
         const sorted = [...row.scans].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        const latestTimestamp = sorted[sorted.length - 1].timestamp;
         if (sorted.length === 1) {
           const only = sorted[0];
-          return { ...row, in: only.type === "out" ? null : only, out: only.type === "out" ? only : null };
+          return { ...row, in: only.type === "out" ? null : only, out: only.type === "out" ? only : null, latestTimestamp };
         }
-        return { ...row, in: sorted[0], out: sorted[sorted.length - 1] };
+        return { ...row, in: sorted[0], out: sorted[sorted.length - 1], latestTimestamp };
       })
-      .sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
+      .sort((a, b) => {
+        if (a.dateKey !== b.dateKey) return a.dateKey < b.dateKey ? 1 : -1;
+        return new Date(b.latestTimestamp) - new Date(a.latestTimestamp);
+      });
   }, [records]);
 
   return (
