@@ -33,12 +33,16 @@ export default function FilterBar({ search, onSearchChange, placeholder = "Searc
   );
 }
 
-export function Select({ value, onChange, options, placeholder }) {
+export function Select({ value, onChange, options, placeholder, required, className }) {
   return (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="px-3 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
+      required={required}
+      className={
+        className ||
+        "px-3 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
+      }
     >
       {placeholder && <option value="">{placeholder}</option>}
       {options.map((opt) => (

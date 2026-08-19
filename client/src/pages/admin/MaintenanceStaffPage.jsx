@@ -260,30 +260,24 @@ function StaffFormModal({ staff, meta, onClose, onSaved }) {
           <input required value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} className="input" />
         </Field>
         <Field label="Site Name">
-          <input
+          <Select
             required
-            list="site-options"
             value={form.siteName}
-            onChange={(e) => setForm({ ...form, siteName: e.target.value })}
+            onChange={(v) => setForm({ ...form, siteName: v })}
+            options={meta.sites}
+            placeholder="Select site"
             className="input"
-            placeholder="e.g. Garden City"
           />
-          <datalist id="site-options">
-            {meta.sites.map((s) => <option key={s} value={s} />)}
-          </datalist>
         </Field>
         <Field label="Designation">
-          <input
+          <Select
             required
-            list="designation-options"
             value={form.designation}
-            onChange={(e) => setForm({ ...form, designation: e.target.value })}
+            onChange={(v) => setForm({ ...form, designation: v })}
+            options={meta.designations}
+            placeholder="Select designation"
             className="input"
-            placeholder="e.g. Security Guard"
           />
-          <datalist id="designation-options">
-            {meta.designations.map((d) => <option key={d} value={d} />)}
-          </datalist>
         </Field>
         <Field label="Name">
           <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
