@@ -43,20 +43,6 @@ app.use("/api/garden-city-patrol-report", gardenCityPatrolReportRoutes);
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
-// TEMPORARY — verifies RESEND_API_KEY actually works end-to-end from Render,
-// then gets removed once confirmed.
-app.get("/api/health/test-mail", async (req, res) => {
-  const { sendAlertEmail } = require("./utils/mailer");
-  if (!process.env.RESEND_API_KEY) {
-    return res.status(400).json({ ok: false, reason: "RESEND_API_KEY not set" });
-  }
-  await sendAlertEmail({
-    subject: "Test — Cloudinary usage alerts are working (from Render)",
-    text: "This is a one-time test email confirming the Cloudinary usage alert setup works from the live server.",
-  });
-  res.json({ ok: true });
-});
-
 const clientDist = path.join(__dirname, "..", "client", "dist");
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
