@@ -5,6 +5,7 @@ const AttendanceScan = require("../models/AttendanceScan");
 const { fileToUrl } = require("../middleware/upload");
 const { haversineMeters } = require("../utils/geo");
 const { buildTeamAttendancePdf } = require("../utils/teamAttendancePdf");
+const { istDateKey, istHour } = require("../utils/istDateRange");
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -32,21 +33,30 @@ function statusTotals(days) {
 // old unclosed "in" is treated as abandoned and the next scan starts fresh.
 const SHIFT_RESET_HOURS = 18;
 
-function toDateKey(date) {
-  return new Date(date).toISOString().slice(0, 10);
-}
+const toDateKey = istDateKey;
+
+// A night-shift scan with no open "in" to pair with, arriving in the early
+// hours of the day, is almost never someone starting a fresh shift at 2 AM —
+// it's a guard who forgot to punch in the previous evening and is only
+// scanning once, at the end of the night. Treat it as that night's punch-out
+// instead of a same-day punch-in, so it shows correctly (Punch Out column,
+// Single Punch status) against the night it actually belongs to.
+const NIGHT_CATCHUP_HOUR_LIMIT = 12;
 
 // Determines whether this scan is a punch-in or punch-out, and which day's
 // shift it belongs to. An "out" inherits the "in" scan's shiftDate, so a
 // night shift that crosses midnight still counts as one day's attendance —
 // the day the guard punched IN, not the day they punched out.
-function determineNextPunch(lastRecord) {
+function determineNextPunch(lastRecord, shift) {
   const now = new Date();
-  if (!lastRecord || lastRecord.type === "out") {
-    return { type: "in", shiftDate: toDateKey(now) };
-  }
-  const hoursSinceIn = (now - new Date(lastRecord.timestamp)) / 3600000;
-  if (hoursSinceIn > SHIFT_RESET_HOURS) {
+  const freshChain =
+    !lastRecord || lastRecord.type === "out" || (now - new Date(lastRecord.timestamp)) / 3600000 > SHIFT_RESET_HOURS;
+
+  if (freshChain) {
+    if (shift === "night" && istHour(now) < NIGHT_CATCHUP_HOUR_LIMIT) {
+      const yesterday = new Date(now.getTime() - 24 * 3600000);
+      return { type: "out", shiftDate: toDateKey(yesterday) };
+    }
     return { type: "in", shiftDate: toDateKey(now) };
   }
   return { type: "out", shiftDate: lastRecord.shiftDate || toDateKey(lastRecord.timestamp) };
@@ -86,7 +96,7 @@ exports.scan = async (req, res) => {
   if (!staff) return res.status(404).json({ message: "Yeh QR code kisi bhi staff se match nahi hua" });
 
   const lastRecord = await AttendanceScan.findOne({ staff: staff._id }).sort({ timestamp: -1 });
-  const { type, shiftDate } = determineNextPunch(lastRecord);
+  const { type, shiftDate } = determineNextPunch(lastRecord, shift === "day" || shift === "night" ? shift : null);
 
   let distanceMeters = null;
   let withinGeofence = null;

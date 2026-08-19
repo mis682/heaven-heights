@@ -120,7 +120,10 @@ export default function AttendanceRecordsPage() {
   // (e.g. someone checking again mid-shift) are ignored, same rule the
   // Team Attendance grid uses. A night shift's later scans carry shiftDate
   // copied from the original "in", so they group with that day even though
-  // they happened after midnight.
+  // they happened after midnight. A single scan uses its own recorded type
+  // instead of always defaulting to Punch In — a night guard who forgot to
+  // punch in and only scanned once at the end of the shift is stored (and
+  // shown) as that night's Punch Out.
   const rows = useMemo(() => {
     const byKey = new Map();
     records.forEach((r) => {
@@ -141,7 +144,11 @@ export default function AttendanceRecordsPage() {
     return Array.from(byKey.values())
       .map((row) => {
         const sorted = [...row.scans].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        return { ...row, in: sorted[0] || null, out: sorted.length > 1 ? sorted[sorted.length - 1] : null };
+        if (sorted.length === 1) {
+          const only = sorted[0];
+          return { ...row, in: only.type === "out" ? null : only, out: only.type === "out" ? only : null };
+        }
+        return { ...row, in: sorted[0], out: sorted[sorted.length - 1] };
       })
       .sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
   }, [records]);

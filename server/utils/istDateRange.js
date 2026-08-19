@@ -1,4 +1,5 @@
 const DAY_MS = 24 * 60 * 60 * 1000;
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 
 // India has no DST, so a fixed +05:30 offset always gives the correct IST
 // wall-clock day boundary regardless of the server's own OS timezone
@@ -16,4 +17,16 @@ function buildIstDateRangeFilter(dateFrom, dateTo) {
   return Object.keys(range).length ? range : null;
 }
 
-module.exports = { istDayStart, buildIstDateRangeFilter };
+// "YYYY-MM-DD" for the IST calendar day a timestamp falls on — shifting the
+// instant by the IST offset before formatting in UTC yields the IST wall-clock
+// date without depending on the server's own timezone.
+function istDateKey(date) {
+  return new Date(new Date(date).getTime() + IST_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+// IST wall-clock hour (0-23) for a timestamp, same offset trick as above.
+function istHour(date) {
+  return new Date(new Date(date).getTime() + IST_OFFSET_MS).getUTCHours();
+}
+
+module.exports = { istDayStart, buildIstDateRangeFilter, istDateKey, istHour };
