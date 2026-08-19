@@ -35,13 +35,21 @@ const SHIFT_RESET_HOURS = 18;
 
 const toDateKey = istDateKey;
 
-// A night-shift scan with no open "in" to pair with, arriving in the early
-// hours of the day, is almost never someone starting a fresh shift at 2 AM —
-// it's a guard who forgot to punch in the previous evening and is only
-// scanning once, at the end of the night. Treat it as that night's punch-out
-// instead of a same-day punch-in, so it shows correctly (Punch Out column,
-// Single Punch status) against the night it actually belongs to.
-const NIGHT_CATCHUP_HOUR_LIMIT = 12;
+// Noon is the pivot for guessing what a "fresh chain" scan (no open "in" to
+// pair with) actually means, per shift:
+// - Night shift, before noon: a night runs ~9 PM-6 AM, so a fresh scan this
+//   early is never someone starting a new shift — it's a guard who forgot to
+//   punch in the previous evening and is only scanning once, at the end of
+//   the night. Treated as that night's punch-out (dated to the night it
+//   started, i.e. yesterday).
+// - Day shift, noon or after: a day shift starts in the morning, so a fresh
+//   scan this late is never a genuine start — it's a guard who forgot the
+//   morning punch-in and is only scanning once, at the end of the day.
+//   Treated as today's punch-out instead of a same-day punch-in (which would
+//   otherwise wrongly swallow tomorrow's real punch-in as its matching out).
+// Both cases show correctly as Punch Out / Single Punch instead of starting
+// a bogus open shift that the next real scan then incorrectly closes.
+const CATCHUP_NOON_HOUR = 12;
 
 // Determines whether this scan is a punch-in or punch-out, and which day's
 // shift it belongs to. An "out" inherits the "in" scan's shiftDate, so a
@@ -53,9 +61,13 @@ function determineNextPunch(lastRecord, shift) {
     !lastRecord || lastRecord.type === "out" || (now - new Date(lastRecord.timestamp)) / 3600000 > SHIFT_RESET_HOURS;
 
   if (freshChain) {
-    if (shift === "night" && istHour(now) < NIGHT_CATCHUP_HOUR_LIMIT) {
+    const hour = istHour(now);
+    if (shift === "night" && hour < CATCHUP_NOON_HOUR) {
       const yesterday = new Date(now.getTime() - 24 * 3600000);
       return { type: "out", shiftDate: toDateKey(yesterday) };
+    }
+    if (shift === "day" && hour >= CATCHUP_NOON_HOUR) {
+      return { type: "out", shiftDate: toDateKey(now) };
     }
     return { type: "in", shiftDate: toDateKey(now) };
   }
