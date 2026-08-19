@@ -19,6 +19,7 @@ const siteLocationRoutes = require("./routes/siteLocations");
 const attendanceScanRoutes = require("./routes/attendanceScan");
 const fireMockDrillRoutes = require("./routes/fireMockDrill");
 const gardenCityPatrolReportRoutes = require("./routes/gardenCityPatrolReport");
+const { checkCloudinaryUsageAndAlert } = require("./utils/cloudinaryUsageAlert");
 
 const app = express();
 
@@ -55,9 +56,15 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
+const CLOUDINARY_CHECK_INTERVAL_MS = 12 * 60 * 60 * 1000;
+
 connectDB()
   .then(() => {
     app.listen(PORT, () => console.log(`[server] listening on http://localhost:${PORT}`));
+    checkCloudinaryUsageAndAlert().catch((err) => console.error("[cloudinary-usage-alert] failed", err));
+    setInterval(() => {
+      checkCloudinaryUsageAndAlert().catch((err) => console.error("[cloudinary-usage-alert] failed", err));
+    }, CLOUDINARY_CHECK_INTERVAL_MS);
   })
   .catch((err) => {
     console.error("[server] failed to connect to MongoDB", err);
