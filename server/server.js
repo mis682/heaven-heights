@@ -43,30 +43,6 @@ app.use("/api/garden-city-patrol-report", gardenCityPatrolReportRoutes);
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
-// TEMPORARY — verifies GMAIL_USER/GMAIL_APP_PASSWORD actually work end-to-end
-// on Render, then gets removed once confirmed.
-app.get("/api/health/test-mail", async (req, res) => {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    return res.status(400).json({ ok: false, reason: "GMAIL_USER or GMAIL_APP_PASSWORD not set" });
-  }
-  try {
-    const nodemailer = require("nodemailer");
-    const t = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
-    });
-    await t.sendMail({
-      from: `"Heaven Heights Alerts" <${process.env.GMAIL_USER}>`,
-      to: process.env.ALERT_EMAIL_TO || "mis@neotericgrp.in",
-      subject: "Test — Cloudinary usage alerts are working",
-      text: "This is a one-time test email confirming the Cloudinary usage alert setup works.",
-    });
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ ok: false, reason: err.message });
-  }
-});
-
 const clientDist = path.join(__dirname, "..", "client", "dist");
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
