@@ -5,7 +5,7 @@ const AttendanceScan = require("../models/AttendanceScan");
 const { fileToUrl } = require("../middleware/upload");
 const { haversineMeters } = require("../utils/geo");
 const { buildTeamAttendancePdf } = require("../utils/teamAttendancePdf");
-const { istDateKey, istHour } = require("../utils/istDateRange");
+const { istDateKey, istHour, istDayStart } = require("../utils/istDateRange");
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -32,6 +32,7 @@ function statusTotals(days) {
 // shifts that punch in one evening and out the next morning. Past this, an
 // old unclosed "in" is treated as abandoned and the next scan starts fresh.
 const SHIFT_RESET_HOURS = 18;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const toDateKey = istDateKey;
 
@@ -171,13 +172,19 @@ exports.records = async (req, res) => {
     filter.$or = [{ name: re }, { employeeId: re }, { siteName: re }];
   }
   if (date) {
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 999);
-    filter.timestamp = { $gte: start, $lte: end };
+    // The Date column shown to coordinators is each record's shiftDate, not
+    // its raw scan time — an overnight shift's punch-out can physically
+    // happen a day later than the day it's attributed to. Query a window
+    // wide enough to catch that, then filter precisely by the same
+    // shiftDate (falling back to the IST calendar day for older records
+    // from before shiftDate existed) so the filter matches what's displayed.
+    const dayStart = istDayStart(date).getTime();
+    filter.timestamp = { $gte: new Date(dayStart - DAY_MS), $lt: new Date(dayStart + 2 * DAY_MS) };
   }
-  const records = await AttendanceScan.find(filter).sort({ timestamp: -1 }).limit(500);
+  let records = await AttendanceScan.find(filter).sort({ timestamp: -1 }).limit(date ? 2000 : 500);
+  if (date) {
+    records = records.filter((r) => (r.shiftDate || istDateKey(r.timestamp)) === date).slice(0, 500);
+  }
   res.json(records);
 };
 
