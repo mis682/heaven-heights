@@ -7,6 +7,7 @@ const { fileToUrl } = require("../middleware/upload");
 const { haversineMeters } = require("../utils/geo");
 const { buildTeamAttendancePdf } = require("../utils/teamAttendancePdf");
 const { istDateKey, istHour, istDayStart } = require("../utils/istDateRange");
+const { notifyWebhook } = require("../utils/webhook");
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -159,6 +160,29 @@ exports.scan = async (req, res) => {
     distanceMeters,
     withinGeofence,
     photo: req.file ? fileToUrl(req.file) : "",
+  });
+
+  const punchLabel = type === "in" ? "Punch In" : "Punch Out";
+  const messageLines = [
+    `🕐 *${staff.name}* (${staff.employeeId}) — ${punchLabel} at *${staff.siteName}*`,
+    `${new Date(record.timestamp).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}${
+      withinGeofence ? " — 📍 On site" : ""
+    }${address ? `\n${address}` : ""}`,
+  ];
+  if (record.photo) {
+    messageLines.push("", record.photo);
+  }
+
+  notifyWebhook({
+    type: "attendance_scan",
+    channel: "attendance-log",
+    employeeId: staff.employeeId,
+    staffName: staff.name,
+    siteName: staff.siteName,
+    punchType: type,
+    timestamp: record.timestamp,
+    photoUrl: record.photo,
+    message: messageLines.join("\n"),
   });
 
   res.status(201).json({
