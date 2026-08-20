@@ -29,11 +29,12 @@ const DESIGNATION_COLORS = ["blue", "orange", "green", "amber", "gray", "red"];
 
 export default function MaintenanceStaffPage() {
   const [staff, setStaff] = useState([]);
-  const [meta, setMeta] = useState({ sites: [], designations: [] });
+  const [meta, setMeta] = useState({ sites: [], designations: [], companies: [] });
   const [stats, setStats] = useState({ total: 0, byDesignation: [] });
   const [search, setSearch] = useState("");
   const [siteFilter, setSiteFilter] = useState("");
   const [designationFilter, setDesignationFilter] = useState("");
+  const [companyFilter, setCompanyFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -41,13 +42,18 @@ export default function MaintenanceStaffPage() {
 
   const loadMeta = () => getMaintenanceStaffMeta().then(setMeta);
   const loadStats = () =>
-    getMaintenanceStaffStats({ siteName: siteFilter || undefined, search: search || undefined }).then(setStats);
+    getMaintenanceStaffStats({
+      siteName: siteFilter || undefined,
+      companyName: companyFilter || undefined,
+      search: search || undefined,
+    }).then(setStats);
 
   const load = async () => {
     setLoading(true);
     const data = await listMaintenanceStaff({
       siteName: siteFilter || undefined,
       designation: designationFilter || undefined,
+      companyName: companyFilter || undefined,
       search: search || undefined,
     });
     setStaff(data);
@@ -61,14 +67,14 @@ export default function MaintenanceStaffPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteFilter, designationFilter, search]);
+  }, [siteFilter, designationFilter, companyFilter, search]);
 
-  // Stat cards reflect the site/search filter but stay independent of the
-  // designation filter, so all designation counts remain visible to switch between.
+  // Stat cards reflect the site/company/search filters but stay independent
+  // of the designation filter, so all designation counts remain visible to switch between.
   useEffect(() => {
     loadStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteFilter, search]);
+  }, [siteFilter, companyFilter, search]);
 
   const remove = async (id) => {
     await deleteMaintenanceStaff(id);
@@ -125,6 +131,7 @@ export default function MaintenanceStaffPage() {
           <>
             <Select value={siteFilter} onChange={setSiteFilter} options={meta.sites} placeholder="All sites" />
             <Select value={designationFilter} onChange={setDesignationFilter} options={meta.designations} placeholder="All designations" />
+            <Select value={companyFilter} onChange={setCompanyFilter} options={meta.companies} placeholder="All companies" />
           </>
         }
       />
@@ -147,6 +154,7 @@ export default function MaintenanceStaffPage() {
           { key: "siteName", header: "Site Name" },
           { key: "designation", header: "Designation" },
           { key: "name", header: "Name" },
+          { key: "companyName", header: "Company", render: (r) => r.companyName || <span className="text-gray-300">—</span> },
           {
             key: "actions",
             header: "Actions",
@@ -207,7 +215,7 @@ export default function MaintenanceStaffPage() {
 }
 
 function StaffFormModal({ staff, meta, onClose, onSaved }) {
-  const [form, setForm] = useState(staff || { employeeId: "", siteName: "", designation: "", name: "" });
+  const [form, setForm] = useState(staff || { employeeId: "", siteName: "", designation: "", name: "", companyName: "" });
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState(staff?.photo || null);
   const [saving, setSaving] = useState(false);
@@ -281,6 +289,15 @@ function StaffFormModal({ staff, meta, onClose, onSaved }) {
         </Field>
         <Field label="Name">
           <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
+        </Field>
+        <Field label="Company">
+          <Select
+            value={form.companyName || ""}
+            onChange={(v) => setForm({ ...form, companyName: v })}
+            options={meta.companies}
+            placeholder="Select company"
+            className="input"
+          />
         </Field>
         <button disabled={saving} className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 mt-2">
           {saving ? "Saving..." : "Save"}

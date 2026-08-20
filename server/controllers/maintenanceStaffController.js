@@ -1,6 +1,7 @@
 const MaintenanceStaff = require("../models/MaintenanceStaff");
 const { fileToUrl } = require("../middleware/upload");
 const { buildIdCardPdf } = require("../utils/idCardPdf");
+const { COMPANY_NAMES } = require("../constants/companies");
 
 function collapseSpaces(value) {
   return value.trim().replace(/\s+/g, " ");
@@ -23,13 +24,14 @@ async function normalizeAgainstExisting(field, value) {
 }
 
 exports.list = async (req, res) => {
-  const { siteName, designation, search } = req.query;
+  const { siteName, designation, companyName, search } = req.query;
   const filter = {};
   if (siteName) filter.siteName = siteName;
   if (designation) filter.designation = designation;
+  if (companyName) filter.companyName = companyName;
   if (search) {
     const re = new RegExp(search, "i");
-    filter.$or = [{ name: re }, { employeeId: re }, { siteName: re }, { designation: re }];
+    filter.$or = [{ name: re }, { employeeId: re }, { siteName: re }, { designation: re }, { companyName: re }];
   }
   const staff = await MaintenanceStaff.find(filter).sort({ employeeId: 1 });
   res.json(staff);
@@ -40,16 +42,17 @@ exports.meta = async (req, res) => {
     MaintenanceStaff.distinct("siteName"),
     MaintenanceStaff.distinct("designation"),
   ]);
-  res.json({ sites: sites.sort(), designations: designations.sort() });
+  res.json({ sites: sites.sort(), designations: designations.sort(), companies: COMPANY_NAMES });
 };
 
 exports.stats = async (req, res) => {
-  const { siteName, search } = req.query;
+  const { siteName, companyName, search } = req.query;
   const filter = {};
   if (siteName) filter.siteName = siteName;
+  if (companyName) filter.companyName = companyName;
   if (search) {
     const re = new RegExp(search, "i");
-    filter.$or = [{ name: re }, { employeeId: re }, { siteName: re }, { designation: re }];
+    filter.$or = [{ name: re }, { employeeId: re }, { siteName: re }, { designation: re }, { companyName: re }];
   }
 
   const [total, byDesignation] = await Promise.all([
