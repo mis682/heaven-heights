@@ -1,6 +1,7 @@
 const { v2: cloudinary } = require("cloudinary");
 const FireMockDrill = require("../models/FireMockDrill");
 const { fileToUrl } = require("../middleware/upload");
+const { notifyWebhook } = require("../utils/webhook");
 
 const PROJECTS = ["Regal Garden", "Neo Meridian", "Milestone", "OBC", "Eden Garden"];
 const VIDEO_FOLDER = "heaven-heights/fire-mock-drill-videos";
@@ -47,6 +48,24 @@ exports.create = async (req, res) => {
   const checklistAttachments = (req.files?.checklistAttachments || []).map(fileToUrl);
 
   const drill = await FireMockDrill.create({ projectName, date, panelPhoto, videos, reportAttachment, checklistAttachments });
+
+  const messageLines = [`🔥 *Fire Mock Drill* submitted for *${projectName}*`, `📅 Date: ${date}`];
+  if (panelPhoto) messageLines.push("", "Panel Photo:", panelPhoto);
+  checklistAttachments.forEach((url, idx) => messageLines.push(`Checklist Page ${idx + 1}: ${url}`));
+  if (reportAttachment) messageLines.push(`📄 Report: ${reportAttachment}`);
+  videos.forEach((url, idx) => messageLines.push(`🎥 Video ${idx + 1}: ${url}`));
+
+  notifyWebhook({
+    type: "fire_mock_drill",
+    projectName,
+    date,
+    panelPhoto,
+    videoCount: videos.length,
+    reportAttachment,
+    checklistCount: checklistAttachments.length,
+    message: messageLines.join("\n"),
+  });
+
   res.status(201).json(drill);
 };
 
