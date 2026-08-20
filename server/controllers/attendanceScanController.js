@@ -163,8 +163,9 @@ exports.scan = async (req, res) => {
   });
 
   const punchLabel = type === "in" ? "Punch In" : "Punch Out";
+  const shiftLabel = record.shift === "night" ? " 🌙 Night Shift" : record.shift === "day" ? " ☀️ Day Shift" : "";
   const messageLines = [
-    `🕐 *${staff.name}* (${staff.employeeId}) — ${punchLabel} at *${staff.siteName}*`,
+    `🕐 *${staff.name}* (${staff.employeeId}) — ${punchLabel} at *${staff.siteName}*${shiftLabel}`,
     `${new Date(record.timestamp).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}${
       withinGeofence ? " — 📍 On site" : ""
     }${address ? `\n${address}` : ""}`,
@@ -181,6 +182,7 @@ exports.scan = async (req, res) => {
       staffName: staff.name,
       siteName: staff.siteName,
       punchType: type,
+      shift: record.shift,
       timestamp: record.timestamp,
       photoUrl: record.photo,
       message: messageLines.join("\n"),
