@@ -31,7 +31,12 @@ function statusTotals(days) {
 // the matching "out") as long as it's within this many hours — covers night
 // shifts that punch in one evening and out the next morning. Past this, an
 // old unclosed "in" is treated as abandoned and the next scan starts fresh.
-const SHIFT_RESET_HOURS = 18;
+// Non-night staff get a much shorter window: without it, someone who forgets
+// to punch out and scans again the next morning has that scan wrongly
+// absorbed as the previous day's punch-out (merging two separate days into
+// one bogus ~18h+ entry) instead of starting a fresh day.
+const NIGHT_SHIFT_RESET_HOURS = 18;
+const DEFAULT_SHIFT_RESET_HOURS = 12;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const toDateKey = istDateKey;
@@ -58,8 +63,9 @@ const CATCHUP_NOON_HOUR = 12;
 // the day the guard punched IN, not the day they punched out.
 function determineNextPunch(lastRecord, shift) {
   const now = new Date();
+  const resetHours = shift === "night" ? NIGHT_SHIFT_RESET_HOURS : DEFAULT_SHIFT_RESET_HOURS;
   const freshChain =
-    !lastRecord || lastRecord.type === "out" || (now - new Date(lastRecord.timestamp)) / 3600000 > SHIFT_RESET_HOURS;
+    !lastRecord || lastRecord.type === "out" || (now - new Date(lastRecord.timestamp)) / 3600000 > resetHours;
 
   if (freshChain) {
     const hour = istHour(now);
