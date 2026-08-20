@@ -173,17 +173,20 @@ exports.scan = async (req, res) => {
     messageLines.push("", record.photo);
   }
 
-  notifyWebhook({
-    type: "attendance_scan",
-    channel: "attendance-log",
-    employeeId: staff.employeeId,
-    staffName: staff.name,
-    siteName: staff.siteName,
-    punchType: type,
-    timestamp: record.timestamp,
-    photoUrl: record.photo,
-    message: messageLines.join("\n"),
-  });
+  notifyWebhook(
+    {
+      type: "attendance_scan",
+      channel: "attendance-log",
+      employeeId: staff.employeeId,
+      staffName: staff.name,
+      siteName: staff.siteName,
+      punchType: type,
+      timestamp: record.timestamp,
+      photoUrl: record.photo,
+      message: messageLines.join("\n"),
+    },
+    "N8N_ATTENDANCE_WEBHOOK_URL"
+  );
 
   res.status(201).json({
     type,
