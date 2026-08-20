@@ -90,6 +90,14 @@ export default function MaintenanceStaffPage() {
     load();
   };
 
+  // Updates in place instead of reloading the whole list, so HR can quickly
+  // go row by row filling in Company for many staff without the table
+  // jumping/re-fetching after every single selection.
+  const quickSetCompany = async (id, companyName) => {
+    setStaff((prev) => prev.map((s) => (s._id === id ? { ...s, companyName } : s)));
+    await updateMaintenanceStaff(id, { companyName });
+  };
+
   return (
     <div>
       <PageHeader
@@ -154,7 +162,19 @@ export default function MaintenanceStaffPage() {
           { key: "siteName", header: "Site Name" },
           { key: "designation", header: "Designation" },
           { key: "name", header: "Name" },
-          { key: "companyName", header: "Company", render: (r) => r.companyName || <span className="text-gray-300">—</span> },
+          {
+            key: "companyName",
+            header: "Company",
+            render: (r) => (
+              <Select
+                value={r.companyName || ""}
+                onChange={(v) => quickSetCompany(r._id, v)}
+                options={meta.companies}
+                placeholder="Select company"
+                className="input text-xs py-1.5 min-w-[220px]"
+              />
+            ),
+          },
           {
             key: "actions",
             header: "Actions",
