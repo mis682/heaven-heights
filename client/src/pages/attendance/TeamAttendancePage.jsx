@@ -1,7 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { User, FileText, FileSpreadsheet } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
-import { getTeamAttendanceSummary, teamAttendanceExportExcelUrl, teamAttendanceExportPdfUrl } from "../../api/attendanceScan";
+import {
+  getTeamAttendanceSummary,
+  teamAttendanceExportExcelUrl,
+  teamAttendanceExportPdfUrl,
+  setAttendanceOverride,
+  clearAttendanceOverride,
+} from "../../api/attendanceScan";
+import { useAuth } from "../../context/AuthContext";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -22,13 +29,18 @@ function presentPercent(days) {
   return Math.round((presentCount / relevant.length) * 100);
 }
 
+const OVERRIDE_STATUS_OPTIONS = ["P", "A", "HD", "SP"];
+
 export default function TeamAttendancePage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
   const [search, setSearch] = useState("");
   const [data, setData] = useState({ daysInMonth: 30, rows: [] });
   const [loading, setLoading] = useState(true);
+  const [menu, setMenu] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -41,6 +53,32 @@ export default function TeamAttendancePage() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month, year, search]);
+
+  const MENU_WIDTH = 180;
+  const MENU_HEIGHT = 260;
+  const openMenu = (e, row, d) => {
+    if (!isAdmin) return;
+    e.preventDefault();
+    const x = Math.min(e.clientX, window.innerWidth - MENU_WIDTH - 8);
+    const y = Math.min(e.clientY, window.innerHeight - MENU_HEIGHT - 8);
+    setMenu({ x, y, employeeId: row.employeeId, name: row.name, day: d.day, overridden: d.overridden });
+  };
+
+  const dateKeyFor = (day) => `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+  const applyOverride = async (status) => {
+    const { employeeId, day } = menu;
+    setMenu(null);
+    await setAttendanceOverride({ employeeId, date: dateKeyFor(day), status, setBy: user?.name || "" });
+    load();
+  };
+
+  const clearOverride = async () => {
+    const { employeeId, day } = menu;
+    setMenu(null);
+    await clearAttendanceOverride(employeeId, dateKeyFor(day));
+    load();
+  };
 
   const dayHeaders = useMemo(
     () =>
@@ -57,7 +95,11 @@ export default function TeamAttendancePage() {
     <div>
       <PageHeader
         title="Team Attendance"
-        subtitle="Pehla scan Punch In, aakhri scan Punch Out — beech ke scans ignore hote hain."
+        subtitle={
+          isAdmin
+            ? "Pehla scan Punch In, aakhri scan Punch Out — beech ke scans ignore hote hain. Kisi bhi din ke status par right-click karke manually edit kar sakte hain."
+            : "Pehla scan Punch In, aakhri scan Punch Out — beech ke scans ignore hote hain."
+        }
       />
 
       <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -158,12 +200,17 @@ export default function TeamAttendancePage() {
                     <td key={d.day} className="px-1 py-2 text-center">
                       {d.status ? (
                         <span
+                          onContextMenu={(e) => openMenu(e, row, d)}
                           title={
-                            d.totalHours != null
+                            d.overridden
+                              ? `${STATUS_META[d.status].label} — manually set${d.setBy ? ` by ${d.setBy}` : ""}`
+                              : d.totalHours != null
                               ? `${STATUS_META[d.status].label} — ${d.totalHours}h`
                               : STATUS_META[d.status].label
                           }
-                          className={`inline-flex w-6 h-6 rounded-full ${STATUS_META[d.status].className} text-white items-center justify-center text-[10px] font-bold`}
+                          className={`inline-flex w-6 h-6 rounded-full ${STATUS_META[d.status].className} text-white items-center justify-center text-[10px] font-bold ${
+                            isAdmin ? "cursor-context-menu" : ""
+                          } ${d.overridden ? "ring-2 ring-offset-1 ring-gray-400" : ""}`}
                         >
                           {d.status}
                         </span>
@@ -178,6 +225,40 @@ export default function TeamAttendancePage() {
           </tbody>
         </table>
       </div>
+
+      {menu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} onContextMenu={(e) => e.preventDefault()} />
+          <div
+            className="fixed z-50 bg-white rounded-xl border border-gray-200 shadow-lg py-1.5 min-w-[170px]"
+            style={{ top: menu.y, left: menu.x }}
+          >
+            <p className="px-3 py-1.5 text-xs text-subtext border-b border-gray-100 mb-1 truncate">
+              {menu.name} — {menu.day}/{month}/{year}
+            </p>
+            {OVERRIDE_STATUS_OPTIONS.map((s) => (
+              <button
+                key={s}
+                onClick={() => applyOverride(s)}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left hover:bg-gray-50"
+              >
+                <span className={`inline-flex w-5 h-5 rounded-full ${STATUS_META[s].className} text-white items-center justify-center text-[9px] font-bold`}>
+                  {s}
+                </span>
+                {STATUS_META[s].label}
+              </button>
+            ))}
+            {menu.overridden && (
+              <>
+                <div className="border-t border-gray-100 mt-1" />
+                <button onClick={clearOverride} className="w-full px-3 py-1.5 text-sm text-left text-gray-500 hover:bg-gray-50 mt-1">
+                  Clear override (auto se calculate hone dein)
+                </button>
+              </>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

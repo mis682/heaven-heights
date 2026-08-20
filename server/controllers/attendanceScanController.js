@@ -2,6 +2,7 @@ const ExcelJS = require("exceljs");
 const MaintenanceStaff = require("../models/MaintenanceStaff");
 const SiteLocation = require("../models/SiteLocation");
 const AttendanceScan = require("../models/AttendanceScan");
+const AttendanceOverride = require("../models/AttendanceOverride");
 const { fileToUrl } = require("../middleware/upload");
 const { haversineMeters } = require("../utils/geo");
 const { buildTeamAttendancePdf } = require("../utils/teamAttendancePdf");
@@ -231,6 +232,11 @@ async function computeMonthSummary({ month, year, search }) {
     byStaffDay.get(key).push(s);
   });
 
+  // HR corrections take precedence over whatever the raw scans compute —
+  // the scans themselves aren't touched, just the displayed/exported status.
+  const overrides = await AttendanceOverride.find({ date: { $regex: `^${monthPrefix}` } });
+  const overrideByStaffDay = new Map(overrides.map((o) => [`${o.employeeId}__${o.date}`, o]));
+
   const today = new Date();
   const isCurrentMonth = today.getFullYear() === y && today.getMonth() + 1 === m;
   const lastRelevantDay = isCurrentMonth ? today.getDate() : daysInMonth;
@@ -243,11 +249,12 @@ async function computeMonthSummary({ month, year, search }) {
         continue;
       }
       const dayScans = byStaffDay.get(`${staff.employeeId}__${day}`) || [];
+      let dayResult;
       if (dayScans.length === 0) {
-        days.push({ day, status: "A", totalHours: 0 });
+        dayResult = { day, status: "A", totalHours: 0 };
       } else if (dayScans.length === 1) {
         const t = dayScans[0].timestamp;
-        days.push({ day, status: "SP", punchIn: t, punchOut: t, totalHours: 0 });
+        dayResult = { day, status: "SP", punchIn: t, punchOut: t, totalHours: 0 };
       } else {
         const punchIn = dayScans[0].timestamp;
         const punchOut = dayScans[dayScans.length - 1].timestamp;
@@ -256,8 +263,14 @@ async function computeMonthSummary({ month, year, search }) {
         if (hours < 5) status = "A";
         else if (hours <= 5.5) status = "HD";
         else status = "P";
-        days.push({ day, status, punchIn, punchOut, totalHours: Math.round(hours * 100) / 100 });
+        dayResult = { day, status, punchIn, punchOut, totalHours: Math.round(hours * 100) / 100 };
       }
+      const dateKey = `${monthPrefix}-${String(day).padStart(2, "0")}`;
+      const override = overrideByStaffDay.get(`${staff.employeeId}__${dateKey}`);
+      if (override) {
+        dayResult = { ...dayResult, status: override.status, overridden: true, setBy: override.setBy };
+      }
+      days.push(dayResult);
     }
     return {
       employeeId: staff.employeeId,
@@ -276,6 +289,28 @@ async function computeMonthSummary({ month, year, search }) {
 exports.monthSummary = async (req, res) => {
   const summary = await computeMonthSummary(req.query);
   res.json(summary);
+};
+
+exports.setAttendanceOverride = async (req, res) => {
+  const { employeeId, date, status, setBy } = req.body;
+  if (!employeeId || !date || !status) {
+    return res.status(400).json({ message: "employeeId, date and status are required" });
+  }
+  const override = await AttendanceOverride.findOneAndUpdate(
+    { employeeId, date },
+    { status, setBy: setBy || "" },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  res.json(override);
+};
+
+exports.clearAttendanceOverride = async (req, res) => {
+  const { employeeId, date } = req.query;
+  if (!employeeId || !date) {
+    return res.status(400).json({ message: "employeeId and date are required" });
+  }
+  await AttendanceOverride.deleteOne({ employeeId, date });
+  res.json({ message: "Override cleared" });
 };
 
 exports.exportTeamAttendanceExcel = async (req, res) => {

@@ -18,6 +18,11 @@ export const deleteAttendanceScanRecord = (id) => api.delete(`/attendance-scan/$
 export const getTeamAttendanceSummary = (params = {}) =>
   api.get("/attendance-scan/team-summary", { params }).then((r) => r.data);
 
+export const setAttendanceOverride = (data) => api.post("/attendance-scan/override", data).then((r) => r.data);
+
+export const clearAttendanceOverride = (employeeId, date) =>
+  api.delete("/attendance-scan/override", { params: { employeeId, date } }).then((r) => r.data);
+
 function toQueryString(params) {
   const qs = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
