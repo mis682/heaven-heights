@@ -55,16 +55,19 @@ exports.create = async (req, res) => {
   if (reportAttachment) messageLines.push(`📄 Report: ${reportAttachment}`);
   videos.forEach((url, idx) => messageLines.push(`🎥 Video ${idx + 1}: ${url}`));
 
-  notifyWebhook({
-    type: "fire_mock_drill",
-    projectName,
-    date,
-    panelPhoto,
-    videoCount: videos.length,
-    reportAttachment,
-    checklistCount: checklistAttachments.length,
-    message: messageLines.join("\n"),
-  });
+  notifyWebhook(
+    {
+      type: "fire_mock_drill",
+      projectName,
+      date,
+      panelPhoto,
+      videoCount: videos.length,
+      reportAttachment,
+      checklistCount: checklistAttachments.length,
+      message: messageLines.join("\n"),
+    },
+    "N8N_FIRE_MOCK_DRILL_WEBHOOK_URL"
+  );
 
   res.status(201).json(drill);
 };
