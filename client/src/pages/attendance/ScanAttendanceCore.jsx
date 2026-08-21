@@ -10,6 +10,18 @@ function isSecurityGuard(designation) {
   return (designation || "").toLowerCase().replace(/\s+/g, "") === "securityguard";
 }
 
+const OFFLINE_MESSAGE = "Internet connection nahi hai — check karke phir try karein";
+
+// A request that never reached the server (no err.response) almost always
+// means the device has no connectivity, not that anything about the
+// request itself was wrong — showing the generic per-action failure
+// message in that case is misleading, since the guard's real problem is
+// their internet, not the QR code/photo/whatever they just did.
+function friendlyError(err, fallback) {
+  if (!navigator.onLine || !err?.response) return OFFLINE_MESSAGE;
+  return err.response?.data?.message || fallback;
+}
+
 // Holds all the scan/capture/submit logic and UI, with no page chrome of its
 // own — used both inside the admin dashboard (ScanAttendancePage) and on the
 // public, no-login link guards can be given directly (PublicScanAttendancePage).
@@ -26,6 +38,16 @@ export default function ScanAttendanceCore() {
 
   useEffect(() => {
     if (phase !== "scanning") return;
+
+    // No point starting the camera if there's no connectivity — the lookup
+    // right after a successful scan would fail anyway, and starting the
+    // camera regardless just leads to the confusing "camera access denied"
+    // message this is meant to replace.
+    if (!navigator.onLine) {
+      setError(OFFLINE_MESSAGE);
+      setPhase("error");
+      return;
+    }
 
     handledRef.current = false;
     const scanner = new Html5Qrcode(SCANNER_ID);
@@ -66,7 +88,7 @@ export default function ScanAttendanceCore() {
             setPhase("identified");
           } catch (err) {
             if (cancelled) return;
-            setError(err.response?.data?.message || "Staff nahi mila is QR code se");
+            setError(friendlyError(err, "Staff nahi mila is QR code se"));
             setPhase("error");
           }
         },
@@ -77,7 +99,7 @@ export default function ScanAttendanceCore() {
       })
       .catch(() => {
         if (!cancelled) {
-          setError("Camera access nahi mila — permission allow karein");
+          setError(navigator.onLine ? "Camera access nahi mila — permission allow karein" : OFFLINE_MESSAGE);
           setPhase("error");
         }
       });
@@ -118,7 +140,7 @@ export default function ScanAttendanceCore() {
       setResult(res);
       setPhase("done");
     } catch (err) {
-      setError(err.response?.data?.message || "Attendance capture nahi ho payi");
+      setError(friendlyError(err, "Attendance capture nahi ho payi"));
       setPhase("error");
     }
   };
