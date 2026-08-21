@@ -3,6 +3,7 @@ const FireMockDrill = require("../models/FireMockDrill");
 const { fileToUrl } = require("../middleware/upload");
 const { notifyWebhook } = require("../utils/webhook");
 const { sendAlertEmail } = require("../utils/mailer");
+const { sendTelegramMessage } = require("../utils/telegram");
 
 const PROJECTS = ["Regal Garden", "Neo Meridian", "Milestone", "OBC", "Eden Garden"];
 const VIDEO_FOLDER = "heaven-heights/fire-mock-drill-videos";
@@ -87,6 +88,19 @@ exports.create = async (req, res) => {
     subject: `Fire Mock Drill submitted — ${projectName} (${date})`,
     text: messageLines.join("\n"),
     html: htmlParts.join("\n"),
+  });
+
+  // Plain text, no *bold* markers — Telegram's Markdown parser fails the
+  // whole send on any unescaped special character, which the raw URLs
+  // below routinely contain.
+  const telegramLines = [`Fire Mock Drill submitted for ${projectName}`, `Date: ${date}`];
+  checklistAttachments.forEach((url, idx) => telegramLines.push(`Checklist Page ${idx + 1}: ${url}`));
+  if (reportAttachment) telegramLines.push(`Report: ${reportAttachment}`);
+  videos.forEach((url, idx) => telegramLines.push(`Video ${idx + 1}: ${url}`));
+
+  sendTelegramMessage({
+    text: telegramLines.join("\n"),
+    photoUrl: panelPhoto,
   });
 
   res.status(201).json(drill);
