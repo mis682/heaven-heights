@@ -19,7 +19,9 @@ const siteLocationRoutes = require("./routes/siteLocations");
 const attendanceScanRoutes = require("./routes/attendanceScan");
 const fireMockDrillRoutes = require("./routes/fireMockDrill");
 const gardenCityPatrolReportRoutes = require("./routes/gardenCityPatrolReport");
+const mediaRoutes = require("./routes/media");
 const { checkCloudinaryUsageAndAlert } = require("./utils/cloudinaryUsageAlert");
+const { archiveOldMedia } = require("./utils/archiveOldMedia");
 
 const app = express();
 
@@ -40,6 +42,7 @@ app.use("/api/site-locations", siteLocationRoutes);
 app.use("/api/attendance-scan", attendanceScanRoutes);
 app.use("/api/fire-mock-drill", fireMockDrillRoutes);
 app.use("/api/garden-city-patrol-report", gardenCityPatrolReportRoutes);
+app.use("/api/media", mediaRoutes);
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
@@ -57,6 +60,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 const CLOUDINARY_CHECK_INTERVAL_MS = 12 * 60 * 60 * 1000;
+const ARCHIVE_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 connectDB()
   .then(() => {
@@ -65,6 +69,11 @@ connectDB()
     setInterval(() => {
       checkCloudinaryUsageAndAlert().catch((err) => console.error("[cloudinary-usage-alert] failed", err));
     }, CLOUDINARY_CHECK_INTERVAL_MS);
+
+    archiveOldMedia().catch((err) => console.error("[archive] failed", err));
+    setInterval(() => {
+      archiveOldMedia().catch((err) => console.error("[archive] failed", err));
+    }, ARCHIVE_INTERVAL_MS);
   })
   .catch((err) => {
     console.error("[server] failed to connect to MongoDB", err);
