@@ -2,6 +2,7 @@ const { v2: cloudinary } = require("cloudinary");
 const FireMockDrill = require("../models/FireMockDrill");
 const { fileToUrl } = require("../middleware/upload");
 const { notifyWebhook } = require("../utils/webhook");
+const { sendAlertEmail } = require("../utils/mailer");
 
 const PROJECTS = ["Regal Garden", "Neo Meridian", "Milestone", "OBC", "Eden Garden"];
 const VIDEO_FOLDER = "heaven-heights/fire-mock-drill-videos";
@@ -68,6 +69,25 @@ exports.create = async (req, res) => {
     },
     "N8N_FIRE_MOCK_DRILL_WEBHOOK_URL"
   );
+
+  const htmlParts = [
+    `<p><b>Fire Mock Drill</b> submitted for <b>${projectName}</b></p>`,
+    `<p>Date: ${date}</p>`,
+  ];
+  if (panelPhoto) htmlParts.push(`<p>Panel Photo:<br/><img src="${panelPhoto}" alt="Panel photo" style="max-width:480px" /></p>`);
+  checklistAttachments.forEach((url, idx) => {
+    htmlParts.push(`<p>Checklist Page ${idx + 1}:<br/><a href="${url}">${url}</a></p>`);
+  });
+  if (reportAttachment) htmlParts.push(`<p>Report: <a href="${reportAttachment}">${reportAttachment}</a></p>`);
+  videos.forEach((url, idx) => {
+    htmlParts.push(`<p>Video ${idx + 1}: <a href="${url}">${url}</a></p>`);
+  });
+
+  sendAlertEmail({
+    subject: `Fire Mock Drill submitted — ${projectName} (${date})`,
+    text: messageLines.join("\n"),
+    html: htmlParts.join("\n"),
+  });
 
   res.status(201).json(drill);
 };
