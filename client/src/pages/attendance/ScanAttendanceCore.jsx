@@ -47,7 +47,12 @@ export default function ScanAttendanceCore() {
 
     scanner
       .start(
-        { facingMode: "environment" },
+        // Capped resolution — QR detection doesn't need a high-res stream,
+        // but without a cap the browser defaults to the camera's max
+        // resolution, which crashes low-RAM Android phones ("Unable to
+        // complete previous operation due to low memory") once the
+        // continuous per-frame scanning kicks in.
+        { facingMode: "environment", width: { ideal: 640, max: 1280 }, height: { ideal: 480, max: 720 } },
         { fps: 10, qrbox: 220 },
         async (decodedText) => {
           if (cancelled || handledRef.current) return;
