@@ -46,17 +46,6 @@ app.use("/api/media", mediaRoutes);
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
-// TEMPORARY — verifies the Google Drive archival setup works end-to-end
-// from Render, then gets removed once confirmed.
-app.get("/api/health/run-archive", async (req, res) => {
-  try {
-    await archiveOldMedia();
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ ok: false, reason: err.message });
-  }
-});
-
 const clientDist = path.join(__dirname, "..", "client", "dist");
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
