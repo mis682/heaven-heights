@@ -22,6 +22,7 @@ const gardenCityPatrolReportRoutes = require("./routes/gardenCityPatrolReport");
 const mediaRoutes = require("./routes/media");
 const { checkCloudinaryUsageAndAlert } = require("./utils/cloudinaryUsageAlert");
 const { archiveOldMedia } = require("./utils/archiveOldMedia");
+const { runDailyBackup } = require("./utils/dailyBackup");
 
 const app = express();
 
@@ -61,6 +62,7 @@ const PORT = process.env.PORT || 5000;
 
 const CLOUDINARY_CHECK_INTERVAL_MS = 12 * 60 * 60 * 1000;
 const ARCHIVE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const BACKUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 connectDB()
   .then(() => {
@@ -74,6 +76,11 @@ connectDB()
     setInterval(() => {
       archiveOldMedia().catch((err) => console.error("[archive] failed", err));
     }, ARCHIVE_INTERVAL_MS);
+
+    runDailyBackup().catch((err) => console.error("[daily-backup] failed", err));
+    setInterval(() => {
+      runDailyBackup().catch((err) => console.error("[daily-backup] failed", err));
+    }, BACKUP_INTERVAL_MS);
   })
   .catch((err) => {
     console.error("[server] failed to connect to MongoDB", err);

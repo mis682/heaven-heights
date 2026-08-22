@@ -7,7 +7,7 @@ const RESEND_API_URL = "https://api.resend.com/emails";
 // Best-effort — a missing/broken mail config should never crash whatever
 // triggered the alert, it should just skip sending (same fire-and-forget
 // philosophy as the Slack/n8n webhook).
-async function sendAlertEmail({ subject, html, text }) {
+async function sendAlertEmail({ subject, html, text, attachments }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return;
   try {
@@ -23,6 +23,8 @@ async function sendAlertEmail({ subject, html, text }) {
         subject,
         text,
         html,
+        // Resend expects each attachment's content as a base64 string.
+        attachments: attachments?.map((a) => ({ filename: a.filename, content: a.content.toString("base64") })),
       }),
     });
   } catch {

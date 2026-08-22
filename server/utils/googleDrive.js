@@ -44,10 +44,10 @@ function isConfigured() {
 // Uploads a buffer to the configured Drive folder and returns a URL served
 // by this app's own proxy route (see routes/media.js) — works as a normal
 // <img src> or link either way, no public Drive sharing needed.
-async function uploadToDrive({ buffer, filename, mimeType }) {
+async function uploadToDrive({ buffer, filename, mimeType, folderId }) {
   const accessToken = await getAccessToken();
-  const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-  const metadata = { name: filename, parents: folderId ? [folderId] : undefined };
+  const targetFolderId = folderId || process.env.GOOGLE_DRIVE_FOLDER_ID;
+  const metadata = { name: filename, parents: targetFolderId ? [targetFolderId] : undefined };
 
   const boundary = "hh_archive_boundary";
   const body = Buffer.concat([
