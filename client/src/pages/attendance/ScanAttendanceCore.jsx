@@ -69,16 +69,28 @@ export default function ScanAttendanceCore() {
 
     scanner
       .start(
-        // Capped resolution — QR detection doesn't need a high-res stream,
-        // but without a cap the browser defaults to the camera's max
-        // resolution, which crashes low-RAM Android phones ("Unable to
-        // complete previous operation due to low memory") once the
-        // continuous per-frame scanning kicks in. `ideal` only (no `max`) —
-        // `max` is a hard constraint and throws OverconstrainedError on
-        // devices whose back camera can't hit that exact range, killing the
-        // scan before the permission prompt even shows.
-        { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } },
-        { fps: 10, qrbox: 220 },
+        // cameraIdOrConfig must have exactly one key (it's a camera
+        // *selector*, not a place for video constraints) — passing
+        // width/height here throws "object should have exactly 1 key".
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: 220,
+          // Capped resolution via videoConstraints (the library's actual
+          // extension point for this) — QR detection doesn't need a
+          // high-res stream, but without a cap the browser defaults to the
+          // camera's max resolution, which crashes low-RAM Android phones
+          // ("Unable to complete previous operation due to low memory")
+          // once continuous per-frame scanning kicks in. `ideal` only (no
+          // `max`, which is a hard constraint and can throw
+          // OverconstrainedError on devices whose camera can't hit that
+          // exact range).
+          videoConstraints: {
+            facingMode: "environment",
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          },
+        },
         async (decodedText) => {
           if (cancelled || handledRef.current) return;
           handledRef.current = true;
