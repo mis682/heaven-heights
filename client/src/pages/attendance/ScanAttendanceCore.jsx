@@ -73,8 +73,11 @@ export default function ScanAttendanceCore() {
         // but without a cap the browser defaults to the camera's max
         // resolution, which crashes low-RAM Android phones ("Unable to
         // complete previous operation due to low memory") once the
-        // continuous per-frame scanning kicks in.
-        { facingMode: "environment", width: { ideal: 640, max: 1280 }, height: { ideal: 480, max: 720 } },
+        // continuous per-frame scanning kicks in. `ideal` only (no `max`) —
+        // `max` is a hard constraint and throws OverconstrainedError on
+        // devices whose back camera can't hit that exact range, killing the
+        // scan before the permission prompt even shows.
+        { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } },
         { fps: 10, qrbox: 220 },
         async (decodedText) => {
           if (cancelled || handledRef.current) return;
