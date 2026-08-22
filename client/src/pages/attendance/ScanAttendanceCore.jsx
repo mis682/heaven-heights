@@ -100,9 +100,17 @@ export default function ScanAttendanceCore() {
       .then(() => {
         started = true;
       })
-      .catch(() => {
+      .catch((err) => {
         if (!cancelled) {
-          setError(navigator.onLine ? "Camera access nahi mila — permission allow karein" : OFFLINE_MESSAGE);
+          // Temporary: surface the raw browser error (e.g. NotAllowedError,
+          // OverconstrainedError, NotReadableError) instead of a generic
+          // message, to pin down why camera start is failing on-site.
+          const detail = err?.name || err?.message || String(err);
+          setError(
+            navigator.onLine
+              ? `Camera access nahi mila — permission allow karein (${detail})`
+              : OFFLINE_MESSAGE
+          );
           setPhase("error");
         }
       });
