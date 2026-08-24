@@ -1,6 +1,8 @@
 const zlib = require("zlib");
 const { uploadToDrive, isConfigured: isDriveConfigured } = require("./googleDrive");
 const { sendAlertEmail } = require("./mailer");
+const { istDateKey } = require("./istDateRange");
+const BackupState = require("../models/BackupState");
 
 const Employee = require("../models/Employee");
 const Guard = require("../models/Guard");
@@ -58,8 +60,20 @@ async function buildBackup() {
 }
 
 async function runDailyBackup() {
+  // Runs once at every server startup as a safety net (see server.js), so a
+  // Render redeploy — which restarts the process — must not re-send the
+  // same day's backup email. Only proceed if today's backup hasn't gone
+  // out yet.
+  const todayKey = istDateKey(new Date());
+  let state = await BackupState.findOne();
+  if (!state) state = await BackupState.create({});
+  if (state.lastBackupDate === todayKey) {
+    console.log(`[daily-backup] already sent for ${todayKey}, skipping`);
+    return;
+  }
+
   const backup = await buildBackup();
-  const dateKey = backup.generatedAt.slice(0, 10);
+  const dateKey = todayKey;
   const json = JSON.stringify(backup);
   const gzipped = zlib.gzipSync(json);
   const filename = `heaven-heights-backup-${dateKey}.json.gz`;
@@ -103,6 +117,9 @@ async function runDailyBackup() {
         : "<p>Backup too large to attach — see the Drive copy above.</p>"),
     attachments: canAttach ? [{ filename, content: gzipped }] : undefined,
   });
+
+  state.lastBackupDate = todayKey;
+  await state.save();
 
   console.log(`[daily-backup] ${dateKey}: ${totalRecords} records, drive=${Boolean(driveUrl)}, emailed=true`);
 }
