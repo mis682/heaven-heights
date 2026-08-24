@@ -18,6 +18,7 @@ const maintenanceStaffRoutes = require("./routes/maintenanceStaff");
 const siteLocationRoutes = require("./routes/siteLocations");
 const attendanceScanRoutes = require("./routes/attendanceScan");
 const fireMockDrillRoutes = require("./routes/fireMockDrill");
+const gcHousekeepingRoutes = require("./routes/gcHousekeeping");
 const gardenCityPatrolReportRoutes = require("./routes/gardenCityPatrolReport");
 const mediaRoutes = require("./routes/media");
 const { checkCloudinaryUsageAndAlert } = require("./utils/cloudinaryUsageAlert");
@@ -42,6 +43,7 @@ app.use("/api/maintenance-staff", maintenanceStaffRoutes);
 app.use("/api/site-locations", siteLocationRoutes);
 app.use("/api/attendance-scan", attendanceScanRoutes);
 app.use("/api/fire-mock-drill", fireMockDrillRoutes);
+app.use("/api/gc-housekeeping", gcHousekeepingRoutes);
 app.use("/api/garden-city-patrol-report", gardenCityPatrolReportRoutes);
 app.use("/api/media", mediaRoutes);
 

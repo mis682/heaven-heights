@@ -7,6 +7,8 @@ import Home from "./pages/Home";
 import ComingSoon from "./pages/ComingSoon";
 
 import HousekeepingPage from "./pages/housekeeping/HousekeepingPage";
+import GCHousekeepingPublicForm from "./pages/housekeeping/GCHousekeepingPublicForm";
+import GCHousekeepingSubmissionsPage from "./pages/housekeeping/GCHousekeepingSubmissionsPage";
 
 import PatrolPublicForm from "./pages/security/patrol/PatrolPublicForm";
 import PatrolSitePage from "./pages/security/patrol/PatrolSitePage";
@@ -44,6 +46,7 @@ export default function App() {
       <Route path="/fire-mock-drill-form" element={<FireMockDrillPublicForm />} />
       <Route path="/scan-attendance-form" element={<PublicScanAttendancePage />} />
       <Route path="/site-location-form" element={<PublicSiteLocationsPage />} />
+      <Route path="/gc-housekeeping-form/:formNumber" element={<GCHousekeepingPublicForm />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -61,6 +64,30 @@ export default function App() {
           element={
             <RequireAuth roles={ADMIN_ONLY_ROLES}>
               <HousekeepingPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/garden-city/submissions"
+          element={
+            <RequireAuth roles={DAILY_REPORT_ROLES}>
+              <GCHousekeepingSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/garden-city/daily-report"
+          element={
+            <RequireAuth roles={DAILY_REPORT_ROLES}>
+              <ComingSoon title="Garden City Housekeeping — Daily Report" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/garden-city/admin-report"
+          element={
+            <RequireAuth roles={DAILY_REPORT_ROLES}>
+              <ComingSoon title="Garden City Housekeeping — Admin Report" />
             </RequireAuth>
           }
         />
