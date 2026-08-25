@@ -19,6 +19,13 @@ const STATUS_STYLES = {
   "wrong image": "bg-amber-100 text-amber-700",
   draft: "bg-gray-100 text-gray-600",
   submitted: "bg-green-100 text-green-700",
+  Cleaned: "bg-green-100 text-green-700",
+  "Not Cleaned": "bg-red-100 text-red-700",
+  "Blur Image": "bg-amber-100 text-amber-700",
+  "Timestamp Missing": "bg-amber-100 text-amber-700",
+  "Form not filled": "bg-amber-100 text-amber-700",
+  "Image missing": "bg-amber-100 text-amber-700",
+  Underconstraction: "bg-teal-100 text-teal-700",
 };
 
 export default function StatusPill({ status }) {

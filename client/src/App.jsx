@@ -8,6 +8,8 @@ import ComingSoon from "./pages/ComingSoon";
 
 import GCHousekeepingPublicForm from "./pages/housekeeping/GCHousekeepingPublicForm";
 import GCHousekeepingSubmissionsPage from "./pages/housekeeping/GCHousekeepingSubmissionsPage";
+import GCHousekeepingDailyReportPage from "./pages/housekeeping/GCHousekeepingDailyReportPage";
+import GCHousekeepingAdminReportPage from "./pages/housekeeping/GCHousekeepingAdminReportPage";
 
 import PatrolPublicForm from "./pages/security/patrol/PatrolPublicForm";
 import PatrolSitePage from "./pages/security/patrol/PatrolSitePage";
@@ -71,7 +73,7 @@ export default function App() {
           path="/housekeeping/garden-city/daily-report"
           element={
             <RequireAuth roles={DAILY_REPORT_ROLES}>
-              <ComingSoon title="Garden City Housekeeping — Daily Report" />
+              <GCHousekeepingDailyReportPage />
             </RequireAuth>
           }
         />
@@ -79,7 +81,7 @@ export default function App() {
           path="/housekeeping/garden-city/admin-report"
           element={
             <RequireAuth roles={DAILY_REPORT_ROLES}>
-              <ComingSoon title="Garden City Housekeeping — Admin Report" />
+              <GCHousekeepingAdminReportPage />
             </RequireAuth>
           }
         />
