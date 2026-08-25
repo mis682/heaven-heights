@@ -78,7 +78,11 @@ function stampImage(file, geo, timestamp) {
   });
 }
 
-export default function CameraCapture({ label, onCapture, disabled, initialCapture }) {
+// allowGallery defaults to false so every existing caller (Security's
+// Patrol/Night Guard forms, Attendance scan) keeps forcing the camera
+// directly, unchanged — only a caller that explicitly opts in gets the
+// OS's normal picker (camera + gallery) instead.
+export default function CameraCapture({ label, onCapture, disabled, initialCapture, allowGallery }) {
   const inputRef = useRef(null);
   const [status, setStatus] = useState(initialCapture ? "done" : "idle"); // idle | processing | done
   const [preview, setPreview] = useState(initialCapture?.preview || null);
@@ -124,7 +128,7 @@ export default function CameraCapture({ label, onCapture, disabled, initialCaptu
         ref={inputRef}
         type="file"
         accept="image/*"
-        capture="environment"
+        {...(allowGallery ? {} : { capture: "environment" })}
         onChange={handleChange}
         className="hidden"
         disabled={disabled}

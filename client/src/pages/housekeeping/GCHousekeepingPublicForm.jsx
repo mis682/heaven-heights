@@ -131,6 +131,7 @@ export default function GCHousekeepingPublicForm() {
                 label={`Checkpoint ${id}`}
                 initialCapture={captures[id]}
                 onCapture={(cap) => setCaptures((prev) => ({ ...prev, [id]: cap }))}
+                allowGallery
               />
             ))}
           </div>
