@@ -94,7 +94,9 @@ exports.finalizeSubmission = async (req, res) => {
 
 exports.listSubmissions = async (req, res) => {
   const { formNumber, dateFrom, dateTo } = req.query;
-  const filter = { status: "submitted" };
+  // $ne (not $eq) so submissions created before the status field existed —
+  // which have no status at all, not "in_progress" — still show up here.
+  const filter = { status: { $ne: "in_progress" } };
   if (formNumber) filter.formNumber = Number(formNumber);
   const dateFilter = buildIstDateRangeFilter(dateFrom, dateTo);
   if (dateFilter) filter.submittedAt = dateFilter;
