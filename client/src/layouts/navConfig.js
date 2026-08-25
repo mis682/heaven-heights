@@ -49,17 +49,11 @@ export const NAV_SECTIONS = [
     items: [
       {
         label: "Housekeeping",
+        roles: DAILY_REPORT_ROLES,
         children: [
-          { label: "Tasks", path: "/housekeeping", roles: ADMIN_ONLY_ROLES },
-          {
-            label: "Garden City",
-            roles: DAILY_REPORT_ROLES,
-            children: [
-              { label: "Submissions", path: "/housekeeping/garden-city/submissions" },
-              { label: "Daily Report", path: "/housekeeping/garden-city/daily-report" },
-              { label: "Admin Report View", path: "/housekeeping/garden-city/admin-report" },
-            ],
-          },
+          { label: "Submissions", path: "/housekeeping/garden-city/submissions" },
+          { label: "Daily Report", path: "/housekeeping/garden-city/daily-report" },
+          { label: "Admin Report View", path: "/housekeeping/garden-city/admin-report" },
         ],
       },
       {

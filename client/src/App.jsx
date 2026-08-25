@@ -6,7 +6,6 @@ import Login from "./pages/Login";
 import Home from "./pages/Home";
 import ComingSoon from "./pages/ComingSoon";
 
-import HousekeepingPage from "./pages/housekeeping/HousekeepingPage";
 import GCHousekeepingPublicForm from "./pages/housekeeping/GCHousekeepingPublicForm";
 import GCHousekeepingSubmissionsPage from "./pages/housekeeping/GCHousekeepingSubmissionsPage";
 
@@ -60,14 +59,6 @@ export default function App() {
       >
         <Route path="/" element={<Home />} />
 
-        <Route
-          path="/housekeeping"
-          element={
-            <RequireAuth roles={ADMIN_ONLY_ROLES}>
-              <HousekeepingPage />
-            </RequireAuth>
-          }
-        />
         <Route
           path="/housekeeping/garden-city/submissions"
           element={

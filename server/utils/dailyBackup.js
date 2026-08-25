@@ -10,7 +10,6 @@ const Project = require("../models/Project");
 const Checkpoint = require("../models/Checkpoint");
 const PatrolSubmission = require("../models/PatrolSubmission");
 const NightGuardSubmission = require("../models/NightGuardSubmission");
-const HousekeepingTask = require("../models/HousekeepingTask");
 const Attendance = require("../models/Attendance");
 const SiteLocation = require("../models/SiteLocation");
 const AttendanceScan = require("../models/AttendanceScan");
@@ -31,7 +30,6 @@ const COLLECTIONS = {
   checkpoints: Checkpoint,
   patrolSubmissions: PatrolSubmission,
   nightGuardSubmissions: NightGuardSubmission,
-  housekeepingTasks: HousekeepingTask,
   attendance: Attendance,
   siteLocations: SiteLocation,
   attendanceScans: AttendanceScan,
