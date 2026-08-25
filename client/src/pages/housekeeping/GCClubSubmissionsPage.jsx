@@ -120,6 +120,16 @@ export default function GCClubSubmissionsPage() {
 
       {viewing && (
         <Modal title={`${viewing.submittedBy} — ${formLabel(viewing.formNumber)}`} onClose={() => setViewing(null)} wide>
+          {viewing.textAnswers?.length > 0 && (
+            <div className="mb-4 space-y-1.5">
+              {viewing.textAnswers.map((t, idx) => (
+                <div key={idx} className="flex items-center justify-between text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                  <span className="font-medium text-heading">{t.label}</span>
+                  <span className="text-gray-600">{t.value || <span className="text-gray-300">—</span>}</span>
+                </div>
+              ))}
+            </div>
+          )}
           {viewing.photos.length === 0 ? (
             <p className="text-sm text-subtext text-center py-6">No checkpoint photos were submitted.</p>
           ) : (

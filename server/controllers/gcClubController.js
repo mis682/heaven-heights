@@ -17,6 +17,13 @@ exports.createSubmission = async (req, res) => {
     return res.status(400).json({ message: "Invalid meta payload" });
   }
 
+  let textAnswers = [];
+  try {
+    textAnswers = req.body.textAnswers ? JSON.parse(req.body.textAnswers) : [];
+  } catch {
+    return res.status(400).json({ message: "Invalid textAnswers payload" });
+  }
+
   const files = req.files || [];
   const photos = files.map((file, idx) => {
     const info = meta[idx] || {};
@@ -32,12 +39,14 @@ exports.createSubmission = async (req, res) => {
     formNumber: form.formNumber,
     submittedBy,
     photos,
+    textAnswers,
   });
 
   const messageLines = [
     `🏋️ *${submittedBy}* submitted *${form.label}* (Garden City Club) — ${photos.length} checkpoints`,
     "",
     ...photos.map((p) => `${p.checkpointLabel}: ${p.photoUrl}`),
+    ...textAnswers.map((t) => `${t.label}: ${t.value}`),
   ];
 
   notifyWebhook({

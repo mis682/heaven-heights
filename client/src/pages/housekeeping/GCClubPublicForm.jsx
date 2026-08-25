@@ -13,6 +13,7 @@ export default function GCClubPublicForm() {
   const [draftChecked, setDraftChecked] = useState(false);
   const [submittedBy, setSubmittedBy] = useState("");
   const [captures, setCaptures] = useState({});
+  const [textAnswers, setTextAnswers] = useState({});
   const [restoredNotice, setRestoredNotice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -21,9 +22,10 @@ export default function GCClubPublicForm() {
   useEffect(() => {
     if (!form) return;
     const draft = loadDraft(form.formNumber);
-    if (draft && Object.keys(draft.captures).length > 0) {
+    if (draft && (Object.keys(draft.captures).length > 0 || Object.keys(draft.textAnswers || {}).length > 0)) {
       setSubmittedBy(draft.submittedBy);
       setCaptures(draft.captures);
+      setTextAnswers(draft.textAnswers || {});
       setRestoredNotice(true);
     }
     setDraftChecked(true);
@@ -32,10 +34,10 @@ export default function GCClubPublicForm() {
 
   useEffect(() => {
     if (!form) return;
-    if (Object.keys(captures).length > 0) {
-      saveDraft(form.formNumber, submittedBy, captures);
+    if (Object.keys(captures).length > 0 || Object.keys(textAnswers).length > 0) {
+      saveDraft(form.formNumber, submittedBy, captures, textAnswers);
     }
-  }, [captures, submittedBy, form]);
+  }, [captures, textAnswers, submittedBy, form]);
 
   if (!form) {
     return <CenteredMessage title="Form not found" message="This Garden City Club form link is invalid." />;
@@ -49,14 +51,19 @@ export default function GCClubPublicForm() {
     return (
       <CenteredMessage
         title="Submitted"
-        message="Checkpoint photos have been recorded. Thank you."
+        message="Checklist has been recorded. Thank you."
         icon={<CheckCircle2 size={28} className="text-green-600" />}
       />
     );
   }
 
-  const missingCount = form.checkpoints.filter((label) => !captures[label]).length;
-  const allCaptured = missingCount === 0;
+  const photoCheckpoints = form.checkpoints.filter((c) => c.type !== "text");
+  const textCheckpoints = form.checkpoints.filter((c) => c.type === "text");
+
+  const missingPhotos = photoCheckpoints.filter((c) => !captures[c.label]).length;
+  const missingText = textCheckpoints.filter((c) => !(textAnswers[c.label] || "").trim()).length;
+  const missingCount = missingPhotos + missingText;
+  const allDone = missingCount === 0;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -72,6 +79,10 @@ export default function GCClubPublicForm() {
       meta.push({ checkpointLabel, capturedAt: cap.capturedAt, geoLocation: cap.geoLocation });
     });
     body.append("meta", JSON.stringify(meta));
+    body.append(
+      "textAnswers",
+      JSON.stringify(textCheckpoints.map((c) => ({ label: c.label, value: textAnswers[c.label] || "" })))
+    );
 
     try {
       await createGCClubSubmission(body);
@@ -93,7 +104,7 @@ export default function GCClubPublicForm() {
           </div>
           <div>
             <p className="font-bold text-heading text-lg">Garden City Club — {form.label}</p>
-            <p className="text-sm text-subtext">Capture a photo for each checkpoint below.</p>
+            <p className="text-sm text-subtext">Capture a photo (or fill the answer) for each checkpoint below.</p>
           </div>
         </div>
 
@@ -101,7 +112,7 @@ export default function GCClubPublicForm() {
           {restoredNotice && (
             <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
               <RefreshCw size={13} />
-              Aapke pehle liye gaye photos restore ho gaye hain — bas baaki checkpoints puri karein.
+              Aapka pehle bhara hua data restore ho gaya hai — bas baaki checkpoints puri karein.
             </div>
           )}
 
@@ -119,27 +130,44 @@ export default function GCClubPublicForm() {
             />
           </div>
 
+          {textCheckpoints.length > 0 && (
+            <div className="space-y-3">
+              {textCheckpoints.map((c) => (
+                <div key={c.label}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{c.label}</label>
+                  <input
+                    type="text"
+                    value={textAnswers[c.label] || ""}
+                    onChange={(e) => setTextAnswers((prev) => ({ ...prev, [c.label]: e.target.value }))}
+                    className="input"
+                    placeholder="Apna jawab likhein"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {form.checkpoints.map((label) => (
+            {photoCheckpoints.map((c) => (
               <CameraCapture
-                key={label}
-                label={label}
-                initialCapture={captures[label]}
-                onCapture={(cap) => setCaptures((prev) => ({ ...prev, [label]: cap }))}
+                key={c.label}
+                label={c.label}
+                initialCapture={captures[c.label]}
+                onCapture={(cap) => setCaptures((prev) => ({ ...prev, [c.label]: cap }))}
                 allowGallery
               />
             ))}
           </div>
 
-          {!allCaptured && (
+          {!allDone && (
             <p className="text-xs text-amber-600 text-center">
-              Baaki {missingCount} checkpoint{missingCount > 1 ? "s" : ""} ki photo lena zaroori hai submit karne se pehle.
+              Baaki {missingCount} checkpoint{missingCount > 1 ? "s" : ""} complete karna zaroori hai submit karne se pehle.
             </p>
           )}
 
           <button
             type="submit"
-            disabled={!submittedBy || !allCaptured || submitting}
+            disabled={!submittedBy || !allDone || submitting}
             className="w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit"}

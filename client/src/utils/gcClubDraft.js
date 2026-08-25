@@ -26,7 +26,7 @@ function dataUrlToFile(dataUrl, filename) {
   return new File([bytes], filename, { type: mime });
 }
 
-export async function saveDraft(formNumber, submittedBy, captures) {
+export async function saveDraft(formNumber, submittedBy, captures, textAnswers) {
   try {
     const serializable = {};
     for (const [checkpointLabel, cap] of Object.entries(captures)) {
@@ -39,7 +39,7 @@ export async function saveDraft(formNumber, submittedBy, captures) {
         geoLocation: cap.geoLocation,
       };
     }
-    localStorage.setItem(draftKey(formNumber), JSON.stringify({ submittedBy, captures: serializable }));
+    localStorage.setItem(draftKey(formNumber), JSON.stringify({ submittedBy, captures: serializable, textAnswers }));
   } catch (e) {
     console.warn("Could not save GC Club draft", e);
   }
@@ -59,7 +59,7 @@ export function loadDraft(formNumber) {
         preview: saved.dataUrl,
       };
     });
-    return { submittedBy: parsed.submittedBy || "", captures };
+    return { submittedBy: parsed.submittedBy || "", captures, textAnswers: parsed.textAnswers || {} };
   } catch (e) {
     console.warn("Could not load GC Club draft", e);
     return null;

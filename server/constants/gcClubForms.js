@@ -1,7 +1,13 @@
 // Garden City Club forms — unlike Garden City's numbered Checkpoint-1..150
 // split across fixed ranges, each Club form has its own named checklist
 // (varies per floor/area), so checkpoints are stored as labels, not a
-// shared numeric range. More forms get appended here as they're provided.
+// shared numeric range. Each checkpoint has a type: "photo" (default, a
+// CameraCapture) or "text" (a short free-text answer, e.g. a PH reading).
+// More forms get appended here as they're provided.
+function photo(label) {
+  return { label, type: "photo" };
+}
+
 const GC_CLUB_FORMS = [
   {
     formNumber: 1,
@@ -35,6 +41,18 @@ const GC_CLUB_FORMS = [
       "Common area Light",
       "Open Terrace",
       "Store Room",
+    ].map(photo),
+  },
+  {
+    formNumber: 2,
+    label: "Swimming Pool Form",
+    checkpoints: [
+      photo("Swimming Pool Image-1"),
+      photo("Swimming Pool Image-2"),
+      photo("Pool Outside area"),
+      photo("Shower Area"),
+      photo("PH level Pic"),
+      { label: "PH level", type: "text" },
     ],
   },
 ];

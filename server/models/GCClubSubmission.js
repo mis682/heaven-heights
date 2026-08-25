@@ -17,6 +17,14 @@ const GCClubSubmissionSchema = new mongoose.Schema(
         },
       },
     ],
+    // Some checkpoints are a short text answer instead of a photo (e.g.
+    // the Swimming Pool form's "PH level" reading).
+    textAnswers: [
+      {
+        label: { type: String, required: true },
+        value: { type: String, default: "" },
+      },
+    ],
   },
   { timestamps: true }
 );
