@@ -37,7 +37,7 @@ import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
 import PrintIdCardsPage from "./pages/admin/PrintIdCardsPage";
-import { ADMIN_ONLY_ROLES, DAILY_REPORT_ROLES, ATTENDANCE_VIEW_ROLES } from "./layouts/navConfig";
+import { ADMIN_ONLY_ROLES, DAILY_REPORT_ROLES, ATTENDANCE_VIEW_ROLES, HOUSEKEEPING_VIEW_ROLES } from "./layouts/navConfig";
 
 export default function App() {
   return (
@@ -64,7 +64,7 @@ export default function App() {
         <Route
           path="/housekeeping/garden-city/submissions"
           element={
-            <RequireAuth roles={DAILY_REPORT_ROLES}>
+            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
               <GCHousekeepingSubmissionsPage />
             </RequireAuth>
           }
@@ -80,7 +80,7 @@ export default function App() {
         <Route
           path="/housekeeping/garden-city/admin-report"
           element={
-            <RequireAuth roles={DAILY_REPORT_ROLES}>
+            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
               <GCHousekeepingAdminReportPage />
             </RequireAuth>
           }

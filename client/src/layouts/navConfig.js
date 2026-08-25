@@ -34,14 +34,20 @@ function patrolSiteNavItem({ label, slug }) {
   };
 }
 
-// Only Admin needs Housekeeping and the staff/guard master data pages —
-// both Security Manager and Coordinator are scoped to Security only.
+// Only Admin needs the staff/guard master data pages — Security Manager and
+// Coordinator are scoped to their own modules.
 export const ADMIN_ONLY_ROLES = ["Admin"];
 
 // Security Manager additionally gets read access to Team Attendance and
 // Attendance Records (to check their own guards' attendance) — every other
 // Attendance submodule stays Admin-only.
 export const ATTENDANCE_VIEW_ROLES = ["Admin", "Security Manager"];
+
+// Security Manager gets read access to Garden City Housekeeping's
+// Submissions and Admin Report View — but not Daily Report, which stays
+// Admin + Coordinator only (DAILY_REPORT_ROLES), same restriction pattern
+// as every other module's Daily Report.
+export const HOUSEKEEPING_VIEW_ROLES = ["Admin", "Coordinator", "Security Manager"];
 
 export const NAV_SECTIONS = [
   {
@@ -52,10 +58,10 @@ export const NAV_SECTIONS = [
         children: [
           {
             label: "Garden City",
-            roles: DAILY_REPORT_ROLES,
+            roles: HOUSEKEEPING_VIEW_ROLES,
             children: [
               { label: "Submissions", path: "/housekeeping/garden-city/submissions" },
-              { label: "Daily Report", path: "/housekeeping/garden-city/daily-report" },
+              { label: "Daily Report", path: "/housekeeping/garden-city/daily-report", roles: DAILY_REPORT_ROLES },
               { label: "Admin Report View", path: "/housekeeping/garden-city/admin-report" },
             ],
           },
