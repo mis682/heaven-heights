@@ -61,6 +61,9 @@ export default function GCHousekeepingPublicForm() {
   const checkpointIds = [];
   for (let id = form.checkpointStart; id <= form.checkpointEnd; id += 1) checkpointIds.push(id);
 
+  const missingCount = checkpointIds.filter((id) => !captures[id]).length;
+  const allCaptured = missingCount === 0;
+
   const submit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -136,9 +139,15 @@ export default function GCHousekeepingPublicForm() {
             ))}
           </div>
 
+          {!allCaptured && (
+            <p className="text-xs text-amber-600 text-center">
+              Baaki {missingCount} checkpoint{missingCount > 1 ? "s" : ""} ki photo lena zaroori hai submit karne se pehle.
+            </p>
+          )}
+
           <button
             type="submit"
-            disabled={!submittedBy || submitting}
+            disabled={!submittedBy || !allCaptured || submitting}
             className="w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit"}
