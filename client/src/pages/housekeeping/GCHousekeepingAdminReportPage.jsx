@@ -6,6 +6,7 @@ import StatusPill from "../../components/StatusPill";
 import Modal from "../../components/Modal";
 import { useAuth } from "../../context/AuthContext";
 import {
+  getGCHousekeepingReportMeta,
   listSubmittedGCHousekeepingReports,
   getGCHousekeepingReport,
   unlockGCHousekeepingReport,
@@ -15,11 +16,16 @@ import {
 
 export default function GCHousekeepingAdminReportPage() {
   const { user } = useAuth();
+  const [statusOptions, setStatusOptions] = useState([]);
   const [reports, setReports] = useState([]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState(null);
+
+  useEffect(() => {
+    getGCHousekeepingReportMeta().then((m) => setStatusOptions(m.statusOptions));
+  }, []);
 
   const load = async () => {
     setLoading(true);
@@ -55,8 +61,7 @@ export default function GCHousekeepingAdminReportPage() {
         columns={[
           { key: "reportDate", header: "Date" },
           { key: "preparedBy", header: "Prepared By" },
-          { key: "cleaned", header: "Cleaned" },
-          { key: "notCleaned", header: "Not Cleaned" },
+          ...statusOptions.map((s) => ({ key: s, header: s, render: (r) => r.counts?.[s] ?? 0 })),
           { key: "submittedAt", header: "Submitted At", render: (r) => new Date(r.submittedAt).toLocaleString() },
           {
             key: "actions",

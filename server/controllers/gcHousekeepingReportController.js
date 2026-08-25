@@ -73,13 +73,15 @@ exports.listSubmitted = async (req, res) => {
   }
   const reports = await GCHousekeepingDailyReport.find(filter).sort({ reportDate: -1 });
   const summarized = reports.map((r) => {
-    const filled = r.entries.filter((e) => e.status);
+    const counts = {};
+    GC_HOUSEKEEPING_STATUS_OPTIONS.forEach((s) => {
+      counts[s] = r.entries.filter((e) => e.status === s).length;
+    });
     return {
       _id: r._id,
       reportDate: r.reportDate,
       preparedBy: r.preparedBy,
-      cleaned: filled.filter((e) => e.status === "Cleaned").length,
-      notCleaned: filled.filter((e) => e.status === "Not Cleaned").length,
+      counts,
       submittedAt: r.submittedAt,
     };
   });
