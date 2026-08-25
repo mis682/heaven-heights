@@ -23,6 +23,48 @@ export const GC_HOUSEKEEPING_FORMS = [
   { formNumber: 4, label: "GC Form 4", checkpointStart: 121, checkpointEnd: 150 },
 ];
 
+// Garden City Club forms — unlike Garden City's numbered Checkpoint-1..150
+// split across fixed ranges, each Club form has its own named checklist (it
+// varies per floor/area), so checkpoints are labels, not a numeric range.
+// Mirrors server/constants/gcClubForms.js — kept in sync manually. More
+// forms get appended here as they're provided (6 total expected).
+export const GC_CLUB_FORMS = [
+  {
+    formNumber: 1,
+    label: "First Floor Form",
+    checkpoints: [
+      "Gym",
+      "Gym Light",
+      "Resturant",
+      "Resturant Reception",
+      "Resturant Light",
+      "Office Room",
+      "Office Room Light",
+      "Common Floor",
+      "Stairs",
+      "WC-1 (Male Washroom)",
+      "WC-2 (Male Washroom)",
+      "Urinal (Male Washroom)",
+      "Shower Area (Male Washroom)",
+      "Changing Room (Male Washroom)",
+      "Washbasin or Mirror (Male Washroom)",
+      "Floor (Male Washroom)",
+      "Dustbin (Male Washroom)",
+      "WC-1 (Female Washroom)",
+      "WC-2 (Female Washroom)",
+      "Washbasin or Mirror (Female Washroom)",
+      "Dustbin (Female Washroom)",
+      "Floor (Female Washroom)",
+      "Shower Area (Female Washroom)",
+      "Changing Room (Female Washroom)",
+      "Utility Room (Female Washroom)",
+      "Common area Light",
+      "Open Terrace",
+      "Store Room",
+    ],
+  },
+];
+
 function patrolSiteNavItem({ label, slug }) {
   return {
     label,
@@ -63,6 +105,15 @@ export const NAV_SECTIONS = [
               { label: "Submissions", path: "/housekeeping/garden-city/submissions" },
               { label: "Daily Report", path: "/housekeeping/garden-city/daily-report", roles: DAILY_REPORT_ROLES },
               { label: "Admin Report View", path: "/housekeeping/garden-city/admin-report" },
+            ],
+          },
+          {
+            label: "Garden City Club",
+            roles: HOUSEKEEPING_VIEW_ROLES,
+            children: [
+              { label: "Submissions", path: "/housekeeping/garden-city-club/submissions" },
+              { label: "Daily Report", path: "/housekeeping/garden-city-club/daily-report", roles: DAILY_REPORT_ROLES },
+              { label: "Admin Report View", path: "/housekeeping/garden-city-club/admin-report" },
             ],
           },
         ],

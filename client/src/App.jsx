@@ -10,6 +10,8 @@ import GCHousekeepingPublicForm from "./pages/housekeeping/GCHousekeepingPublicF
 import GCHousekeepingSubmissionsPage from "./pages/housekeeping/GCHousekeepingSubmissionsPage";
 import GCHousekeepingDailyReportPage from "./pages/housekeeping/GCHousekeepingDailyReportPage";
 import GCHousekeepingAdminReportPage from "./pages/housekeeping/GCHousekeepingAdminReportPage";
+import GCClubPublicForm from "./pages/housekeeping/GCClubPublicForm";
+import GCClubSubmissionsPage from "./pages/housekeeping/GCClubSubmissionsPage";
 
 import PatrolPublicForm from "./pages/security/patrol/PatrolPublicForm";
 import PatrolSitePage from "./pages/security/patrol/PatrolSitePage";
@@ -49,6 +51,7 @@ export default function App() {
       <Route path="/scan-attendance-form" element={<PublicScanAttendancePage />} />
       <Route path="/site-location-form" element={<PublicSiteLocationsPage />} />
       <Route path="/gc-housekeeping-form/:formNumber" element={<GCHousekeepingPublicForm />} />
+      <Route path="/gc-club-form/:formNumber" element={<GCClubPublicForm />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -82,6 +85,33 @@ export default function App() {
           element={
             <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
               <GCHousekeepingAdminReportPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/garden-city-club/submissions"
+          element={
+            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
+              <GCClubSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        {/* Daily Report / Admin Report wait on the remaining 5 Club forms
+            before they can list a complete checkpoint set. */}
+        <Route
+          path="/housekeeping/garden-city-club/daily-report"
+          element={
+            <RequireAuth roles={DAILY_REPORT_ROLES}>
+              <ComingSoon title="Garden City Club — Daily Report" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/garden-city-club/admin-report"
+          element={
+            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
+              <ComingSoon title="Garden City Club — Admin Report" />
             </RequireAuth>
           }
         />
