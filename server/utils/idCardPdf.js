@@ -111,4 +111,57 @@ async function buildIdCardPdf(staff) {
   return doc;
 }
 
-module.exports = { buildIdCardPdf, CARD_WIDTH, CARD_HEIGHT };
+// Prints several staff's cards on shared pages instead of one-page-per-card,
+// to save paper/lamination sheets — front+back pairs are stacked 3 to a
+// page at the exact same CARD_WIDTH/CARD_HEIGHT as the single-card PDF
+// above (reusing the same drawFront/drawBack), so nothing about the printed
+// size changes and existing laminating pouches still fit. The last page
+// just holds however many are left over (1 or 2) rather than padding with
+// blank space.
+const CARDS_PER_PAGE = 3;
+
+async function buildMultiIdCardPdf(staffList) {
+  const doc = new PDFDocument({ autoFirstPage: false, margin: 0 });
+
+  for (let i = 0; i < staffList.length; i += CARDS_PER_PAGE) {
+    const pageStaff = staffList.slice(i, i + CARDS_PER_PAGE);
+    doc.addPage({ size: [CARD_WIDTH * 2, CARD_HEIGHT * pageStaff.length], margin: 0 });
+
+    for (let row = 0; row < pageStaff.length; row++) {
+      const staff = pageStaff[row];
+      const yOffset = row * CARD_HEIGHT;
+
+      doc.save();
+      doc.translate(0, yOffset);
+      doc.scale(SCALE_X, SCALE_Y);
+      await drawFront(doc, staff);
+      doc.restore();
+
+      doc.save();
+      doc.dash(3, { space: 2 }).lineWidth(0.75).moveTo(CARD_WIDTH, yOffset).lineTo(CARD_WIDTH, yOffset + CARD_HEIGHT).stroke("#9ca3af");
+      doc.undash();
+      doc.restore();
+
+      doc.save();
+      doc.translate(CARD_WIDTH, yOffset).scale(SCALE_X, SCALE_Y);
+      await drawBack(doc, staff);
+      doc.restore();
+
+      if (row < pageStaff.length - 1) {
+        doc.save();
+        doc
+          .dash(3, { space: 2 })
+          .lineWidth(0.75)
+          .moveTo(0, yOffset + CARD_HEIGHT)
+          .lineTo(CARD_WIDTH * 2, yOffset + CARD_HEIGHT)
+          .stroke("#9ca3af");
+        doc.undash();
+        doc.restore();
+      }
+    }
+  }
+
+  return doc;
+}
+
+module.exports = { buildIdCardPdf, buildMultiIdCardPdf, CARD_WIDTH, CARD_HEIGHT };

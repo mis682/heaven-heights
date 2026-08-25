@@ -35,6 +35,7 @@ import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
+import PrintIdCardsPage from "./pages/admin/PrintIdCardsPage";
 import { ADMIN_ONLY_ROLES, DAILY_REPORT_ROLES, ATTENDANCE_VIEW_ROLES } from "./layouts/navConfig";
 
 export default function App() {
@@ -173,6 +174,14 @@ export default function App() {
           element={
             <RequireAuth roles={ADMIN_ONLY_ROLES}>
               <MaintenanceStaffPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/print-id-cards"
+          element={
+            <RequireAuth roles={ADMIN_ONLY_ROLES}>
+              <PrintIdCardsPage />
             </RequireAuth>
           }
         />
