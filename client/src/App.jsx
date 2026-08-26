@@ -14,6 +14,10 @@ import GCClubPublicForm from "./pages/housekeeping/GCClubPublicForm";
 import GCClubSubmissionsPage from "./pages/housekeeping/GCClubSubmissionsPage";
 import GCClubDailyReportPage from "./pages/housekeeping/GCClubDailyReportPage";
 import GCClubAdminReportPage from "./pages/housekeeping/GCClubAdminReportPage";
+import ReserveClubPublicForm from "./pages/housekeeping/ReserveClubPublicForm";
+import ReserveClubSubmissionsPage from "./pages/housekeeping/ReserveClubSubmissionsPage";
+import ReserveClubDailyReportPage from "./pages/housekeeping/ReserveClubDailyReportPage";
+import ReserveClubAdminReportPage from "./pages/housekeeping/ReserveClubAdminReportPage";
 
 import PatrolPublicForm from "./pages/security/patrol/PatrolPublicForm";
 import PatrolSitePage from "./pages/security/patrol/PatrolSitePage";
@@ -54,6 +58,7 @@ export default function App() {
       <Route path="/site-location-form" element={<PublicSiteLocationsPage />} />
       <Route path="/gc-housekeeping-form/:formNumber" element={<GCHousekeepingPublicForm />} />
       <Route path="/gc-club-form/:formNumber" element={<GCClubPublicForm />} />
+      <Route path="/reserve-club-form/:formNumber" element={<ReserveClubPublicForm />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -112,6 +117,31 @@ export default function App() {
           element={
             <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
               <GCClubAdminReportPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/reserve-club/submissions"
+          element={
+            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
+              <ReserveClubSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/reserve-club/daily-report"
+          element={
+            <RequireAuth roles={DAILY_REPORT_ROLES}>
+              <ReserveClubDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/reserve-club/admin-report"
+          element={
+            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
+              <ReserveClubAdminReportPage />
             </RequireAuth>
           }
         />

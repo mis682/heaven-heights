@@ -183,6 +183,12 @@ export const GC_CLUB_FORMS = [
   },
 ];
 
+// Neoteric Reserve Club forms — same shape as GC_CLUB_FORMS (named
+// checklists per form, photo/text checkpoint types, optional checkpoints).
+// Mirrors server/constants/reserveClubForms.js — kept in sync manually.
+// Starts empty; 8 forms get appended here as they're provided.
+export const RESERVE_CLUB_FORMS = [];
+
 function patrolSiteNavItem({ label, slug }) {
   return {
     label,
@@ -232,6 +238,15 @@ export const NAV_SECTIONS = [
               { label: "Submissions", path: "/housekeeping/garden-city-club/submissions" },
               { label: "Daily Report", path: "/housekeeping/garden-city-club/daily-report", roles: DAILY_REPORT_ROLES },
               { label: "Admin Report View", path: "/housekeeping/garden-city-club/admin-report" },
+            ],
+          },
+          {
+            label: "Neoteric Reserve Club",
+            roles: HOUSEKEEPING_VIEW_ROLES,
+            children: [
+              { label: "Submissions", path: "/housekeeping/reserve-club/submissions" },
+              { label: "Daily Report", path: "/housekeeping/reserve-club/daily-report", roles: DAILY_REPORT_ROLES },
+              { label: "Admin Report View", path: "/housekeeping/reserve-club/admin-report" },
             ],
           },
         ],
