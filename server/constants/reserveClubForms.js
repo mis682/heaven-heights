@@ -81,6 +81,11 @@ const RESERVE_CLUB_FORMS = [
       "Stair Case",
     ].map(photo),
   },
+  {
+    formNumber: 4,
+    label: "Gym Form",
+    checkpoints: ["Lights+Floor", "Machine", "(Accessories +Mirror)", "Fridge Bottle+Towel", "Dustbin"].map(photo),
+  },
 ];
 
 function getFormByNumber(formNumber) {
