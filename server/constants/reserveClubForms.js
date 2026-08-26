@@ -7,7 +7,27 @@ function photo(label, opts = {}) {
   return { label, type: "photo", ...opts };
 }
 
-const RESERVE_CLUB_FORMS = [];
+const RESERVE_CLUB_FORMS = [
+  {
+    formNumber: 1,
+    label: "Room 1 & 2 Form",
+    checkpoints: [
+      "Bed Pic (Room-1)",
+      "Tea Table Pic (Room-1)",
+      "Dustbin Pic (Room-1)",
+      "Mirror Cabinet (Room-1)",
+      "WC (Room-1 Washroom)",
+      "Washbasin+Mirror (Room-1 Washroom)",
+      "Bed Pic (Room-2)",
+      "Tea table (Room-2)",
+      "Dustbin (Room-2)",
+      "Mirror cabinet (Room-2)",
+      "WC (Room 2 Washroom)",
+      "Washbasin+Mirror (Room-2 Washroom)",
+      "Floor",
+    ].map((label) => photo(label, { required: false })),
+  },
+];
 
 function getFormByNumber(formNumber) {
   return RESERVE_CLUB_FORMS.find((f) => f.formNumber === Number(formNumber));
