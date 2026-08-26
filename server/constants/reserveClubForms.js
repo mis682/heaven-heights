@@ -56,6 +56,31 @@ const RESERVE_CLUB_FORMS = [
       photo("AC Duct Cleaning (only Sunday)", { required: false }),
     ],
   },
+  {
+    formNumber: 3,
+    label: "Second Floor Washroom Form",
+    checkpoints: [
+      "WC Pic (Male Washroom)",
+      "Washbasin+Mirror (Male Washroom)",
+      "Dustbin (Male Washroom)",
+      "Floor (Male Washroom)",
+      "Urinal -1+2+3 (Male Washroom)",
+      "Shower Area (Male Washroom)",
+      "Steam (Male Washroom)",
+      "Sauna (Male Washroom)",
+      "WC-1 (Female Washroom)",
+      "WC-2 (Female Washroom)",
+      "Washbasin-1 + Mirror (Female Washroom)",
+      "Washbasin-2 +Mirror (Female Washroom)",
+      "Dustbin (Female Washroom)",
+      "Floor (Female Washroom)",
+      "Shower Area (Female Washroom)",
+      "Steam (Female Washroom)",
+      "Sauna (Female Washroom)",
+      "Floor",
+      "Stair Case",
+    ].map(photo),
+  },
 ];
 
 function getFormByNumber(formNumber) {
