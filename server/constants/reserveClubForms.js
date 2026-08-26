@@ -86,6 +86,19 @@ const RESERVE_CLUB_FORMS = [
     label: "Gym Form",
     checkpoints: ["Lights+Floor", "Machine", "(Accessories +Mirror)", "Fridge Bottle+Towel", "Dustbin"].map(photo),
   },
+  {
+    formNumber: 5,
+    label: "Swimming Pool Form",
+    checkpoints: [
+      photo("Swimming Pool-1"),
+      photo("Swimming Pool-2"),
+      photo("Pool Outside Area"),
+      photo("Shower Area"),
+      photo("Mirror Pic"),
+      { label: "PH Level (Short Answer)", type: "text" },
+      photo("PH level"),
+    ],
+  },
 ];
 
 function getFormByNumber(formNumber) {
