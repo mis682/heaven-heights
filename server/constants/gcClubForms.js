@@ -81,6 +81,32 @@ const GC_CLUB_FORMS = [
       "Washbasin or mirror (Room-4)",
     ].map(photo),
   },
+  {
+    formNumber: 4,
+    label: "Second Floor Form",
+    checkpoints: [
+      "Banquet Hall -1",
+      "Banquet Hall-2",
+      "Banquet Hall Light",
+      "Floor Pic",
+      "Open Terrace",
+      "Stairs",
+      "Store Room",
+      "WC-1 (Male Washroom)",
+      "WC-2 (Male Washroom)",
+      "WC-3 (Male Washroom)",
+      "Urinal (Male Washroom)",
+      "Washbasin or Mirror (Male Washroom)",
+      "Floor (Male Washroom)",
+      "Dustbin (Male Washroom)",
+      "WC-1 (Female Washroom)",
+      "WC-2 (Female Washroom)",
+      "Washbasin or Mirror (Female Washroom)",
+      "Dustbin (Female Washroom)",
+      "Floor (Female Washroom)",
+      "Common Area Light",
+    ].map(photo),
+  },
 ];
 
 function getFormByNumber(formNumber) {
