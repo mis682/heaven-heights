@@ -12,6 +12,8 @@ import GCHousekeepingDailyReportPage from "./pages/housekeeping/GCHousekeepingDa
 import GCHousekeepingAdminReportPage from "./pages/housekeeping/GCHousekeepingAdminReportPage";
 import GCClubPublicForm from "./pages/housekeeping/GCClubPublicForm";
 import GCClubSubmissionsPage from "./pages/housekeeping/GCClubSubmissionsPage";
+import GCClubDailyReportPage from "./pages/housekeeping/GCClubDailyReportPage";
+import GCClubAdminReportPage from "./pages/housekeeping/GCClubAdminReportPage";
 
 import PatrolPublicForm from "./pages/security/patrol/PatrolPublicForm";
 import PatrolSitePage from "./pages/security/patrol/PatrolSitePage";
@@ -97,13 +99,11 @@ export default function App() {
             </RequireAuth>
           }
         />
-        {/* Daily Report / Admin Report wait on the remaining 5 Club forms
-            before they can list a complete checkpoint set. */}
         <Route
           path="/housekeeping/garden-city-club/daily-report"
           element={
             <RequireAuth roles={DAILY_REPORT_ROLES}>
-              <ComingSoon title="Garden City Club — Daily Report" />
+              <GCClubDailyReportPage />
             </RequireAuth>
           }
         />
@@ -111,7 +111,7 @@ export default function App() {
           path="/housekeeping/garden-city-club/admin-report"
           element={
             <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
-              <ComingSoon title="Garden City Club — Admin Report" />
+              <GCClubAdminReportPage />
             </RequireAuth>
           }
         />

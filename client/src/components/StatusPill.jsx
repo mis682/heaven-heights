@@ -26,6 +26,10 @@ const STATUS_STYLES = {
   "Form not filled": "bg-amber-100 text-amber-700",
   "Image missing": "bg-amber-100 text-amber-700",
   Underconstraction: "bg-teal-100 text-teal-700",
+  Clean: "bg-green-100 text-green-700",
+  "Not Clean": "bg-red-100 text-red-700",
+  "Image Missing": "bg-amber-100 text-amber-700",
+  "Same image": "bg-amber-100 text-amber-700",
 };
 
 export default function StatusPill({ status }) {
