@@ -60,8 +60,8 @@ export default function GCClubPublicForm() {
   const photoCheckpoints = form.checkpoints.filter((c) => c.type !== "text");
   const textCheckpoints = form.checkpoints.filter((c) => c.type === "text");
 
-  const missingPhotos = photoCheckpoints.filter((c) => !captures[c.label]).length;
-  const missingText = textCheckpoints.filter((c) => !(textAnswers[c.label] || "").trim()).length;
+  const missingPhotos = photoCheckpoints.filter((c) => c.required !== false && !captures[c.label]).length;
+  const missingText = textCheckpoints.filter((c) => c.required !== false && !(textAnswers[c.label] || "").trim()).length;
   const missingCount = missingPhotos + missingText;
   const allDone = missingCount === 0;
 

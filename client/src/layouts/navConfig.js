@@ -27,11 +27,12 @@ export const GC_HOUSEKEEPING_FORMS = [
 // split across fixed ranges, each Club form has its own named checklist (it
 // varies per floor/area), so checkpoints are labels, not a numeric range.
 // Each checkpoint has a type: "photo" (default, a CameraCapture) or "text"
-// (a short free-text answer, e.g. a PH reading). Mirrors
-// server/constants/gcClubForms.js — kept in sync manually. More forms get
-// appended here as they're provided (6 total expected).
-function photo(label) {
-  return { label, type: "photo" };
+// (a short free-text answer, e.g. a PH reading), and is required unless
+// explicitly marked { required: false } (e.g. AC Duct Cleaning, only
+// applicable on Sundays). Mirrors server/constants/gcClubForms.js — kept in
+// sync manually. More forms get appended here as they're provided.
+function photo(label, opts = {}) {
+  return { label, type: "photo", ...opts };
 }
 
 export const GC_CLUB_FORMS = [
@@ -132,6 +133,23 @@ export const GC_CLUB_FORMS = [
       "Floor (Female Washroom)",
       "Common Area Light",
     ].map(photo),
+  },
+  {
+    formNumber: 5,
+    label: "Terrace Floor Form",
+    checkpoints: [
+      photo("Party Hall"),
+      photo("Party Hall Light"),
+      photo("WC-1 (Washroom)"),
+      photo("WC-2 (Washroom)"),
+      photo("Washbasin or Mirror (Washroom)"),
+      photo("Dustbin (Washroom)"),
+      photo("Floor (Washroom)"),
+      photo("Open Terrace -1"),
+      photo("Open Terrace-2"),
+      photo("Store Room"),
+      photo("AC Duct Cleaning (Only Sunday) (Optional)", { required: false }),
+    ],
   },
 ];
 
