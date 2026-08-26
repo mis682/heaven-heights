@@ -81,6 +81,32 @@ export const GC_CLUB_FORMS = [
       { label: "PH level", type: "text" },
     ],
   },
+  {
+    formNumber: 3,
+    label: "Room Floor Form",
+    checkpoints: [
+      "Bed (Room-1)",
+      "Cabinet (Room-1)",
+      "Dustbin (Room-1)",
+      "Washroom WC (Room-1)",
+      "Washbasin or mirror (Room-1)",
+      "Bed (Room-2)",
+      "Cabinet (Room-2)",
+      "Dustbin (Room-2)",
+      "Washroom WC (Room-2)",
+      "Washbasin or mirror (Room-2)",
+      "Bed (Room-3)",
+      "Cabinet (Room-3)",
+      "Dustbin (Room-3)",
+      "Washroom WC (Room-3)",
+      "Washbasin or mirror (Room-3)",
+      "Bed (Room-4)",
+      "Cabinet (Room-4)",
+      "Dustbin (Room-4)",
+      "Washroom WC (Room-4)",
+      "Washbasin or mirror (Room-4)",
+    ].map(photo),
+  },
 ];
 
 function patrolSiteNavItem({ label, slug }) {
