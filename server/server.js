@@ -6,6 +6,8 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/users");
+const roleRoutes = require("./routes/roles");
 const employeeRoutes = require("./routes/employees");
 const guardRoutes = require("./routes/guards");
 const projectRoutes = require("./routes/projects");
@@ -36,6 +38,8 @@ app.use(cors({ origin: process.env.CLIENT_ORIGIN || "*" }));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/roles", roleRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/guards", guardRoutes);
 app.use("/api/projects", projectRoutes);

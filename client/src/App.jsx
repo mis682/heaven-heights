@@ -45,7 +45,7 @@ import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
 import PrintIdCardsPage from "./pages/admin/PrintIdCardsPage";
-import { ADMIN_ONLY_ROLES, DAILY_REPORT_ROLES, ATTENDANCE_VIEW_ROLES, HOUSEKEEPING_VIEW_ROLES } from "./layouts/navConfig";
+import UserManagementPage from "./pages/admin/UserManagementPage";
 
 export default function App() {
   return (
@@ -74,7 +74,7 @@ export default function App() {
         <Route
           path="/housekeeping/garden-city/submissions"
           element={
-            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
+            <RequireAuth permission={{ module: "gcHousekeeping", action: "view" }}>
               <GCHousekeepingSubmissionsPage />
             </RequireAuth>
           }
@@ -82,7 +82,7 @@ export default function App() {
         <Route
           path="/housekeeping/garden-city/daily-report"
           element={
-            <RequireAuth roles={DAILY_REPORT_ROLES}>
+            <RequireAuth permission={{ module: "gcHousekeeping", action: "edit" }}>
               <GCHousekeepingDailyReportPage />
             </RequireAuth>
           }
@@ -90,7 +90,7 @@ export default function App() {
         <Route
           path="/housekeeping/garden-city/admin-report"
           element={
-            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
+            <RequireAuth permission={{ module: "gcHousekeeping", action: "view" }}>
               <GCHousekeepingAdminReportPage />
             </RequireAuth>
           }
@@ -99,7 +99,7 @@ export default function App() {
         <Route
           path="/housekeeping/garden-city-club/submissions"
           element={
-            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
+            <RequireAuth permission={{ module: "gcClub", action: "view" }}>
               <GCClubSubmissionsPage />
             </RequireAuth>
           }
@@ -107,7 +107,7 @@ export default function App() {
         <Route
           path="/housekeeping/garden-city-club/daily-report"
           element={
-            <RequireAuth roles={DAILY_REPORT_ROLES}>
+            <RequireAuth permission={{ module: "gcClub", action: "edit" }}>
               <GCClubDailyReportPage />
             </RequireAuth>
           }
@@ -115,7 +115,7 @@ export default function App() {
         <Route
           path="/housekeeping/garden-city-club/admin-report"
           element={
-            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
+            <RequireAuth permission={{ module: "gcClub", action: "view" }}>
               <GCClubAdminReportPage />
             </RequireAuth>
           }
@@ -124,7 +124,7 @@ export default function App() {
         <Route
           path="/housekeeping/reserve-club/submissions"
           element={
-            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
+            <RequireAuth permission={{ module: "reserveClub", action: "view" }}>
               <ReserveClubSubmissionsPage />
             </RequireAuth>
           }
@@ -132,7 +132,7 @@ export default function App() {
         <Route
           path="/housekeeping/reserve-club/daily-report"
           element={
-            <RequireAuth roles={DAILY_REPORT_ROLES}>
+            <RequireAuth permission={{ module: "reserveClub", action: "edit" }}>
               <ReserveClubDailyReportPage />
             </RequireAuth>
           }
@@ -140,7 +140,7 @@ export default function App() {
         <Route
           path="/housekeeping/reserve-club/admin-report"
           element={
-            <RequireAuth roles={HOUSEKEEPING_VIEW_ROLES}>
+            <RequireAuth permission={{ module: "reserveClub", action: "view" }}>
               <ReserveClubAdminReportPage />
             </RequireAuth>
           }
@@ -152,7 +152,7 @@ export default function App() {
         <Route
           path="/security/patrol/garden-city/daily-report"
           element={
-            <RequireAuth roles={DAILY_REPORT_ROLES}>
+            <RequireAuth permission={{ module: "patrol", action: "edit" }}>
               <GardenCityDailyReportPage />
             </RequireAuth>
           }
@@ -161,7 +161,7 @@ export default function App() {
         <Route
           path="/security/patrol/:project/daily-report"
           element={
-            <RequireAuth roles={DAILY_REPORT_ROLES}>
+            <RequireAuth permission={{ module: "patrol", action: "edit" }}>
               <PatrolDailyReportBuilderPage />
             </RequireAuth>
           }
@@ -172,7 +172,7 @@ export default function App() {
         <Route
           path="/security/night-guard/daily-report"
           element={
-            <RequireAuth roles={DAILY_REPORT_ROLES}>
+            <RequireAuth permission={{ module: "nightGuard", action: "edit" }}>
               <NightGuardDailyReportPage />
             </RequireAuth>
           }
@@ -184,7 +184,7 @@ export default function App() {
         <Route
           path="/attendance"
           element={
-            <RequireAuth roles={ADMIN_ONLY_ROLES}>
+            <RequireAuth permission={{ module: "attendance", action: "edit" }}>
               <AttendancePage />
             </RequireAuth>
           }
@@ -192,7 +192,7 @@ export default function App() {
         <Route
           path="/attendance/scan"
           element={
-            <RequireAuth roles={ADMIN_ONLY_ROLES}>
+            <RequireAuth permission={{ module: "attendance", action: "edit" }}>
               <ScanAttendancePage />
             </RequireAuth>
           }
@@ -200,7 +200,7 @@ export default function App() {
         <Route
           path="/attendance/records"
           element={
-            <RequireAuth roles={ATTENDANCE_VIEW_ROLES}>
+            <RequireAuth permission={{ module: "attendance", action: "view" }}>
               <AttendanceRecordsPage />
             </RequireAuth>
           }
@@ -208,7 +208,7 @@ export default function App() {
         <Route
           path="/attendance/sites"
           element={
-            <RequireAuth roles={ADMIN_ONLY_ROLES}>
+            <RequireAuth permission={{ module: "siteLocations", action: "edit" }}>
               <SiteLocationsPage />
             </RequireAuth>
           }
@@ -216,7 +216,7 @@ export default function App() {
         <Route
           path="/attendance/team"
           element={
-            <RequireAuth roles={ATTENDANCE_VIEW_ROLES}>
+            <RequireAuth permission={{ module: "attendance", action: "view" }}>
               <TeamAttendancePage />
             </RequireAuth>
           }
@@ -225,7 +225,7 @@ export default function App() {
         <Route
           path="/admin/maintenance-staff"
           element={
-            <RequireAuth roles={ADMIN_ONLY_ROLES}>
+            <RequireAuth permission={{ module: "maintenanceStaff", action: "view" }}>
               <MaintenanceStaffPage />
             </RequireAuth>
           }
@@ -233,7 +233,7 @@ export default function App() {
         <Route
           path="/admin/print-id-cards"
           element={
-            <RequireAuth roles={ADMIN_ONLY_ROLES}>
+            <RequireAuth permission={{ module: "guards", action: "edit" }}>
               <PrintIdCardsPage />
             </RequireAuth>
           }
@@ -241,8 +241,16 @@ export default function App() {
         <Route
           path="/admin/guards"
           element={
-            <RequireAuth roles={ADMIN_ONLY_ROLES}>
+            <RequireAuth permission={{ module: "guards", action: "view" }}>
               <GuardMasterDataPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <RequireAuth permission={{ module: "users", action: "view" }}>
+              <UserManagementPage />
             </RequireAuth>
           }
         />

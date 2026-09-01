@@ -10,18 +10,20 @@ function pathsOf(item) {
   return [];
 }
 
-function isVisible(item, role) {
-  return !item.roles || item.roles.includes(role);
+function isVisible(item, { role, hasPermission }) {
+  if (!item.permission) return true;
+  if (role === "Admin") return true;
+  return hasPermission(item.permission.module, item.permission.action);
 }
 
-function NavItem({ item, collapsed, depth = 0, onNavigate, role }) {
+function NavItem({ item, collapsed, depth = 0, onNavigate, access }) {
   const location = useLocation();
   const descendantPaths = pathsOf(item);
   const isActiveBranch = descendantPaths.some((p) => location.pathname.startsWith(p));
   const [open, setOpen] = useState(isActiveBranch);
 
   if (item.children) {
-    const visibleChildren = item.children.filter((child) => isVisible(child, role));
+    const visibleChildren = item.children.filter((child) => isVisible(child, access));
     if (visibleChildren.length === 0) return null;
 
     return (
@@ -44,7 +46,7 @@ function NavItem({ item, collapsed, depth = 0, onNavigate, role }) {
         {open && !collapsed && (
           <div className="mt-0.5 space-y-0.5">
             {visibleChildren.map((child) => (
-              <NavItem key={child.label} item={child} collapsed={collapsed} depth={depth + 1} onNavigate={onNavigate} role={role} />
+              <NavItem key={child.label} item={child} collapsed={collapsed} depth={depth + 1} onNavigate={onNavigate} access={access} />
             ))}
           </div>
         )}
@@ -71,7 +73,8 @@ function NavItem({ item, collapsed, depth = 0, onNavigate, role }) {
 }
 
 export default function Sidebar({ collapsed, mobileOpen, onClose }) {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
+  const access = { role: user?.role, hasPermission };
 
   return (
     <>
@@ -104,9 +107,9 @@ export default function Sidebar({ collapsed, mobileOpen, onClose }) {
               )}
               <div className="space-y-0.5">
                 {section.items
-                  .filter((item) => isVisible(item, user?.role))
+                  .filter((item) => isVisible(item, access))
                   .map((item) => (
-                    <NavItem key={item.label} item={item} collapsed={collapsed} onNavigate={onClose} role={user?.role} />
+                    <NavItem key={item.label} item={item} collapsed={collapsed} onNavigate={onClose} access={access} />
                   ))}
               </div>
             </div>

@@ -2,18 +2,29 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Sparkles, Shield, Clock, Building2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { ADMIN_ONLY_ROLES } from "../layouts/navConfig";
 
 const TILES = [
-  { label: "Housekeeping", path: "/housekeeping", icon: Sparkles, color: "bg-primary-light text-primary", roles: ADMIN_ONLY_ROLES },
+  {
+    label: "Housekeeping",
+    path: "/housekeeping",
+    icon: Sparkles,
+    color: "bg-primary-light text-primary",
+    permission: { module: "gcHousekeeping", action: "view" },
+  },
   { label: "Patrol Checkpoints", path: "/security/patrol/garden-city/submissions", icon: Shield, color: "bg-blue-100 text-blue-600" },
   { label: "Night Guard", path: "/security/night-guard/submissions", icon: Shield, color: "bg-gray-100 text-gray-600" },
-  { label: "Attendance", path: "/attendance", icon: Clock, color: "bg-green-100 text-green-600", roles: ADMIN_ONLY_ROLES },
+  {
+    label: "Attendance",
+    path: "/attendance",
+    icon: Clock,
+    color: "bg-green-100 text-green-600",
+    permission: { module: "attendance", action: "edit" },
+  },
 ];
 
 export default function Home() {
-  const { user } = useAuth();
-  const tiles = TILES.filter((t) => !t.roles || t.roles.includes(user?.role));
+  const { user, hasPermission } = useAuth();
+  const tiles = TILES.filter((t) => !t.permission || hasPermission(t.permission.module, t.permission.action));
 
   return (
     <div>

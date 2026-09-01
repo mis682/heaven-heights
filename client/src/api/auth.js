@@ -1,7 +1,7 @@
 import api from "./client";
 
-export const loginRequest = (name, role, password) =>
-  api.post("/auth/login", { name, role, password }).then((r) => r.data);
+export const loginRequest = (email, password) =>
+  api.post("/auth/login", { email, password }).then((r) => r.data);
 
 // Resolves to true/false rather than throwing, so a network hiccup doesn't
 // look like an invalidated session — only an explicit server "no" logs out.

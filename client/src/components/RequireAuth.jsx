@@ -2,8 +2,8 @@ import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function RequireAuth({ roles, children }) {
-  const { user } = useAuth();
+export default function RequireAuth({ permission, children }) {
+  const { user, hasPermission } = useAuth();
   const location = useLocation();
 
   // Sessions created before password-protected login was added have no
@@ -12,11 +12,11 @@ export default function RequireAuth({ roles, children }) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
-  if (roles && !roles.includes(user.role)) {
+  if (permission && !hasPermission(permission.module, permission.action)) {
     return (
       <div className="p-10 text-center">
         <p className="text-lg font-semibold text-heading">Access restricted</p>
-        <p className="text-sm text-subtext mt-1">Your role ({user.role}) cannot view this page.</p>
+        <p className="text-sm text-subtext mt-1">You don't have permission to view this page.</p>
       </div>
     );
   }

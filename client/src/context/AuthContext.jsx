@@ -39,14 +39,20 @@ export function AuthProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.token]);
 
-  const login = async (name, role, password) => {
-    const data = await loginRequest(name, role, password);
+  const login = async (email, password) => {
+    const data = await loginRequest(email, password);
     setUser(data);
     return data;
   };
   const logout = () => setUser(null);
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+  const hasPermission = (moduleKey, action) => {
+    if (!user) return false;
+    if (user.role === "Admin") return true;
+    return !!user.permissions?.[moduleKey]?.[action];
+  };
+
+  return <AuthContext.Provider value={{ user, login, logout, hasPermission }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

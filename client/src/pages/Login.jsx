@@ -3,11 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Building2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const ROLES = ["Admin", "Security Manager", "Coordinator"];
-
 export default function Login() {
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("Coordinator");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -17,11 +14,11 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim() || !password) return;
+    if (!email.trim() || !password) return;
     setSubmitting(true);
     setError("");
     try {
-      await login(name.trim(), role, password);
+      await login(email.trim(), password);
       const redirectTo = location.state?.from || "/";
       navigate(redirectTo, { replace: true });
     } catch (err) {
@@ -44,32 +41,15 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Your name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Priya Nair"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@company.com"
               className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
               autoFocus
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <div className="grid grid-cols-3 gap-2">
-              {ROLES.map((r) => (
-                <button
-                  type="button"
-                  key={r}
-                  onClick={() => setRole(r)}
-                  className={`py-2 rounded-xl text-sm font-medium border transition-colors ${
-                    role === r ? "border-primary bg-primary-light text-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div>
@@ -78,7 +58,7 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Role ka password"
+              placeholder="Your password"
               className="w-full px-3 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>

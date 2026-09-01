@@ -6,10 +6,10 @@ const PATROL_SITES = [
   { label: "School", slug: "school" },
 ];
 
-// Daily Report is prepared by coordinators, not security managers, so it's
-// hidden from Security Manager while every other security submodule stays
-// visible to all three roles.
-export const DAILY_REPORT_ROLES = ["Admin", "Coordinator"];
+// Daily Report requires "edit" on the module — Coordinator's default
+// permissions include edit on housekeeping/patrol/nightGuard, Security
+// Manager's don't, so this preserves the original role split while now
+// being driven by each user's actual permissions rather than their role name.
 
 // Garden City's 150 housekeeping checkpoints are split across 4 public forms
 // so no single person has to photograph all of them in one sitting — each
@@ -286,26 +286,15 @@ function patrolSiteNavItem({ label, slug }) {
     label,
     children: [
       { label: "Submissions", path: `/security/patrol/${slug}/submissions` },
-      { label: "Daily Report", path: `/security/patrol/${slug}/daily-report`, roles: DAILY_REPORT_ROLES },
+      {
+        label: "Daily Report",
+        path: `/security/patrol/${slug}/daily-report`,
+        permission: { module: "patrol", action: "edit" },
+      },
       { label: "Admin Report View", path: `/security/patrol/${slug}/admin-report` },
     ],
   };
 }
-
-// Only Admin needs the staff/guard master data pages — Security Manager and
-// Coordinator are scoped to their own modules.
-export const ADMIN_ONLY_ROLES = ["Admin"];
-
-// Security Manager additionally gets read access to Team Attendance and
-// Attendance Records (to check their own guards' attendance) — every other
-// Attendance submodule stays Admin-only.
-export const ATTENDANCE_VIEW_ROLES = ["Admin", "Security Manager"];
-
-// Security Manager gets read access to Garden City Housekeeping's
-// Submissions and Admin Report View — but not Daily Report, which stays
-// Admin + Coordinator only (DAILY_REPORT_ROLES), same restriction pattern
-// as every other module's Daily Report.
-export const HOUSEKEEPING_VIEW_ROLES = ["Admin", "Coordinator", "Security Manager"];
 
 export const NAV_SECTIONS = [
   {
@@ -316,28 +305,40 @@ export const NAV_SECTIONS = [
         children: [
           {
             label: "Garden City",
-            roles: HOUSEKEEPING_VIEW_ROLES,
+            permission: { module: "gcHousekeeping", action: "view" },
             children: [
               { label: "Submissions", path: "/housekeeping/garden-city/submissions" },
-              { label: "Daily Report", path: "/housekeeping/garden-city/daily-report", roles: DAILY_REPORT_ROLES },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/garden-city/daily-report",
+                permission: { module: "gcHousekeeping", action: "edit" },
+              },
               { label: "Admin Report View", path: "/housekeeping/garden-city/admin-report" },
             ],
           },
           {
             label: "Garden City Club",
-            roles: HOUSEKEEPING_VIEW_ROLES,
+            permission: { module: "gcClub", action: "view" },
             children: [
               { label: "Submissions", path: "/housekeeping/garden-city-club/submissions" },
-              { label: "Daily Report", path: "/housekeeping/garden-city-club/daily-report", roles: DAILY_REPORT_ROLES },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/garden-city-club/daily-report",
+                permission: { module: "gcClub", action: "edit" },
+              },
               { label: "Admin Report View", path: "/housekeeping/garden-city-club/admin-report" },
             ],
           },
           {
             label: "Neoteric Reserve Club",
-            roles: HOUSEKEEPING_VIEW_ROLES,
+            permission: { module: "reserveClub", action: "view" },
             children: [
               { label: "Submissions", path: "/housekeeping/reserve-club/submissions" },
-              { label: "Daily Report", path: "/housekeeping/reserve-club/daily-report", roles: DAILY_REPORT_ROLES },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/reserve-club/daily-report",
+                permission: { module: "reserveClub", action: "edit" },
+              },
               { label: "Admin Report View", path: "/housekeeping/reserve-club/admin-report" },
             ],
           },
@@ -351,7 +352,11 @@ export const NAV_SECTIONS = [
             label: "Night Guard",
             children: [
               { label: "Submissions", path: "/security/night-guard/submissions" },
-              { label: "Daily Report", path: "/security/night-guard/daily-report", roles: DAILY_REPORT_ROLES },
+              {
+                label: "Daily Report",
+                path: "/security/night-guard/daily-report",
+                permission: { module: "nightGuard", action: "edit" },
+              },
               { label: "Admin Report View", path: "/security/night-guard/admin-report" },
             ],
           },
@@ -361,15 +366,20 @@ export const NAV_SECTIONS = [
       {
         label: "Attendance",
         children: [
-          { label: "Daily Attendance", path: "/attendance", roles: ADMIN_ONLY_ROLES },
-          { label: "Scan Attendance", path: "/attendance/scan", roles: ADMIN_ONLY_ROLES },
-          { label: "Attendance Records", path: "/attendance/records", roles: ATTENDANCE_VIEW_ROLES },
-          { label: "Team Attendance", path: "/attendance/team", roles: ATTENDANCE_VIEW_ROLES },
-          { label: "Site Locations", path: "/attendance/sites", roles: ADMIN_ONLY_ROLES },
+          { label: "Daily Attendance", path: "/attendance", permission: { module: "attendance", action: "edit" } },
+          { label: "Scan Attendance", path: "/attendance/scan", permission: { module: "attendance", action: "edit" } },
+          { label: "Attendance Records", path: "/attendance/records", permission: { module: "attendance", action: "view" } },
+          { label: "Team Attendance", path: "/attendance/team", permission: { module: "attendance", action: "view" } },
+          { label: "Site Locations", path: "/attendance/sites", permission: { module: "siteLocations", action: "edit" } },
         ],
       },
-      { label: "Maintenance Staff", path: "/admin/maintenance-staff", roles: ADMIN_ONLY_ROLES },
-      { label: "Guard Master Data", path: "/admin/guards", roles: ADMIN_ONLY_ROLES },
+      {
+        label: "Maintenance Staff",
+        path: "/admin/maintenance-staff",
+        permission: { module: "maintenanceStaff", action: "view" },
+      },
+      { label: "Guard Master Data", path: "/admin/guards", permission: { module: "guards", action: "view" } },
+      { label: "User Management", path: "/admin/users", permission: { module: "users", action: "view" } },
     ],
   },
 ];
