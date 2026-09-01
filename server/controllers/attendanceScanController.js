@@ -38,7 +38,7 @@ function statusTotals(days) {
 // absorbed as the previous day's punch-out (merging two separate days into
 // one bogus ~18h+ entry) instead of starting a fresh day.
 const NIGHT_SHIFT_RESET_HOURS = 18;
-const DEFAULT_SHIFT_RESET_HOURS = 12;
+const DEFAULT_SHIFT_RESET_HOURS = 14;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const toDateKey = istDateKey;
@@ -70,12 +70,22 @@ function determineNextPunch(lastRecord, shift) {
     !lastRecord || lastRecord.type === "out" || (now - new Date(lastRecord.timestamp)) / 3600000 > resetHours;
 
   if (freshChain) {
+    // If the last record is itself a recent "out", that shift has already
+    // been closed moments ago — this new scan can't be its forgotten
+    // closing punch too, so skip the catch-up guess and treat it as a plain
+    // new punch-in. Without this, a guard who scans twice in a row right
+    // after closing out (duplicate tap, or genuinely starting the next
+    // day) has the second scan wrongly re-classified as another "out" for
+    // the previous day instead of the new day's punch-in.
+    const justClosedShift =
+      lastRecord && lastRecord.type === "out" && (now - new Date(lastRecord.timestamp)) / 3600000 < resetHours;
+
     const hour = istHour(now);
-    if (shift === "night" && hour < CATCHUP_NOON_HOUR) {
+    if (!justClosedShift && shift === "night" && hour < CATCHUP_NOON_HOUR) {
       const yesterday = new Date(now.getTime() - 24 * 3600000);
       return { type: "out", shiftDate: toDateKey(yesterday) };
     }
-    if (shift === "day" && hour >= CATCHUP_NOON_HOUR) {
+    if (!justClosedShift && shift === "day" && hour >= CATCHUP_NOON_HOUR) {
       return { type: "out", shiftDate: toDateKey(now) };
     }
     return { type: "in", shiftDate: toDateKey(now) };
