@@ -29,16 +29,16 @@ function statusTotals(days) {
   };
 }
 
-// A shift open with an "in" scan is treated as still open (its next scan is
-// the matching "out") as long as it's within this many hours — covers night
-// shifts that punch in one evening and out the next morning. Past this, an
-// old unclosed "in" is treated as abandoned and the next scan starts fresh.
-// Non-night staff get a much shorter window: without it, someone who forgets
-// to punch out and scans again the next morning has that scan wrongly
-// absorbed as the previous day's punch-out (merging two separate days into
-// one bogus ~18h+ entry) instead of starting a fresh day.
+// A night shift open with an "in" scan is treated as still open (its next
+// scan is the matching "out") as long as it's within this many hours —
+// covers shifts that punch in one evening and out the next morning, crossing
+// an IST calendar-day boundary. Past this, an old unclosed "in" is treated
+// as abandoned and the next scan starts fresh. Day/unspecified-shift staff
+// don't use an hours window at all (see determineNextPunch) — a flat elapsed
+// number can't tell a legitimate long day apart from a guard who forgot to
+// punch in one morning, scanned only once that evening, and is now starting
+// a genuinely new day: both land in roughly the same 12-14h range.
 const NIGHT_SHIFT_RESET_HOURS = 18;
-const DEFAULT_SHIFT_RESET_HOURS = 14;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const toDateKey = istDateKey;
@@ -65,27 +65,50 @@ const CATCHUP_NOON_HOUR = 12;
 // the day the guard punched IN, not the day they punched out.
 function determineNextPunch(lastRecord, shift) {
   const now = new Date();
-  const resetHours = shift === "night" ? NIGHT_SHIFT_RESET_HOURS : DEFAULT_SHIFT_RESET_HOURS;
-  const freshChain =
-    !lastRecord || lastRecord.type === "out" || (now - new Date(lastRecord.timestamp)) / 3600000 > resetHours;
+
+  if (shift === "night") {
+    const freshChain =
+      !lastRecord ||
+      lastRecord.type === "out" ||
+      (now - new Date(lastRecord.timestamp)) / 3600000 > NIGHT_SHIFT_RESET_HOURS;
+
+    if (freshChain) {
+      // If the last record is itself a recent "out", that night has already
+      // been closed moments ago — this new scan can't be its forgotten
+      // closing punch too, so skip the catch-up guess and treat it as a
+      // plain new punch-in. Without this, a guard who scans twice in a row
+      // right after closing out has the second scan wrongly re-classified
+      // as another "out" for the previous night instead of the new night's
+      // punch-in.
+      const justClosedShift =
+        lastRecord && lastRecord.type === "out" && (now - new Date(lastRecord.timestamp)) / 3600000 < NIGHT_SHIFT_RESET_HOURS;
+
+      if (!justClosedShift && istHour(now) < CATCHUP_NOON_HOUR) {
+        const yesterday = new Date(now.getTime() - 24 * 3600000);
+        return { type: "out", shiftDate: toDateKey(yesterday) };
+      }
+      return { type: "in", shiftDate: toDateKey(now) };
+    }
+    return { type: "out", shiftDate: lastRecord.shiftDate || toDateKey(lastRecord.timestamp) };
+  }
+
+  // Day shift / unspecified: pairing is scoped to the IST calendar day
+  // instead of an elapsed-hours window. A day shift never legitimately
+  // crosses midnight, so any scan on a different calendar day from the open
+  // "in" always starts a fresh "in" — no matter how few hours have passed
+  // (e.g. forgot the morning punch-in, scanned only once that evening; the
+  // next morning's scan must not be absorbed as that evening's "out"). Within
+  // the same calendar day, an open "in" pairs with the next scan as
+  // "out" even on an unusually long day.
+  const lastRecordDate = lastRecord && (lastRecord.shiftDate || toDateKey(lastRecord.timestamp));
+  const freshChain = !lastRecord || lastRecord.type === "out" || lastRecordDate !== toDateKey(now);
 
   if (freshChain) {
-    // If the last record is itself a recent "out", that shift has already
-    // been closed moments ago — this new scan can't be its forgotten
-    // closing punch too, so skip the catch-up guess and treat it as a plain
-    // new punch-in. Without this, a guard who scans twice in a row right
-    // after closing out (duplicate tap, or genuinely starting the next
-    // day) has the second scan wrongly re-classified as another "out" for
-    // the previous day instead of the new day's punch-in.
-    const justClosedShift =
-      lastRecord && lastRecord.type === "out" && (now - new Date(lastRecord.timestamp)) / 3600000 < resetHours;
+    // See the night-shift comment above — same reasoning, applied to a
+    // same-day "out" that was just recorded moments ago.
+    const justClosedShift = lastRecord && lastRecord.type === "out" && lastRecordDate === toDateKey(now);
 
-    const hour = istHour(now);
-    if (!justClosedShift && shift === "night" && hour < CATCHUP_NOON_HOUR) {
-      const yesterday = new Date(now.getTime() - 24 * 3600000);
-      return { type: "out", shiftDate: toDateKey(yesterday) };
-    }
-    if (!justClosedShift && shift === "day" && hour >= CATCHUP_NOON_HOUR) {
+    if (!justClosedShift && shift === "day" && istHour(now) >= CATCHUP_NOON_HOUR) {
       return { type: "out", shiftDate: toDateKey(now) };
     }
     return { type: "in", shiftDate: toDateKey(now) };
