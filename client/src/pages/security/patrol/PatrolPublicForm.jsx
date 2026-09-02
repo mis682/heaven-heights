@@ -27,7 +27,7 @@ export default function PatrolPublicForm() {
         // Sourced from Maintenance Staff (Security Guard designation), not
         // filtered by site — guards rotate between sites daily.
         const g = await listMaintenanceStaff({ designation: "Security Guard" });
-        setGuards(g);
+        setGuards([...g].sort((a, b) => a.name.localeCompare(b.name)));
 
         const draft = loadDraft(slug);
         if (draft && Object.keys(draft.captures).length > 0) {

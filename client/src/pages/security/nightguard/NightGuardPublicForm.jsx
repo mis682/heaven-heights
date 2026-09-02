@@ -21,7 +21,9 @@ export default function NightGuardPublicForm() {
     getNightGuardMeta().then((m) => setSites(m.sites));
     // Sourced from Maintenance Staff (Security Guard designation), not
     // filtered by site — guards rotate between sites daily.
-    listMaintenanceStaff({ designation: "Security Guard" }).then(setGuards);
+    listMaintenanceStaff({ designation: "Security Guard" }).then((g) =>
+      setGuards([...g].sort((a, b) => a.name.localeCompare(b.name)))
+    );
 
     const draft = loadDraft();
     if (draft && (draft.capture || draft.projectName)) {
