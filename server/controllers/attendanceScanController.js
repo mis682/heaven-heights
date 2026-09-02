@@ -38,7 +38,7 @@ function statusTotals(days) {
 // number can't tell a legitimate long day apart from a guard who forgot to
 // punch in one morning, scanned only once that evening, and is now starting
 // a genuinely new day: both land in roughly the same 12-14h range.
-const NIGHT_SHIFT_RESET_HOURS = 18;
+const NIGHT_SHIFT_RESET_HOURS = 14;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const toDateKey = istDateKey;
