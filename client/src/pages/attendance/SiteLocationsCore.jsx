@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { MapPin, LocateFixed, CheckCircle2 } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
-import { listSiteLocations, saveSiteLocation } from "../../api/siteLocations";
+import { listSiteLocations, saveSiteLocation, setSiteLocationEnabled } from "../../api/siteLocations";
 
 export default function SiteLocationsCore() {
   const [sites, setSites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
+  const [togglingSite, setTogglingSite] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -18,6 +19,13 @@ export default function SiteLocationsCore() {
   useEffect(() => {
     load();
   }, []);
+
+  const toggleEnabled = async (site) => {
+    setTogglingSite(site.siteName);
+    await setSiteLocationEnabled(site.siteName, !site.enabled);
+    await load();
+    setTogglingSite(null);
+  };
 
   return (
     <div>
@@ -45,6 +53,29 @@ export default function SiteLocationsCore() {
                 </span>
               ) : (
                 <span className="text-xs font-medium text-amber-600">Not set</span>
+              ),
+          },
+          {
+            key: "enabled",
+            header: "Location",
+            render: (r) =>
+              r.configured ? (
+                <button
+                  onClick={() => toggleEnabled(r)}
+                  disabled={togglingSite === r.siteName}
+                  title={r.enabled ? "Location ON — click to turn OFF" : "Location OFF — click to turn ON"}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${
+                    r.enabled ? "bg-green-500" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      r.enabled ? "translate-x-4" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              ) : (
+                <span className="text-xs text-gray-400">—</span>
               ),
           },
           {

@@ -157,7 +157,7 @@ exports.scan = async (req, res) => {
 
   if (!isSecurityGuard(staff.designation)) {
     const siteLocation = await SiteLocation.findOne({ siteName: staff.siteName });
-    if (siteLocation) {
+    if (siteLocation && siteLocation.enabled !== false) {
       const hasCoords = latitude != null && longitude != null && latitude !== "" && longitude !== "";
       if (!hasCoords) {
         // A site with a configured lock must not silently skip the geofence

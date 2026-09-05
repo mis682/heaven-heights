@@ -6,6 +6,10 @@ const SiteLocationSchema = new mongoose.Schema(
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true },
     radiusMeters: { type: Number, default: 500 },
+    // Lets a site's geofence be paused without losing the saved
+    // latitude/longitude/radius, so re-enabling it later restores the exact
+    // same location instead of requiring it to be set again.
+    enabled: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
