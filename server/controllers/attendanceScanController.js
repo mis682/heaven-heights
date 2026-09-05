@@ -116,12 +116,14 @@ function determineNextPunch(lastRecord, shift) {
   return { type: "out", shiftDate: lastRecord.shiftDate || toDateKey(lastRecord.timestamp) };
 }
 
-// Guards rotate between sites daily, so their assigned "home" site in the
-// roster doesn't reflect where they're actually posted on a given day —
-// the geofence check is skipped for them, but stays enforced for everyone
-// else (housekeeping, gardeners, drivers, etc.) who work a fixed site.
-function isSecurityGuard(designation) {
-  return (designation || "").toLowerCase().replace(/\s+/g, "") === "securityguard";
+// Guards and Electricians rotate between sites daily, so their assigned
+// "home" site in the roster doesn't reflect where they're actually posted on
+// a given day — the geofence check is skipped for them, but stays enforced
+// for everyone else (housekeeping, gardeners, drivers, etc.) who work a
+// fixed site.
+const GEOFENCE_EXEMPT_DESIGNATIONS = ["securityguard", "electrician"];
+function isGeofenceExempt(designation) {
+  return GEOFENCE_EXEMPT_DESIGNATIONS.includes((designation || "").toLowerCase().replace(/\s+/g, ""));
 }
 
 exports.lookup = async (req, res) => {
@@ -155,7 +157,7 @@ exports.scan = async (req, res) => {
   let distanceMeters = null;
   let withinGeofence = null;
 
-  if (!isSecurityGuard(staff.designation)) {
+  if (!isGeofenceExempt(staff.designation)) {
     const siteLocation = await SiteLocation.findOne({ siteName: staff.siteName });
     if (siteLocation && siteLocation.enabled !== false) {
       const hasCoords = latitude != null && longitude != null && latitude !== "" && longitude !== "";
