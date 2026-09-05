@@ -261,8 +261,8 @@ exports.records = async (req, res) => {
 
 // First scan of the day = punch in, last scan = punch out, everything in
 // between is ignored. Status is derived from the resulting duration:
-// 0 scans -> Absent, 1 scan -> Single Punch, <5h -> Absent,
-// 5h-5h30m -> Half Day, >5h30m -> Present.
+// 0 scans -> Absent, 1 scan -> Single Punch, <4h30m -> Absent,
+// 4h30m-6h30m -> Half Day, >6h30m -> Present.
 async function computeMonthSummary({ month, year, search }) {
   const y = Number(year);
   const m = Number(month);
@@ -324,8 +324,8 @@ async function computeMonthSummary({ month, year, search }) {
         const punchOut = dayScans[dayScans.length - 1].timestamp;
         const hours = (new Date(punchOut) - new Date(punchIn)) / 3600000;
         let status;
-        if (hours < 5) status = "A";
-        else if (hours <= 5.5) status = "HD";
+        if (hours < 4.5) status = "A";
+        else if (hours <= 6.5) status = "HD";
         else status = "P";
         dayResult = { day, status, punchIn, punchOut, totalHours: Math.round(hours * 100) / 100 };
       }
