@@ -22,16 +22,40 @@ const housekeepingCloudinaryAuth = {
   api_secret: process.env.CLOUDINARY_HOUSEKEEPING_API_SECRET,
 };
 
-// Once the primary account's usage crosses cloudinaryUsageAlert's failover
-// threshold, new "main" uploads (Attendance, Patrol, Night Guard, Fire Mock
-// Drill, Maintenance Staff) automatically land on the Housekeeping account
-// instead — which has its own separate, mostly-unused quota — rather than
-// starting to fail once the primary account's free-plan credits run out.
-// Reads the flag set by that periodic check rather than calling Cloudinary's
+// Two more optional fallback tiers beyond Housekeeping — set these env vars
+// on Render to add a 3rd/4th account to the chain. A tier left unconfigured
+// is simply skipped, so adding one later never needs a code change.
+const fallback3CloudinaryAuth = {
+  cloud_name: process.env.CLOUDINARY_FALLBACK3_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_FALLBACK3_API_KEY,
+  api_secret: process.env.CLOUDINARY_FALLBACK3_API_SECRET,
+};
+const fallback4CloudinaryAuth = {
+  cloud_name: process.env.CLOUDINARY_FALLBACK4_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_FALLBACK4_API_KEY,
+  api_secret: process.env.CLOUDINARY_FALLBACK4_API_SECRET,
+};
+
+// Ordered failover chain for "main" uploads (Attendance, Patrol, Night
+// Guard, Fire Mock Drill, Maintenance Staff): once the currently-active
+// account's usage crosses cloudinaryUsageAlert's failover threshold, new
+// uploads move to the next tier here instead of risking outright upload
+// failures once an account's free-plan credits run out. Falls back to
+// Primary as soon as Primary's own usage recovers (e.g. the monthly reset),
+// regardless of which tier is currently active.
+const CLOUDINARY_ACCOUNTS = [
+  { label: "Primary", ...primaryCloudinaryAuth },
+  { label: "Housekeeping", ...housekeepingCloudinaryAuth },
+  { label: "Fallback 3", ...fallback3CloudinaryAuth },
+  { label: "Fallback 4", ...fallback4CloudinaryAuth },
+].filter((a) => a.cloud_name && a.api_key && a.api_secret);
+
+// Reads the tier set by that periodic check rather than calling Cloudinary's
 // usage API on every single upload.
 async function getMainUploadAuth() {
   const state = await CloudinaryAlertState.findOne();
-  return state?.useFallbackAccount ? housekeepingCloudinaryAuth : primaryCloudinaryAuth;
+  const { label, ...auth } = CLOUDINARY_ACCOUNTS[state?.activeAccountIndex || 0] || CLOUDINARY_ACCOUNTS[0];
+  return auth;
 }
 
 class CloudinaryStorage {
@@ -149,4 +173,5 @@ module.exports = {
   fileToUrl,
   primaryCloudinaryAuth,
   housekeepingCloudinaryAuth,
+  CLOUDINARY_ACCOUNTS,
 };

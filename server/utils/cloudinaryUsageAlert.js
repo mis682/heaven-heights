@@ -1,4 +1,4 @@
-const { cloudinary } = require("../middleware/upload");
+const { cloudinary, CLOUDINARY_ACCOUNTS } = require("../middleware/upload");
 const CloudinaryAlertState = require("../models/CloudinaryAlertState");
 const { sendAlertEmail } = require("./mailer");
 
@@ -8,24 +8,33 @@ const { sendAlertEmail } = require("./mailer");
 // bandwidth/transformation reset).
 const THRESHOLDS = [50, 75, 90];
 
-// Above this, new uploads fail over to the Housekeeping account rather than
-// risk Cloudinary rejecting them outright once the primary account's credits
-// run out.
+// Above this, new uploads fail over to the next account in
+// CLOUDINARY_ACCOUNTS rather than risk Cloudinary rejecting them outright
+// once the active account's credits run out.
 const FALLBACK_THRESHOLD = 90;
 
 function toMB(bytes) {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
 
-async function checkCloudinaryUsageAndAlert() {
-  let usage;
+async function getUsage(account) {
   try {
-    usage = await cloudinary.api.usage();
+    return await cloudinary.api.usage({
+      cloud_name: account.cloud_name,
+      api_key: account.api_key,
+      api_secret: account.api_secret,
+    });
   } catch {
-    return; // transient Cloudinary API hiccup — try again next cycle
+    return null; // transient Cloudinary API hiccup — try again next cycle
   }
+}
 
-  const usedPercent = usage.credits?.used_percent ?? 0;
+async function checkCloudinaryUsageAndAlert() {
+  const primary = CLOUDINARY_ACCOUNTS[0];
+  const primaryUsage = await getUsage(primary);
+  if (!primaryUsage) return;
+
+  const usedPercent = primaryUsage.credits?.used_percent ?? 0;
 
   let state = await CloudinaryAlertState.findOne();
   if (!state) state = await CloudinaryAlertState.create({});
@@ -42,11 +51,11 @@ async function checkCloudinaryUsageAndAlert() {
     state.lastAlertedThreshold = nextThreshold;
     state.lastAlertedAt = new Date();
 
-    const storageMB = toMB(usage.storage?.usage ?? 0);
-    const bandwidthMB = toMB(usage.bandwidth?.usage ?? 0);
-    const transformations = usage.transformations?.usage ?? 0;
-    const creditsUsed = usage.credits?.usage ?? 0;
-    const creditsLimit = usage.credits?.limit ?? 25;
+    const storageMB = toMB(primaryUsage.storage?.usage ?? 0);
+    const bandwidthMB = toMB(primaryUsage.bandwidth?.usage ?? 0);
+    const transformations = primaryUsage.transformations?.usage ?? 0;
+    const creditsUsed = primaryUsage.credits?.usage ?? 0;
+    const creditsLimit = primaryUsage.credits?.limit ?? 25;
 
     await sendAlertEmail({
       subject: `Cloudinary usage at ${nextThreshold}% — Heaven Heights`,
@@ -69,23 +78,44 @@ async function checkCloudinaryUsageAndAlert() {
     });
   }
 
-  const shouldUseFallback = usedPercent >= FALLBACK_THRESHOLD;
-  if (shouldUseFallback !== state.useFallbackAccount) {
-    state.useFallbackAccount = shouldUseFallback;
+  // Failover chain: advance a tier when the currently-active account's own
+  // usage crosses the threshold, or jump straight back to Primary (tier 0)
+  // as soon as ITS usage recovers (e.g. the monthly reset) — regardless of
+  // which tier was active, since a Primary reset is the clearest signal a
+  // new cycle has begun.
+  const activeIndex = Math.min(state.activeAccountIndex || 0, CLOUDINARY_ACCOUNTS.length - 1);
+  let newIndex = activeIndex;
+
+  if (activeIndex > 0 && usedPercent < FALLBACK_THRESHOLD) {
+    newIndex = 0;
+  } else {
+    const activeUsage = activeIndex === 0 ? primaryUsage : await getUsage(CLOUDINARY_ACCOUNTS[activeIndex]);
+    const activeUsedPercent = activeUsage?.credits?.used_percent ?? 0;
+    if (activeUsedPercent >= FALLBACK_THRESHOLD && activeIndex < CLOUDINARY_ACCOUNTS.length - 1) {
+      newIndex = activeIndex + 1;
+    }
+  }
+
+  if (newIndex !== activeIndex) {
+    const fromLabel = CLOUDINARY_ACCOUNTS[activeIndex].label;
+    const toLabel = CLOUDINARY_ACCOUNTS[newIndex].label;
+    state.activeAccountIndex = newIndex;
     await sendAlertEmail({
-      subject: shouldUseFallback
-        ? "Cloudinary switched to backup account — Heaven Heights"
-        : "Cloudinary back on primary account — Heaven Heights",
-      text: shouldUseFallback
-        ? `Primary Cloudinary usage hit ${usedPercent}%, at or above the ${FALLBACK_THRESHOLD}% failover threshold.\n\n` +
-          `New uploads (Attendance, Patrol, Night Guard, Fire Mock Drill, Maintenance Staff) are now going to the Housekeeping account instead, so they don't start failing.`
-        : `Primary Cloudinary usage dropped back to ${usedPercent}%, below the ${FALLBACK_THRESHOLD}% failover threshold.\n\n` +
-          `New uploads have switched back to the primary account.`,
-      html: shouldUseFallback
-        ? `<p>Primary Cloudinary usage hit <b>${usedPercent}%</b>, at or above the ${FALLBACK_THRESHOLD}% failover threshold.</p>` +
-          `<p>New uploads (Attendance, Patrol, Night Guard, Fire Mock Drill, Maintenance Staff) are now going to the <b>Housekeeping account</b> instead, so they don't start failing.</p>`
-        : `<p>Primary Cloudinary usage dropped back to <b>${usedPercent}%</b>, below the ${FALLBACK_THRESHOLD}% failover threshold.</p>` +
-          `<p>New uploads have switched back to the primary account.</p>`,
+      subject: `Cloudinary switched to "${toLabel}" account — Heaven Heights`,
+      text:
+        `New uploads (Attendance, Patrol, Night Guard, Fire Mock Drill, Maintenance Staff) have switched ` +
+        `from the "${fromLabel}" account to the "${toLabel}" account.\n\n` +
+        (newIndex > activeIndex
+          ? `Reason: the "${fromLabel}" account's usage crossed the ${FALLBACK_THRESHOLD}% failover threshold.`
+          : `Reason: the Primary account's usage dropped back below ${FALLBACK_THRESHOLD}% (likely the monthly reset).`),
+      html:
+        `<p>New uploads (Attendance, Patrol, Night Guard, Fire Mock Drill, Maintenance Staff) have switched ` +
+        `from the <b>${fromLabel}</b> account to the <b>${toLabel}</b> account.</p>` +
+        `<p>${
+          newIndex > activeIndex
+            ? `Reason: the "${fromLabel}" account's usage crossed the ${FALLBACK_THRESHOLD}% failover threshold.`
+            : `Reason: the Primary account's usage dropped back below ${FALLBACK_THRESHOLD}% (likely the monthly reset).`
+        }</p>`,
     });
   }
 

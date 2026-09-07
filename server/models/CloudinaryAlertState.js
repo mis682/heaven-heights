@@ -10,11 +10,12 @@ const CloudinaryAlertStateSchema = new mongoose.Schema(
     lastAlertedThreshold: { type: Number, default: 0 },
     lastAlertedAt: { type: Date, default: null },
     lastUsedPercent: { type: Number, default: 0 },
-    // Once the primary account's usage crosses FALLBACK_THRESHOLD, new
-    // uploads across the app switch to the Housekeeping account (which has
-    // its own separate, mostly-unused quota) instead of failing outright.
-    // Flips back once usage drops again (e.g. the monthly reset).
-    useFallbackAccount: { type: Boolean, default: false },
+    // Index into middleware/upload.js's CLOUDINARY_ACCOUNTS chain (0 =
+    // Primary) that new "main" uploads currently go to. Advances a tier
+    // when the active account's usage crosses FALLBACK_THRESHOLD, and jumps
+    // straight back to 0 as soon as Primary's own usage recovers (e.g. the
+    // monthly reset) regardless of which tier was active.
+    activeAccountIndex: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

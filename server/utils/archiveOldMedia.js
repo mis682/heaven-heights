@@ -1,4 +1,4 @@
-const { cloudinary, primaryCloudinaryAuth, housekeepingCloudinaryAuth } = require("../middleware/upload");
+const { cloudinary, CLOUDINARY_ACCOUNTS } = require("../middleware/upload");
 const { uploadToDrive, isConfigured } = require("./googleDrive");
 const PatrolSubmission = require("../models/PatrolSubmission");
 const NightGuardSubmission = require("../models/NightGuardSubmission");
@@ -24,12 +24,14 @@ function parseCloudinaryUrl(url) {
   return { cloudName, resourceType, publicId };
 }
 
-// A file may live on either the primary or the (fallback/Housekeeping)
-// account — see getMainUploadAuth in middleware/upload.js — so deleting it
-// after copying to Drive has to authenticate against whichever account its
-// own URL says it's actually on, not just assume the primary account.
+// A file may live on any account in the failover chain — see
+// getMainUploadAuth in middleware/upload.js — so deleting it after copying
+// to Drive has to authenticate against whichever account its own URL says
+// it's actually on, not just assume the primary account.
 function authForCloudName(cloudName) {
-  return cloudName === housekeepingCloudinaryAuth.cloud_name ? housekeepingCloudinaryAuth : primaryCloudinaryAuth;
+  const match = CLOUDINARY_ACCOUNTS.find((a) => a.cloud_name === cloudName);
+  const { label, ...auth } = match || CLOUDINARY_ACCOUNTS[0];
+  return auth;
 }
 
 function isCloudinaryUrl(url) {
