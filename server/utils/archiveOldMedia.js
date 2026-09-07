@@ -13,7 +13,7 @@ const FireMockDrill = require("../models/FireMockDrill");
 const ARCHIVE_AFTER_DAYS = 25;
 // Cap per model per run so one tick never runs too long — a large backlog
 // just drains a bit more each day.
-const BATCH_LIMIT = 20;
+const BATCH_LIMIT = 25;
 
 function parseCloudinaryUrl(url) {
   const match = url.match(/res\.cloudinary\.com\/[^/]+\/(image|video|raw)\/upload\/v\d+\/([^?]+)/);
