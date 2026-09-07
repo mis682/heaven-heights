@@ -10,7 +10,7 @@ const FireMockDrill = require("../models/FireMockDrill");
 // no dependency on the Drive account being reachable). The app keeps
 // working exactly the same either way — only the URL stored in Mongo
 // changes; the field itself is untouched.
-const ARCHIVE_AFTER_DAYS = 60;
+const ARCHIVE_AFTER_DAYS = 25;
 // Cap per model per run so one tick never runs too long — a large backlog
 // just drains a bit more each day.
 const BATCH_LIMIT = 20;
