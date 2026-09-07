@@ -76,6 +76,28 @@ function PunchCell({ record, onPhotoClick, onDelete, canDelete }) {
   );
 }
 
+// Walks a staff/day's scans in chronological order and pairs each "in" with
+// the "out" immediately after it into its own session — so a guard who
+// worked, say, a Day shift and then a Night shift on the same calendar day
+// gets two separate sessions instead of one bogus ~23h block spanning both.
+// An "in" with nothing after it (still open) or a leading/lone "out" (no
+// preceding "in" in this group) becomes a session with just that one side.
+function pairSessions(sorted) {
+  const sessions = [];
+  let i = 0;
+  while (i < sorted.length) {
+    const cur = sorted[i];
+    if (cur.type === "in" && sorted[i + 1]?.type === "out") {
+      sessions.push({ in: cur, out: sorted[i + 1] });
+      i += 2;
+    } else {
+      sessions.push(cur.type === "out" ? { in: null, out: cur } : { in: cur, out: null });
+      i += 1;
+    }
+  }
+  return sessions;
+}
+
 export default function AttendanceRecordsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
@@ -115,46 +137,43 @@ export default function AttendanceRecordsPage() {
     load();
   };
 
-  // Group scans by staff + shift day, then take the chronologically earliest
-  // scan as Punch In and the latest as Punch Out — any scans in between
-  // (e.g. someone checking again mid-shift) are ignored, same rule the
-  // Team Attendance grid uses. A night shift's later scans carry shiftDate
-  // copied from the original "in", so they group with that day even though
-  // they happened after midnight. A single scan uses its own recorded type
-  // instead of always defaulting to Punch In — a night guard who forgot to
-  // punch in and only scanned once at the end of the shift is stored (and
-  // shown) as that night's Punch Out.
+  // Group scans by staff + shift day, then pair each session (In/Out) within
+  // that day into its own row — see pairSessions above. A night shift's
+  // later scans carry shiftDate copied from the original "in", so they group
+  // with that day even though they happened after midnight.
   const rows = useMemo(() => {
     const byKey = new Map();
     records.forEach((r) => {
       const dateKey = r.shiftDate || new Date(r.timestamp).toISOString().slice(0, 10);
       const key = `${r.employeeId}__${dateKey}`;
       if (!byKey.has(key)) {
-        byKey.set(key, {
-          key,
-          employeeId: r.employeeId,
-          name: r.name,
-          siteName: r.siteName,
-          dateKey,
-          scans: [],
-        });
+        byKey.set(key, { employeeId: r.employeeId, name: r.name, siteName: r.siteName, dateKey, scans: [] });
       }
       byKey.get(key).scans.push(r);
     });
-    return Array.from(byKey.values())
-      .map((row) => {
-        const sorted = [...row.scans].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        const latestTimestamp = sorted[sorted.length - 1].timestamp;
-        if (sorted.length === 1) {
-          const only = sorted[0];
-          return { ...row, in: only.type === "out" ? null : only, out: only.type === "out" ? only : null, latestTimestamp };
-        }
-        return { ...row, in: sorted[0], out: sorted[sorted.length - 1], latestTimestamp };
-      })
-      .sort((a, b) => {
-        if (a.dateKey !== b.dateKey) return a.dateKey < b.dateKey ? 1 : -1;
-        return new Date(b.latestTimestamp) - new Date(a.latestTimestamp);
+
+    const allRows = [];
+    byKey.forEach((group) => {
+      const sorted = [...group.scans].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      pairSessions(sorted).forEach((session, idx) => {
+        const latestTimestamp = (session.out || session.in).timestamp;
+        allRows.push({
+          key: `${group.employeeId}__${group.dateKey}__${idx}`,
+          employeeId: group.employeeId,
+          name: group.name,
+          siteName: group.siteName,
+          dateKey: group.dateKey,
+          in: session.in,
+          out: session.out,
+          latestTimestamp,
+        });
       });
+    });
+
+    return allRows.sort((a, b) => {
+      if (a.dateKey !== b.dateKey) return a.dateKey < b.dateKey ? 1 : -1;
+      return new Date(b.latestTimestamp) - new Date(a.latestTimestamp);
+    });
   }, [records]);
 
   return (
