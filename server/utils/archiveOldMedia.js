@@ -1,4 +1,4 @@
-const { cloudinary } = require("../middleware/upload");
+const { cloudinary, primaryCloudinaryAuth, housekeepingCloudinaryAuth } = require("../middleware/upload");
 const { uploadToDrive, isConfigured } = require("./googleDrive");
 const PatrolSubmission = require("../models/PatrolSubmission");
 const NightGuardSubmission = require("../models/NightGuardSubmission");
@@ -16,11 +16,20 @@ const ARCHIVE_AFTER_DAYS = 25;
 const BATCH_LIMIT = 25;
 
 function parseCloudinaryUrl(url) {
-  const match = url.match(/res\.cloudinary\.com\/[^/]+\/(image|video|raw)\/upload\/v\d+\/([^?]+)/);
+  const match = url.match(/res\.cloudinary\.com\/([^/]+)\/(image|video|raw)\/upload\/v\d+\/([^?]+)/);
   if (!match) return null;
-  const resourceType = match[1];
-  const publicId = resourceType === "raw" ? match[2] : match[2].replace(/\.[a-zA-Z0-9]+$/, "");
-  return { resourceType, publicId };
+  const cloudName = match[1];
+  const resourceType = match[2];
+  const publicId = resourceType === "raw" ? match[3] : match[3].replace(/\.[a-zA-Z0-9]+$/, "");
+  return { cloudName, resourceType, publicId };
+}
+
+// A file may live on either the primary or the (fallback/Housekeeping)
+// account — see getMainUploadAuth in middleware/upload.js — so deleting it
+// after copying to Drive has to authenticate against whichever account its
+// own URL says it's actually on, not just assume the primary account.
+function authForCloudName(cloudName) {
+  return cloudName === housekeepingCloudinaryAuth.cloud_name ? housekeepingCloudinaryAuth : primaryCloudinaryAuth;
 }
 
 function isCloudinaryUrl(url) {
@@ -42,7 +51,9 @@ async function archiveOneUrl(url) {
   const filename = parsed.publicId.split("/").pop();
 
   const { url: newUrl } = await uploadToDrive({ buffer, filename, mimeType });
-  await cloudinary.uploader.destroy(parsed.publicId, { resource_type: parsed.resourceType }).catch(() => {});
+  await cloudinary.uploader
+    .destroy(parsed.publicId, { resource_type: parsed.resourceType, ...authForCloudName(parsed.cloudName) })
+    .catch(() => {});
   return newUrl;
 }
 

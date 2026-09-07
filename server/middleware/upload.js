@@ -1,16 +1,50 @@
 const multer = require("multer");
 const { v2: cloudinary } = require("cloudinary");
+const CloudinaryAlertState = require("../models/CloudinaryAlertState");
 
-cloudinary.config({
+const primaryCloudinaryAuth = {
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+};
+
+cloudinary.config(primaryCloudinaryAuth);
+
+// Housekeeping photos go to a separate Cloudinary account (its own free-tier
+// quota) so this module's volume doesn't eat into the credits the other
+// modules share. Credentials are passed per-call instead of via
+// cloudinary.config() — the SDK accepts cloud_name/api_key/api_secret
+// directly in each call's options, taking precedence over the global config
+// for just that call, so this never touches the primary account's config.
+const housekeepingCloudinaryAuth = {
+  cloud_name: process.env.CLOUDINARY_HOUSEKEEPING_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_HOUSEKEEPING_API_KEY,
+  api_secret: process.env.CLOUDINARY_HOUSEKEEPING_API_SECRET,
+};
+
+// Once the primary account's usage crosses cloudinaryUsageAlert's failover
+// threshold, new "main" uploads (Attendance, Patrol, Night Guard, Fire Mock
+// Drill, Maintenance Staff) automatically land on the Housekeeping account
+// instead — which has its own separate, mostly-unused quota — rather than
+// starting to fail once the primary account's free-plan credits run out.
+// Reads the flag set by that periodic check rather than calling Cloudinary's
+// usage API on every single upload.
+async function getMainUploadAuth() {
+  const state = await CloudinaryAlertState.findOne();
+  return state?.useFallbackAccount ? housekeepingCloudinaryAuth : primaryCloudinaryAuth;
+}
 
 class CloudinaryStorage {
-  _handleFile(req, file, cb) {
+  async _handleFile(req, file, cb) {
+    let auth;
+    try {
+      auth = await getMainUploadAuth();
+    } catch (err) {
+      return cb(err);
+    }
     const uploadStream = cloudinary.uploader.upload_stream(
       {
+        ...auth,
         folder: "heaven-heights",
         resource_type: "image",
         transformation: [{ width: 1600, height: 1600, crop: "limit", quality: "auto:good", fetch_format: "auto" }],
@@ -44,9 +78,15 @@ const FIELD_RESOURCE_TYPES = {
 };
 
 class MixedCloudinaryStorage {
-  _handleFile(req, file, cb) {
+  async _handleFile(req, file, cb) {
+    let auth;
+    try {
+      auth = await getMainUploadAuth();
+    } catch (err) {
+      return cb(err);
+    }
     const resourceType = FIELD_RESOURCE_TYPES[file.fieldname] || "auto";
-    const options = { folder: "heaven-heights", resource_type: resourceType };
+    const options = { ...auth, folder: "heaven-heights", resource_type: resourceType };
     if (resourceType === "image") {
       options.transformation = [{ width: 1600, height: 1600, crop: "limit", quality: "auto:good", fetch_format: "auto" }];
     }
@@ -68,18 +108,6 @@ const uploadMixed = multer({
   storage: new MixedCloudinaryStorage(),
   limits: { fileSize: 200 * 1024 * 1024 },
 });
-
-// Housekeeping photos go to a separate Cloudinary account (its own free-tier
-// quota) so this module's volume doesn't eat into the credits the other
-// modules share. Credentials are passed per-call instead of via
-// cloudinary.config() — the SDK accepts cloud_name/api_key/api_secret
-// directly in each call's options, taking precedence over the global config
-// for just that call, so this never touches the primary account's config.
-const housekeepingCloudinaryAuth = {
-  cloud_name: process.env.CLOUDINARY_HOUSEKEEPING_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_HOUSEKEEPING_API_KEY,
-  api_secret: process.env.CLOUDINARY_HOUSEKEEPING_API_SECRET,
-};
 
 class HousekeepingCloudinaryStorage {
   _handleFile(req, file, cb) {
@@ -113,4 +141,12 @@ function fileToUrl(file) {
   return file.path;
 }
 
-module.exports = { upload, uploadMixed, uploadHousekeeping, cloudinary, fileToUrl };
+module.exports = {
+  upload,
+  uploadMixed,
+  uploadHousekeeping,
+  cloudinary,
+  fileToUrl,
+  primaryCloudinaryAuth,
+  housekeepingCloudinaryAuth,
+};

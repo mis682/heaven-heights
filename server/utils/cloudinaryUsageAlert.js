@@ -8,6 +8,11 @@ const { sendAlertEmail } = require("./mailer");
 // bandwidth/transformation reset).
 const THRESHOLDS = [50, 75, 90];
 
+// Above this, new uploads fail over to the Housekeeping account rather than
+// risk Cloudinary rejecting them outright once the primary account's credits
+// run out.
+const FALLBACK_THRESHOLD = 90;
+
 function toMB(bytes) {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
@@ -61,6 +66,26 @@ async function checkCloudinaryUsageAndAlert() {
         `<li>Transformations (this cycle): ${transformations}</li>` +
         `</ul>` +
         `<p>If this keeps climbing, guard checkpoint photo uploads could start failing once the free plan limit is hit.</p>`,
+    });
+  }
+
+  const shouldUseFallback = usedPercent >= FALLBACK_THRESHOLD;
+  if (shouldUseFallback !== state.useFallbackAccount) {
+    state.useFallbackAccount = shouldUseFallback;
+    await sendAlertEmail({
+      subject: shouldUseFallback
+        ? "Cloudinary switched to backup account — Heaven Heights"
+        : "Cloudinary back on primary account — Heaven Heights",
+      text: shouldUseFallback
+        ? `Primary Cloudinary usage hit ${usedPercent}%, at or above the ${FALLBACK_THRESHOLD}% failover threshold.\n\n` +
+          `New uploads (Attendance, Patrol, Night Guard, Fire Mock Drill, Maintenance Staff) are now going to the Housekeeping account instead, so they don't start failing.`
+        : `Primary Cloudinary usage dropped back to ${usedPercent}%, below the ${FALLBACK_THRESHOLD}% failover threshold.\n\n` +
+          `New uploads have switched back to the primary account.`,
+      html: shouldUseFallback
+        ? `<p>Primary Cloudinary usage hit <b>${usedPercent}%</b>, at or above the ${FALLBACK_THRESHOLD}% failover threshold.</p>` +
+          `<p>New uploads (Attendance, Patrol, Night Guard, Fire Mock Drill, Maintenance Staff) are now going to the <b>Housekeeping account</b> instead, so they don't start failing.</p>`
+        : `<p>Primary Cloudinary usage dropped back to <b>${usedPercent}%</b>, below the ${FALLBACK_THRESHOLD}% failover threshold.</p>` +
+          `<p>New uploads have switched back to the primary account.</p>`,
     });
   }
 
