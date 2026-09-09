@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { User, CheckCircle2, XCircle, Trash2, Sun, Moon } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
@@ -113,13 +113,22 @@ export default function AttendanceRecordsPage() {
     listSiteLocations().then((data) => setSites(data.map((s) => s.siteName)));
   }, []);
 
+  // Fast typing in the search box fires a request per keystroke; nothing
+  // guarantees they resolve in the order they were sent, so an earlier
+  // (shorter, broader) search's response can land after a later one and
+  // overwrite it with stale results. A request counter lets only the
+  // most-recently-started request's response ever get applied.
+  const requestIdRef = useRef(0);
+
   const load = async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     const data = await listAttendanceScanRecords({
       siteName: siteFilter || undefined,
       date: date || undefined,
       search: search || undefined,
     });
+    if (requestId !== requestIdRef.current) return; // a newer request superseded this one
     setRecords(data);
     setLoading(false);
   };
