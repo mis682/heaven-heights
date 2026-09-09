@@ -102,22 +102,25 @@ export default function NightGuardDailyReportPage() {
     const cleanRows = rows.filter((r) => r.date && r.site && r.timeSlot && r.guardName && r.status);
     const droppedCount = rows.length - cleanRows.length;
 
-    if (rows.length > 0 && cleanRows.length === 0) {
-      alert("Every row is missing a Date, Site, Time, Guard Name or Status — nothing was saved. Fill in all fields before saving.");
-      return;
-    }
-    // Submitting locks the report, so it's worth letting the coordinator back
-    // out and go fill in the rest first. Saving a draft never blocks on this
-    // — the completed rows are saved immediately regardless, so a cancelled
-    // (or dismissed) prompt can never discard already-finished work. Losing
-    // work here isn't hypothetical: a coordinator once hit Cancel on this
-    // prompt while saving a draft and the whole in-progress report vanished,
-    // because nothing had reached the server yet.
-    if (targetStatus === "submitted" && droppedCount > 0) {
-      const proceed = window.confirm(
-        `${droppedCount} row(s) are incomplete (missing Date/Site/Time/Guard Name/Status) and will NOT be included. Continue anyway?`
-      );
-      if (!proceed) return;
+    // Submitting locks the report, so it's worth pausing to confirm before
+    // dropping incomplete rows or submitting nothing at all — those are
+    // covered here. Saving a draft never blocks on anything below: it just
+    // silently saves whatever rows are already complete (or does nothing if
+    // none are), with no alert/confirm to interrupt the coordinator or risk
+    // losing already-finished work to a dismissed prompt.
+    if (targetStatus === "submitted") {
+      if (rows.length > 0 && cleanRows.length === 0) {
+        alert("Every row is missing a Date, Site, Time, Guard Name or Status — nothing was saved. Fill in all fields before saving.");
+        return;
+      }
+      if (droppedCount > 0) {
+        const proceed = window.confirm(
+          `${droppedCount} row(s) are incomplete (missing Date/Site/Time/Guard Name/Status) and will NOT be included. Continue anyway?`
+        );
+        if (!proceed) return;
+      }
+    } else if (cleanRows.length === 0) {
+      return; // nothing fillable yet — nothing to save
     }
 
     setSaving(true);
@@ -129,9 +132,6 @@ export default function NightGuardDailyReportPage() {
       setRows(submitted.entries.map((e) => ({ ...e })));
     } else {
       setReport(saved);
-      if (droppedCount > 0) {
-        alert(`Saved ${cleanRows.length} completed row(s). ${droppedCount} incomplete row(s) were not saved — fill them in and save again.`);
-      }
     }
     setSaving(false);
   };
