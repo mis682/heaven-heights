@@ -13,6 +13,12 @@ import {
   listNightGuardSubmissions,
 } from "../../../api/nightguard";
 import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
+import { saveDraft as saveLocalDraft, loadDraft as loadLocalDraft, clearDraft as clearLocalDraft } from "../../../utils/dailyReportDraft";
+
+// Every edit is mirrored here as it happens, not just the last successful
+// save — so a coordinator who fills in some fields and navigates to another
+// page before clicking Save doesn't lose that work when they come back.
+const DRAFT_KEY = "nightguard-report-rows-draft";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -39,6 +45,12 @@ export default function NightGuardDailyReportPage() {
   const [proofSubmissions, setProofSubmissions] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [restoredNotice, setRestoredNotice] = useState(false);
+  // Guards the autosave effect below from firing with the placeholder empty
+  // `rows` state before the initial load (server draft vs. local draft) has
+  // actually decided what rows should start out as — otherwise it would
+  // overwrite a real local draft with [] the instant this page mounts.
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     // Sourced from Maintenance Staff (Security Guard designation), not
@@ -51,11 +63,25 @@ export default function NightGuardDailyReportPage() {
       const [m, r] = await Promise.all([getNightGuardMeta(), getOpenDraft()]);
       setMeta(m);
       setReport(r);
-      setRows(r && r.entries.length > 0 ? r.entries.map((e) => ({ ...e })) : makeShiftSet(m.timeSlots));
+      const locked = r?.status === "submitted";
+      const localDraft = !locked ? loadLocalDraft(DRAFT_KEY) : null;
+      if (locked) clearLocalDraft(DRAFT_KEY);
+      if (localDraft) {
+        setRows(localDraft);
+        setRestoredNotice(true);
+      } else {
+        setRows(r && r.entries.length > 0 ? r.entries.map((e) => ({ ...e })) : makeShiftSet(m.timeSlots));
+      }
+      setLoaded(true);
     })();
   }, []);
 
   const isLocked = report?.status === "submitted";
+
+  // Mirrors every edit to localStorage as a safety net — see DRAFT_KEY above.
+  useEffect(() => {
+    if (loaded && !isLocked) saveLocalDraft(DRAFT_KEY, rows);
+  }, [rows, isLocked, loaded]);
 
   const updateRow = (idx, patch) => {
     setRows((prev) => prev.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
@@ -96,6 +122,7 @@ export default function NightGuardDailyReportPage() {
 
     setSaving(true);
     const saved = await saveDraftReport({ entries: cleanRows, preparedBy: user?.name || "" });
+    clearLocalDraft(DRAFT_KEY); // now safely on the server — the local safety-net copy is no longer needed
     if (targetStatus === "submitted") {
       const submitted = await submitReport(saved._id);
       setReport(submitted);
@@ -125,6 +152,12 @@ export default function NightGuardDailyReportPage() {
             : { label: saving ? "Saving..." : "Submit Report", icon: <Send size={16} />, onClick: () => persist("submitted") }
         }
       />
+
+      {restoredNotice && (
+        <div className="mb-4 px-3 py-2 rounded-xl bg-blue-50 text-blue-700 text-xs font-medium">
+          Aapke pichle unsaved changes restore ho gaye hain — bhoolna mat, "Save as Draft" dabana.
+        </div>
+      )}
 
       {isLocked && (
         <div className="mb-4">

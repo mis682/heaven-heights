@@ -18,6 +18,7 @@ import {
   exportPatrolReportUrl,
   exportPatrolReportPdfUrl,
 } from "../../../api/patrolReports";
+import { saveDraft as saveLocalDraft, loadDraft as loadLocalDraft, clearDraft as clearLocalDraft } from "../../../utils/dailyReportDraft";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -39,6 +40,17 @@ export default function PatrolDailyReportBuilderPage() {
   const [proofRow, setProofRow] = useState(null);
   const [proofPhotos, setProofPhotos] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [restoredNotice, setRestoredNotice] = useState(false);
+  // Guards the autosave effect below from firing with a stale/placeholder
+  // `rows` state before the load for the *current* project has actually
+  // decided what rows should start out as.
+  const [loaded, setLoaded] = useState(false);
+  // Every edit is mirrored to localStorage as it happens (see the autosave
+  // effect below), not just the last successful save, so a coordinator who
+  // fills in some fields and navigates to another page before clicking Save
+  // doesn't lose that work. Scoped per project — each patrol site keeps its
+  // own draft.
+  const draftKey = `patrol-report-rows-draft-${slug}`;
 
   useEffect(() => {
     getPatrolReportMeta(slug).then(setMeta);
@@ -58,18 +70,33 @@ export default function PatrolDailyReportBuilderPage() {
 
   useEffect(() => {
     if (!projectId || !project) return;
+    setLoaded(false);
     (async () => {
       const r = await getOpenPatrolReportDraft(projectId);
       setReport(r);
-      if (r && r.entries.length > 0) {
+      const locked = r?.status === "submitted";
+      const localDraft = !locked ? loadLocalDraft(draftKey) : null;
+      if (locked) clearLocalDraft(draftKey);
+      if (localDraft) {
+        setRows(localDraft);
+        setRestoredNotice(true);
+      } else if (r && r.entries.length > 0) {
         setRows(r.entries.map((e) => ({ ...e, checkpointStatuses: [...e.checkpointStatuses] })));
       } else {
         setRows([emptyRow(project.checkpointCount)]);
       }
+      setLoaded(true);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, project]);
 
   const isLocked = report?.status === "submitted";
+
+  // Mirrors every edit to localStorage as a safety net — see draftKey above.
+  useEffect(() => {
+    if (loaded && !isLocked) saveLocalDraft(draftKey, rows);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, isLocked, loaded]);
   const checkpointCount = report?.checkpointCount || project?.checkpointCount || 0;
 
   const updateRow = (idx, patch) => setRows((prev) => prev.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
@@ -124,6 +151,7 @@ export default function PatrolDailyReportBuilderPage() {
       entries: cleanRows,
       preparedBy: user?.name || "",
     });
+    clearLocalDraft(draftKey); // now safely on the server — the local safety-net copy is no longer needed
     if (targetStatus === "submitted") {
       const submitted = await submitPatrolReport(saved._id);
       setReport(submitted);
@@ -151,6 +179,12 @@ export default function PatrolDailyReportBuilderPage() {
           isLocked ? undefined : { label: saving ? "Saving..." : "Submit Report", icon: <Send size={16} />, onClick: () => persist("submitted") }
         }
       />
+
+      {restoredNotice && (
+        <div className="mb-4 px-3 py-2 rounded-xl bg-blue-50 text-blue-700 text-xs font-medium">
+          Aapke pichle unsaved changes restore ho gaye hain — bhoolna mat, "Save as Draft" dabana.
+        </div>
+      )}
 
       {isLocked && (
         <div className="mb-4">
