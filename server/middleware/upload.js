@@ -22,19 +22,21 @@ const housekeepingCloudinaryAuth = {
   api_secret: process.env.CLOUDINARY_HOUSEKEEPING_API_SECRET,
 };
 
-// Two more optional fallback tiers beyond Housekeeping — set these env vars
-// on Render to add a 3rd/4th account to the chain. A tier left unconfigured
-// is simply skipped, so adding one later never needs a code change.
-const fallback3CloudinaryAuth = {
-  cloud_name: process.env.CLOUDINARY_FALLBACK3_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_FALLBACK3_API_KEY,
-  api_secret: process.env.CLOUDINARY_FALLBACK3_API_SECRET,
-};
-const fallback4CloudinaryAuth = {
-  cloud_name: process.env.CLOUDINARY_FALLBACK4_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_FALLBACK4_API_KEY,
-  api_secret: process.env.CLOUDINARY_FALLBACK4_API_SECRET,
-};
+// Further optional fallback tiers beyond Housekeeping, numbered 3.. — set
+// CLOUDINARY_FALLBACK<N>_CLOUD_NAME/API_KEY/API_SECRET on Render to add one.
+// A tier left unconfigured (or any gap in the numbering) is simply skipped,
+// so adding another account later — 5th, 6th, however many — never needs a
+// code change, only new env vars.
+const MAX_FALLBACK_TIERS = 20;
+const numberedFallbackAuths = Array.from({ length: MAX_FALLBACK_TIERS - 2 }, (_, i) => {
+  const n = i + 3;
+  return {
+    label: `Fallback ${n}`,
+    cloud_name: process.env[`CLOUDINARY_FALLBACK${n}_CLOUD_NAME`],
+    api_key: process.env[`CLOUDINARY_FALLBACK${n}_API_KEY`],
+    api_secret: process.env[`CLOUDINARY_FALLBACK${n}_API_SECRET`],
+  };
+});
 
 // Ordered failover chain for "main" uploads (Attendance, Patrol, Night
 // Guard, Fire Mock Drill, Maintenance Staff): once the currently-active
@@ -46,8 +48,7 @@ const fallback4CloudinaryAuth = {
 const CLOUDINARY_ACCOUNTS = [
   { label: "Primary", ...primaryCloudinaryAuth },
   { label: "Housekeeping", ...housekeepingCloudinaryAuth },
-  { label: "Fallback 3", ...fallback3CloudinaryAuth },
-  { label: "Fallback 4", ...fallback4CloudinaryAuth },
+  ...numberedFallbackAuths,
 ].filter((a) => a.cloud_name && a.api_key && a.api_secret);
 
 // Reads the tier set by that periodic check rather than calling Cloudinary's
