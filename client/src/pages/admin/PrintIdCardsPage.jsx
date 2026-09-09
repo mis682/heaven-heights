@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IdCard, User, Download } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import FilterBar, { Select } from "../../components/FilterBar";
@@ -24,13 +24,22 @@ export default function PrintIdCardsPage() {
     getMaintenanceStaffMeta().then(setMeta);
   }, []);
 
+  // Fast typing in the search box fires a request per keystroke; nothing
+  // guarantees they resolve in the order they were sent, so an earlier
+  // (shorter, broader) search's response can land after a later one and
+  // overwrite it with stale results. A request counter lets only the
+  // most-recently-started request's response ever get applied.
+  const requestIdRef = useRef(0);
+
   useEffect(() => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     listMaintenanceStaff({
       siteName: siteFilter || undefined,
       designation: designationFilter || undefined,
       search: search || undefined,
     }).then((data) => {
+      if (requestId !== requestIdRef.current) return;
       setStaff(data);
       setLoading(false);
     });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Eye, Pencil, Trash2, Video, FileText, Image as ImageIcon, X, Copy, Loader2 } from "lucide-react";
 import PageHeader from "../../../components/PageHeader";
 import DataTable from "../../../components/DataTable";
@@ -35,9 +35,18 @@ export default function FireMockDrillSubmissionsPage() {
     getFireMockDrillMeta().then((m) => setProjects(m.projects));
   }, []);
 
+  // Fast typing in the search box fires a request per keystroke; nothing
+  // guarantees they resolve in the order they were sent, so an earlier
+  // (shorter, broader) search's response can land after a later one and
+  // overwrite it with stale results. A request counter lets only the
+  // most-recently-started request's response ever get applied.
+  const requestIdRef = useRef(0);
+
   const load = async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     const data = await listFireMockDrills({ projectName: projectFilter || undefined, search: search || undefined });
+    if (requestId !== requestIdRef.current) return;
     setDrills(data);
     setLoading(false);
   };

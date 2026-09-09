@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Plus, Pencil, Trash2, Users, Shield, Sparkles, Leaf, Car, Zap, Droplet, IdCard, User, Camera } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import StatCard from "../../components/StatCard";
@@ -42,14 +42,27 @@ export default function MaintenanceStaffPage() {
   const [uploadingId, setUploadingId] = useState(null);
 
   const loadMeta = () => getMaintenanceStaffMeta().then(setMeta);
-  const loadStats = () =>
-    getMaintenanceStaffStats({
+
+  // Fast typing in the search box fires a request per keystroke; nothing
+  // guarantees they resolve in the order they were sent, so an earlier
+  // (shorter, broader) search's response can land after a later one and
+  // overwrite it with stale results. A request counter per fetch lets only
+  // the most-recently-started request's response ever get applied.
+  const statsRequestIdRef = useRef(0);
+  const loadStats = async () => {
+    const requestId = ++statsRequestIdRef.current;
+    const res = await getMaintenanceStaffStats({
       siteName: siteFilter || undefined,
       companyName: companyFilter || undefined,
       search: search || undefined,
-    }).then(setStats);
+    });
+    if (requestId !== statsRequestIdRef.current) return;
+    setStats(res);
+  };
 
+  const requestIdRef = useRef(0);
   const load = async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     const data = await listMaintenanceStaff({
       siteName: siteFilter || undefined,
@@ -57,6 +70,7 @@ export default function MaintenanceStaffPage() {
       companyName: companyFilter || undefined,
       search: search || undefined,
     });
+    if (requestId !== requestIdRef.current) return;
     setStaff(data);
     setLoading(false);
   };
