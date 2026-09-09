@@ -7,6 +7,7 @@ import PhotoLightbox from "../../components/PhotoLightbox";
 import { listAttendanceScanRecords, deleteAttendanceScanRecord } from "../../api/attendanceScan";
 import { listSiteLocations } from "../../api/siteLocations";
 import { useAuth } from "../../context/AuthContext";
+import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
 
 function formatTotalHours(inRecord, outRecord) {
   if (!inRecord || !outRecord) return "—";
@@ -25,7 +26,7 @@ function PunchCell({ record, onPhotoClick, onDelete, canDelete }) {
     <div className="flex items-center gap-2 group">
       {record.photo ? (
         <img
-          src={record.photo}
+          src={cloudinaryThumbnailUrl(record.photo, 100)}
           alt=""
           className="w-8 h-8 rounded-full object-cover border border-gray-200 cursor-pointer shrink-0"
           onClick={() => onPhotoClick(record)}

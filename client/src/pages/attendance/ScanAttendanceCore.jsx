@@ -3,6 +3,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { CheckCircle2, XCircle, LogIn, LogOut, Sun, Moon } from "lucide-react";
 import CameraCapture from "../../components/CameraCapture";
 import { lookupStaffByEmployeeId, submitAttendanceScan } from "../../api/attendanceScan";
+import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
 
 const SCANNER_ID = "qr-scanner-region";
 
@@ -181,7 +182,7 @@ export default function ScanAttendanceCore() {
         <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
           <div className="flex items-center gap-3">
             {staff.photo ? (
-              <img src={staff.photo} alt="" className="w-14 h-14 rounded-full object-cover border border-gray-200" />
+              <img src={cloudinaryThumbnailUrl(staff.photo, 100)} alt="" className="w-14 h-14 rounded-full object-cover border border-gray-200" />
             ) : (
               <div className="w-14 h-14 rounded-full bg-gray-100 border border-gray-200" />
             )}

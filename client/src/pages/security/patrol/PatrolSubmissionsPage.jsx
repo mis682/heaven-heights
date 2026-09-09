@@ -6,6 +6,7 @@ import DataTable from "../../../components/DataTable";
 import Modal from "../../../components/Modal";
 import { listProjects } from "../../../api/projects";
 import { listPatrolSubmissions, getPatrolSubmission } from "../../../api/patrol";
+import { cloudinaryThumbnailUrl } from "../../../utils/cloudinary";
 
 export default function PatrolSubmissionsPage() {
   const [projects, setProjects] = useState([]);
@@ -90,7 +91,7 @@ export default function PatrolSubmissionsPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {viewing.photos.map((p, idx) => (
                 <div key={idx} className="rounded-xl border border-gray-200 overflow-hidden">
-                  <img src={p.photoUrl} alt={`Checkpoint ${p.checkpointId}`} className="w-full h-32 object-cover" />
+                  <img src={cloudinaryThumbnailUrl(p.photoUrl)} alt={`Checkpoint ${p.checkpointId}`} className="w-full h-32 object-cover" />
                   <div className="p-2 text-xs text-gray-600 space-y-0.5">
                     <p className="font-semibold text-heading">Checkpoint {p.checkpointId}</p>
                     <p className="flex items-center gap-1">

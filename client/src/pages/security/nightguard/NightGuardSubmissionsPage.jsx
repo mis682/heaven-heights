@@ -5,6 +5,7 @@ import FilterBar, { Select } from "../../../components/FilterBar";
 import DataTable from "../../../components/DataTable";
 import PhotoLightbox from "../../../components/PhotoLightbox";
 import { getNightGuardMeta, listNightGuardSubmissions } from "../../../api/nightguard";
+import { cloudinaryThumbnailUrl } from "../../../utils/cloudinary";
 
 export default function NightGuardSubmissionsPage() {
   const [sites, setSites] = useState([]);
@@ -84,7 +85,7 @@ export default function NightGuardSubmissionsPage() {
             header: "Photo",
             render: (r) => (
               <img
-                src={r.guardPhotoUrl}
+                src={cloudinaryThumbnailUrl(r.guardPhotoUrl, 100)}
                 alt={r.guardName}
                 onClick={() => setLightboxIndex(filteredSubmissions.indexOf(r))}
                 className="w-14 h-14 rounded-lg object-cover border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"

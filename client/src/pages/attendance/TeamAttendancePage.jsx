@@ -9,6 +9,7 @@ import {
   clearAttendanceOverride,
 } from "../../api/attendanceScan";
 import { useAuth } from "../../context/AuthContext";
+import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -183,7 +184,7 @@ export default function TeamAttendancePage() {
                   <td className="sticky left-0 bg-white px-3 py-2 z-10">
                     <div className="flex items-center gap-2">
                       {row.photo ? (
-                        <img src={row.photo} alt="" className="w-7 h-7 rounded-full object-cover border border-gray-200 shrink-0" />
+                        <img src={cloudinaryThumbnailUrl(row.photo, 100)} alt="" className="w-7 h-7 rounded-full object-cover border border-gray-200 shrink-0" />
                       ) : (
                         <div className="w-7 h-7 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
                           <User size={13} className="text-gray-400" />

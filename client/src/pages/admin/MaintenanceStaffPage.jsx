@@ -15,6 +15,7 @@ import {
   deleteMaintenanceStaff,
   idCardUrl,
 } from "../../api/maintenanceStaff";
+import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
 
 const DESIGNATION_ICONS = {
   "Security Guard": Shield,
@@ -151,7 +152,7 @@ export default function MaintenanceStaffPage() {
             header: "Photo",
             render: (r) =>
               r.photo ? (
-                <img src={r.photo} alt={r.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                <img src={cloudinaryThumbnailUrl(r.photo, 100)} alt={r.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
               ) : (
                 <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
                   <User size={16} className="text-gray-400" />

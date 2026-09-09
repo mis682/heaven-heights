@@ -14,6 +14,7 @@ import {
 } from "../../../api/nightguard";
 import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
 import { saveDraft as saveLocalDraft, loadDraft as loadLocalDraft, clearDraft as clearLocalDraft } from "../../../utils/dailyReportDraft";
+import { cloudinaryThumbnailUrl } from "../../../utils/cloudinary";
 
 // Every edit is mirrored here as it happens, not just the last successful
 // save — so a coordinator who fills in some fields and navigates to another
@@ -265,7 +266,7 @@ export default function NightGuardDailyReportPage() {
                     className="relative w-full h-28 block group"
                     title="Click to maximize"
                   >
-                    <img src={s.guardPhotoUrl} alt={s.guardName} className="w-full h-28 object-cover" />
+                    <img src={cloudinaryThumbnailUrl(s.guardPhotoUrl)} alt={s.guardName} className="w-full h-28 object-cover" />
                     <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors">
                       <Maximize2 size={18} className="text-white opacity-0 group-hover:opacity-100" />
                     </span>

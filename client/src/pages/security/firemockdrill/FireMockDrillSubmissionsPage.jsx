@@ -5,6 +5,7 @@ import DataTable from "../../../components/DataTable";
 import FilterBar, { Select } from "../../../components/FilterBar";
 import Modal from "../../../components/Modal";
 import PhotoLightbox from "../../../components/PhotoLightbox";
+import { cloudinaryThumbnailUrl } from "../../../utils/cloudinary";
 import {
   getFireMockDrillMeta,
   listFireMockDrills,
@@ -83,7 +84,7 @@ export default function FireMockDrillSubmissionsPage() {
             render: (r) =>
               r.panelPhoto ? (
                 <img
-                  src={r.panelPhoto}
+                  src={cloudinaryThumbnailUrl(r.panelPhoto, 100)}
                   alt=""
                   className="w-9 h-9 rounded-lg object-cover border border-gray-200 cursor-pointer"
                   onClick={() => setLightboxPhoto(r.panelPhoto)}

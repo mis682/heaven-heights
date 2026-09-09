@@ -5,6 +5,7 @@ import FilterBar, { Select } from "../../components/FilterBar";
 import DataTable from "../../components/DataTable";
 import { getMaintenanceStaffMeta, listMaintenanceStaff } from "../../api/maintenanceStaff";
 import { printIdCardsUrl } from "../../api/idCardPrint";
+import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
 
 // Standalone page, deliberately separate from MaintenanceStaffPage — only
 // reads staff data via the existing (unmodified) API, to print several ID
@@ -96,7 +97,7 @@ export default function PrintIdCardsPage() {
             header: "Photo",
             render: (r) =>
               r.photo ? (
-                <img src={r.photo} alt={r.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                <img src={cloudinaryThumbnailUrl(r.photo, 100)} alt={r.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
               ) : (
                 <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
                   <User size={16} className="text-gray-400" />

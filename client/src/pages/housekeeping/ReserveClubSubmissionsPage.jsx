@@ -7,6 +7,7 @@ import Modal from "../../components/Modal";
 import PhotoLightbox from "../../components/PhotoLightbox";
 import { listReserveClubSubmissions, getReserveClubSubmission } from "../../api/reserveClub";
 import { RESERVE_CLUB_FORMS } from "../../layouts/navConfig";
+import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
 
 function formLabel(formNumber) {
   return RESERVE_CLUB_FORMS.find((f) => f.formNumber === formNumber)?.label || `Form ${formNumber}`;
@@ -146,7 +147,7 @@ export default function ReserveClubSubmissionsPage() {
                     className="relative w-full h-32 block group"
                     title="Click to maximize"
                   >
-                    <img src={p.photoUrl} alt={p.checkpointLabel} className="w-full h-32 object-cover" />
+                    <img src={cloudinaryThumbnailUrl(p.photoUrl)} alt={p.checkpointLabel} className="w-full h-32 object-cover" />
                     <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors">
                       <Maximize2 size={20} className="text-white opacity-0 group-hover:opacity-100" />
                     </span>

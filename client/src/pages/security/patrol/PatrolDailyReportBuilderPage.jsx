@@ -19,6 +19,7 @@ import {
   exportPatrolReportPdfUrl,
 } from "../../../api/patrolReports";
 import { saveDraft as saveLocalDraft, loadDraft as loadLocalDraft, clearDraft as clearLocalDraft } from "../../../utils/dailyReportDraft";
+import { cloudinaryThumbnailUrl } from "../../../utils/cloudinary";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -337,7 +338,7 @@ export default function PatrolDailyReportBuilderPage() {
               {proofPhotos.map((p, idx) => (
                 <div key={idx} className="rounded-xl border border-gray-200 overflow-hidden">
                   <button type="button" onClick={() => setLightboxIndex(idx)} className="relative w-full h-28 block group" title="Click to maximize">
-                    <img src={p.photoUrl} alt={`Checkpoint ${p.checkpointId}`} className="w-full h-28 object-cover" />
+                    <img src={cloudinaryThumbnailUrl(p.photoUrl)} alt={`Checkpoint ${p.checkpointId}`} className="w-full h-28 object-cover" />
                     <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors">
                       <Maximize2 size={18} className="text-white opacity-0 group-hover:opacity-100" />
                     </span>
