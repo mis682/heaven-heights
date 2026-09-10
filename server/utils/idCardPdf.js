@@ -19,6 +19,17 @@ const CARD_HEIGHT = 170;
 const SCALE_X = CARD_WIDTH / DESIGN_WIDTH;
 const SCALE_Y = CARD_HEIGHT / DESIGN_HEIGHT;
 
+// The printed photo is a ~68pt (under 1 inch) square, so the full ~1600px
+// upload is far more resolution than a laminated card needs — request a
+// smaller on-the-fly derived version instead, same idea as the client-side
+// thumbnail optimization (client/src/utils/cloudinary.js), just sized up a
+// bit (300px vs the ~100px web avatars) since this ends up printed, not
+// just viewed on a screen.
+function cloudinaryPrintPhotoUrl(url, size = 300) {
+  if (!url || !url.includes("/upload/")) return url;
+  return url.replace("/upload/", `/upload/w_${size},h_${size},c_fill,q_auto,f_auto/`);
+}
+
 async function fetchImageBuffer(url) {
   const res = await fetch(url);
   if (!res.ok) return null;
@@ -42,7 +53,7 @@ async function drawFront(doc, staff) {
   doc.rect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT).fill("#ffffff");
   drawLogo(doc, 10, 130);
 
-  const photoBuffer = staff.photo ? await fetchImageBuffer(staff.photo).catch(() => null) : null;
+  const photoBuffer = staff.photo ? await fetchImageBuffer(cloudinaryPrintPhotoUrl(staff.photo)).catch(() => null) : null;
   const photoX = 14;
   const photoY = 48;
   const photoSize = 68;
