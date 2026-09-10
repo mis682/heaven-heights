@@ -4,6 +4,7 @@ const PatrolSubmission = require("../models/PatrolSubmission");
 const NightGuardSubmission = require("../models/NightGuardSubmission");
 const AttendanceScan = require("../models/AttendanceScan");
 const FireMockDrill = require("../models/FireMockDrill");
+const GCHousekeepingSubmission = require("../models/GCHousekeepingSubmission");
 
 // Files older than this move from Cloudinary to Google Drive to free up
 // Cloudinary storage, while everything recent stays on Cloudinary (fast CDN,
@@ -113,6 +114,26 @@ async function archiveAttendanceScans(cutoff) {
   return docs.length;
 }
 
+async function archiveGCHousekeepingSubmissions(cutoff) {
+  const docs = await GCHousekeepingSubmission.find({
+    submittedAt: { $lt: cutoff },
+    "photos.photoUrl": { $regex: "res\\.cloudinary\\.com" },
+  }).limit(BATCH_LIMIT);
+
+  for (const doc of docs) {
+    for (const photo of doc.photos) {
+      if (!isCloudinaryUrl(photo.photoUrl)) continue;
+      try {
+        photo.photoUrl = await archiveOneUrl(photo.photoUrl);
+      } catch (err) {
+        console.error("[archive] GCHousekeepingSubmission photo failed", doc._id.toString(), err.message);
+      }
+    }
+    await doc.save();
+  }
+  return docs.length;
+}
+
 async function archiveFireMockDrills(cutoff) {
   // date is a "YYYY-MM-DD" string, not a real Date field, so compare as
   // strings — works fine since ISO-formatted dates sort lexicographically.
@@ -148,6 +169,7 @@ async function archiveOldMedia() {
     nightGuard: await archiveNightGuardSubmissions(cutoff),
     attendance: await archiveAttendanceScans(cutoff),
     fireMockDrill: await archiveFireMockDrills(cutoff),
+    gcHousekeeping: await archiveGCHousekeepingSubmissions(cutoff),
   };
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   if (total > 0) console.log("[archive] processed", counts);
