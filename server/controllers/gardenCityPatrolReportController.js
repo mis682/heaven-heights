@@ -3,9 +3,82 @@ const GardenCityPatrolReport = require("../models/GardenCityPatrolReport");
 const { GARDEN_CITY_SCHEDULE } = require("../constants/gardenCitySchedule");
 const { STATUS_OPTIONS } = require("../constants/reportStatus");
 const { buildGardenCityReportPdf } = require("../utils/gardenCityReportPdf");
+const { computeGardenCitySla, addDaysToDateKey, LATE_THRESHOLD_MINUTES } = require("../utils/gardenCitySla");
 
 exports.meta = async (req, res) => {
   res.json({ statusOptions: STATUS_OPTIONS, schedule: GARDEN_CITY_SCHEDULE });
+};
+
+// Compares each scheduled checkpoint's time against the guard's actual
+// photo-capture time for that night — used by the Daily Report Builder to
+// show an On Time/Late/No Photo badge per row, purely informational (it
+// never changes what status the coordinator can pick).
+exports.getSla = async (req, res) => {
+  const { date } = req.query;
+  if (!date) return res.status(400).json({ message: "date is required" });
+  const sla = await computeGardenCitySla(date);
+  res.json({ sla, lateThresholdMinutes: LATE_THRESHOLD_MINUTES });
+};
+
+// Aggregates the same per-checkpoint SLA comparison across a date range,
+// per guard — the "who's actually late" view. A checkpoint with a photo is
+// credited to whoever's name is on that photo (the real guard, regardless
+// of who the coordinator assigned); a checkpoint with no photo at all is
+// credited to the coordinator's assignment instead, since that's the only
+// name available to hold accountable for the miss.
+exports.getGuardKpi = async (req, res) => {
+  const { from, to } = req.query;
+  if (!from || !to) return res.status(400).json({ message: "from and to are required" });
+
+  const perGuard = new Map();
+  const touch = (guardName) => {
+    if (!guardName) return null;
+    if (!perGuard.has(guardName)) {
+      perGuard.set(guardName, { guardName, onTime: 0, late: 0, noPhoto: 0, lateDetails: [] });
+    }
+    return perGuard.get(guardName);
+  };
+
+  for (let date = from; date <= to; date = addDaysToDateKey(date, 1)) {
+    const [sla, report] = await Promise.all([
+      computeGardenCitySla(date),
+      GardenCityPatrolReport.findOne({ reportDate: date }).select("entries"),
+    ]);
+
+    GARDEN_CITY_SCHEDULE.forEach((slot, idx) => {
+      const info = sla[idx];
+      if (!info) return;
+
+      if (info.slaStatus === "no_photo") {
+        const guard = touch(report?.entries?.[idx]?.guardName);
+        if (guard) guard.noPhoto += 1;
+        return;
+      }
+
+      const guard = touch(info.actualGuardName);
+      if (!guard) return;
+      if (info.slaStatus === "on_time") {
+        guard.onTime += 1;
+      } else {
+        guard.late += 1;
+        guard.lateDetails.push({
+          date,
+          checkpointLabel: slot.checkpointLabel,
+          scheduledTime: slot.time,
+          lateByMinutes: info.lateByMinutes,
+        });
+      }
+    });
+  }
+
+  const rows = Array.from(perGuard.values())
+    .map((g) => {
+      const total = g.onTime + g.late + g.noPhoto;
+      return { ...g, total, onTimePercent: total > 0 ? Math.round((g.onTime / total) * 100) : 0 };
+    })
+    .sort((a, b) => a.onTimePercent - b.onTimePercent);
+
+  res.json({ from, to, lateThresholdMinutes: LATE_THRESHOLD_MINUTES, rows });
 };
 
 exports.getByDate = async (req, res) => {

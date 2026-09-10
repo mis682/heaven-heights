@@ -5,6 +5,12 @@ export const getGardenCityReportMeta = () => api.get("/garden-city-patrol-report
 export const getGardenCityReportByDate = (date) =>
   api.get("/garden-city-patrol-report/by-date", { params: { date } }).then((r) => r.data);
 
+export const getGardenCitySla = (date) =>
+  api.get("/garden-city-patrol-report/sla", { params: { date } }).then((r) => r.data);
+
+export const getGardenCityGuardKpi = (from, to) =>
+  api.get("/garden-city-patrol-report/guard-kpi", { params: { from, to } }).then((r) => r.data);
+
 export const saveGardenCityReportDraft = (data) =>
   api.post("/garden-city-patrol-report/draft", data).then((r) => r.data);
 

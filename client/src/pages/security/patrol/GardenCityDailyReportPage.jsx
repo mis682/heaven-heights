@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Save, Send, Lock, FileText, Download } from "lucide-react";
+import { Save, Send, Lock, FileText, Download, CheckCircle2, Clock, ImageOff } from "lucide-react";
 import PageHeader from "../../../components/PageHeader";
 import StatusPill from "../../../components/StatusPill";
 import { useAuth } from "../../../context/AuthContext";
@@ -11,6 +11,7 @@ import {
   submitGardenCityReport,
   gardenCityReportExportUrl,
   gardenCityReportExportPdfUrl,
+  getGardenCitySla,
 } from "../../../api/gardenCityPatrolReport";
 
 function today() {
@@ -29,6 +30,31 @@ function getBandColors(entries) {
   return colors;
 }
 
+// Purely informational — reflects the guard's actual photo-capture time vs.
+// the scheduled slot, never affects what status the coordinator can pick.
+function SlaBadge({ info }) {
+  if (!info) return <span className="text-xs text-gray-300">—</span>;
+  if (info.slaStatus === "on_time") {
+    return (
+      <span className="inline-flex items-center gap-1 text-green-700 text-xs font-medium">
+        <CheckCircle2 size={12} /> On Time
+      </span>
+    );
+  }
+  if (info.slaStatus === "late") {
+    return (
+      <span className="inline-flex items-center gap-1 text-amber-700 text-xs font-medium">
+        <Clock size={12} /> Late by {info.lateByMinutes} min
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-gray-400 text-xs font-medium">
+      <ImageOff size={12} /> No Photo
+    </span>
+  );
+}
+
 export default function GardenCityDailyReportPage() {
   const { user } = useAuth();
   const [meta, setMeta] = useState({ statusOptions: [], schedule: [] });
@@ -37,6 +63,7 @@ export default function GardenCityDailyReportPage() {
   const [entries, setEntries] = useState([]);
   const [guards, setGuards] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [sla, setSla] = useState([]);
 
   useEffect(() => {
     getGardenCityReportMeta().then(setMeta);
@@ -57,6 +84,11 @@ export default function GardenCityDailyReportPage() {
       }
     })();
   }, [date, meta.schedule]);
+
+  useEffect(() => {
+    setSla([]);
+    getGardenCitySla(date).then((r) => setSla(r.sla));
+  }, [date]);
 
   const isLocked = report?.status === "submitted";
   const bandColors = getBandColors(entries);
@@ -111,6 +143,7 @@ export default function GardenCityDailyReportPage() {
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">Checkpoint & Time</th>
                 <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">Guard Name</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">SLA</th>
                 <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">{date}</th>
               </tr>
             </thead>
@@ -134,6 +167,9 @@ export default function GardenCityDailyReportPage() {
                         </option>
                       ))}
                     </select>
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    <SlaBadge info={sla[idx]} />
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <select
