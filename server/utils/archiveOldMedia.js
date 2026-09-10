@@ -11,10 +11,10 @@ const GCHousekeepingSubmission = require("../models/GCHousekeepingSubmission");
 // no dependency on the Drive account being reachable). The app keeps
 // working exactly the same either way — only the URL stored in Mongo
 // changes; the field itself is untouched.
-const ARCHIVE_AFTER_DAYS = 25;
+const ARCHIVE_AFTER_DAYS = 4;
 // Cap per model per run so one tick never runs too long — a large backlog
 // just drains a bit more each day.
-const BATCH_LIMIT = 25;
+const BATCH_LIMIT = 50;
 
 function parseCloudinaryUrl(url) {
   const match = url.match(/res\.cloudinary\.com\/([^/]+)\/(image|video|raw)\/upload\/v\d+\/([^?]+)/);
