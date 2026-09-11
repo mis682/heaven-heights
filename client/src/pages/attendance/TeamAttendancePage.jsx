@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { User, FileText, FileSpreadsheet } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
+import ThemedSelect from "../../components/ThemedSelect";
 import {
   getTeamAttendanceSummary,
   teamAttendanceExportExcelUrl,
@@ -119,29 +120,27 @@ export default function TeamAttendancePage() {
           placeholder="Search by name or employee ID..."
           className="input flex-1 min-w-[220px]"
         />
-        <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="input w-auto">
-          {MONTHS.map((m, i) => (
-            <option key={m} value={i + 1}>
-              {m}
-            </option>
-          ))}
-        </select>
-        <select value={year} onChange={(e) => setYear(Number(e.target.value))} className="input w-auto">
-          {[year - 1, year, year + 1].map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
+        <ThemedSelect
+          value={month}
+          onChange={(v) => setMonth(Number(v))}
+          options={MONTHS.map((m, i) => ({ value: i + 1, label: m }))}
+          className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 w-auto"
+        />
+        <ThemedSelect
+          value={year}
+          onChange={(v) => setYear(Number(v))}
+          options={[year - 1, year, year + 1].map((y) => ({ value: y, label: String(y) }))}
+          className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 w-auto"
+        />
         <a
           href={teamAttendanceExportPdfUrl({ month, year, search: search || undefined })}
-          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50"
+          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <FileText size={15} /> Export PDF
         </a>
         <a
           href={teamAttendanceExportExcelUrl({ month, year, search: search || undefined })}
-          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50"
+          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <FileSpreadsheet size={15} /> Export Excel
         </a>
@@ -149,7 +148,7 @@ export default function TeamAttendancePage() {
 
       <div className="flex flex-wrap gap-4 mb-4">
         {Object.entries(STATUS_META).map(([key, meta]) => (
-          <span key={key} className="inline-flex items-center gap-1.5 text-xs text-gray-600">
+          <span key={key} className="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             <span className={`w-5 h-5 rounded-full ${meta.className} text-white flex items-center justify-center text-[10px] font-bold shrink-0`}>
               {key}
             </span>
@@ -158,18 +157,18 @@ export default function TeamAttendancePage() {
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-x-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
         <table className="text-sm border-collapse w-full">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="sticky left-0 bg-gray-50 px-3 py-2.5 text-left font-medium text-gray-500 z-10 min-w-[180px]">
+            <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+              <th className="sticky left-0 bg-gray-50 dark:bg-gray-900/40 px-3 py-2.5 text-left font-medium text-gray-500 dark:text-gray-400 z-10 min-w-[180px]">
                 Name
               </th>
-              <th className="px-3 py-2.5 text-left font-medium text-gray-500 min-w-[80px]">Present %</th>
+              <th className="px-3 py-2.5 text-left font-medium text-gray-500 dark:text-gray-400 min-w-[80px]">Present %</th>
               {dayHeaders.map((d) => (
-                <th key={d.day} className="px-1 py-2.5 text-center font-medium text-gray-500 min-w-[38px]">
+                <th key={d.day} className="px-1 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[38px]">
                   <div>{d.day}</div>
-                  <div className="text-[10px] text-gray-400 uppercase">{d.weekday}</div>
+                  <div className="text-[10px] text-gray-400 dark:text-gray-500 uppercase">{d.weekday}</div>
                 </th>
               ))}
             </tr>
@@ -177,35 +176,35 @@ export default function TeamAttendancePage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={colSpan} className="text-center py-10 text-subtext text-sm">
+                <td colSpan={colSpan} className="text-center py-10 text-subtext dark:text-gray-400 text-sm">
                   Loading...
                 </td>
               </tr>
             ) : data.rows.length === 0 ? (
               <tr>
-                <td colSpan={colSpan} className="text-center py-10 text-subtext text-sm">
+                <td colSpan={colSpan} className="text-center py-10 text-subtext dark:text-gray-400 text-sm">
                   Koi staff nahi mila
                 </td>
               </tr>
             ) : (
               data.rows.map((row) => (
-                <tr key={row.employeeId} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
-                  <td className="sticky left-0 bg-white px-3 py-2 z-10">
+                <tr key={row.employeeId} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                  <td className="sticky left-0 bg-white dark:bg-gray-800 px-3 py-2 z-10">
                     <div className="flex items-center gap-2">
                       {row.photo ? (
-                        <img src={cloudinaryThumbnailUrl(row.photo, 100)} alt="" className="w-7 h-7 rounded-full object-cover border border-gray-200 shrink-0" />
+                        <img src={cloudinaryThumbnailUrl(row.photo, 100)} alt="" className="w-7 h-7 rounded-full object-cover border border-gray-200 dark:border-gray-700 shrink-0" />
                       ) : (
-                        <div className="w-7 h-7 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
-                          <User size={13} className="text-gray-400" />
+                        <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
+                          <User size={13} className="text-gray-400 dark:text-gray-500" />
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="font-medium text-heading truncate max-w-[130px]">{row.name}</p>
-                        <p className="text-xs text-subtext truncate max-w-[130px]">{row.employeeId}</p>
+                        <p className="font-medium text-heading dark:text-gray-100 truncate max-w-[130px]">{row.name}</p>
+                        <p className="text-xs text-subtext dark:text-gray-400 truncate max-w-[130px]">{row.employeeId}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-3 py-2 font-medium text-heading">{presentPercent(row.days)}%</td>
+                  <td className="px-3 py-2 font-medium text-heading dark:text-gray-100">{presentPercent(row.days)}%</td>
                   {row.days.map((d) => (
                     <td key={d.day} className="px-1 py-2 text-center">
                       {d.status ? (
@@ -220,12 +219,12 @@ export default function TeamAttendancePage() {
                           }
                           className={`inline-flex w-6 h-6 rounded-full ${STATUS_META[d.status].className} text-white items-center justify-center text-[10px] font-bold ${
                             isAdmin ? "cursor-context-menu" : ""
-                          } ${d.overridden ? "ring-2 ring-offset-1 ring-gray-400" : ""}`}
+                          } ${d.overridden ? "ring-2 ring-offset-1 dark:ring-offset-gray-800 ring-gray-400" : ""}`}
                         >
                           {d.status}
                         </span>
                       ) : (
-                        <span className="text-gray-300">—</span>
+                        <span className="text-gray-300 dark:text-gray-600">—</span>
                       )}
                     </td>
                   ))}
@@ -240,17 +239,17 @@ export default function TeamAttendancePage() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} onContextMenu={(e) => e.preventDefault()} />
           <div
-            className="fixed z-50 bg-white rounded-xl border border-gray-200 shadow-lg py-1.5 min-w-[170px]"
+            className="fixed z-50 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg py-1.5 min-w-[170px]"
             style={{ top: menu.y, left: menu.x }}
           >
-            <p className="px-3 py-1.5 text-xs text-subtext border-b border-gray-100 mb-1 truncate">
+            <p className="px-3 py-1.5 text-xs text-subtext dark:text-gray-400 border-b border-gray-100 dark:border-gray-700 mb-1 truncate">
               {menu.name} — {menu.day}/{month}/{year}
             </p>
             {OVERRIDE_STATUS_OPTIONS.map((s) => (
               <button
                 key={s}
                 onClick={() => applyOverride(s)}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left hover:bg-gray-50"
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <span className={`inline-flex w-5 h-5 rounded-full ${STATUS_META[s].className} text-white items-center justify-center text-[9px] font-bold`}>
                   {s}
@@ -260,8 +259,8 @@ export default function TeamAttendancePage() {
             ))}
             {menu.overridden && (
               <>
-                <div className="border-t border-gray-100 mt-1" />
-                <button onClick={clearOverride} className="w-full px-3 py-1.5 text-sm text-left text-gray-500 hover:bg-gray-50 mt-1">
+                <div className="border-t border-gray-100 dark:border-gray-700 mt-1" />
+                <button onClick={clearOverride} className="w-full px-3 py-1.5 text-sm text-left text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 mt-1">
                   Clear override (auto se calculate hone dein)
                 </button>
               </>

@@ -5,6 +5,7 @@ import DataTable from "../../../components/DataTable";
 import StatusPill from "../../../components/StatusPill";
 import Modal from "../../../components/Modal";
 import { Select } from "../../../components/FilterBar";
+import ThemedDatePicker from "../../../components/ThemedDatePicker";
 import { listSubmittedReports, getReport, unlockReport, exportReportUrl, exportReportPdfUrl } from "../../../api/nightguard";
 import { getNightGuardMeta } from "../../../api/nightguard";
 import { apiOrigin as API_BASE } from "../../../api/client";
@@ -57,10 +58,10 @@ export default function NightGuardAdminReportPage() {
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <Select value={site} onChange={setSite} options={sites} placeholder="All sites" />
-        <span className="text-sm text-subtext">Submitted between</span>
-        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input max-w-[160px]" />
-        <span className="text-sm text-subtext">and</span>
-        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input max-w-[160px]" />
+        <span className="text-sm text-subtext dark:text-gray-400">Submitted between</span>
+        <ThemedDatePicker value={dateFrom} onChange={setDateFrom} className="max-w-[160px]" />
+        <span className="text-sm text-subtext dark:text-gray-400">and</span>
+        <ThemedDatePicker value={dateTo} onChange={setDateTo} className="max-w-[160px]" />
       </div>
 
       <DataTable
@@ -79,10 +80,10 @@ export default function NightGuardAdminReportPage() {
                 <button onClick={() => view(r._id)} className="text-xs font-semibold text-primary hover:underline">
                   View
                 </button>
-                <a href={exportReportUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 hover:underline inline-flex items-center gap-1">
+                <a href={exportReportUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1">
                   <Download size={12} /> Excel
                 </a>
-                <a href={exportReportPdfUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 hover:underline inline-flex items-center gap-1">
+                <a href={exportReportPdfUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1">
                   <FileText size={12} /> PDF
                 </a>
               </div>
@@ -99,15 +100,15 @@ export default function NightGuardAdminReportPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm mb-4">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
+                <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
                   {["Date", "Site", "Time", "Status", "Guard Name"].map((h) => (
-                    <th key={h} className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500">{h}</th>
+                    <th key={h} className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {viewing.entries.map((e) => (
-                  <tr key={e._id} className="border-b border-gray-100 last:border-b-0">
+                  <tr key={e._id} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
                     <td className="px-3 py-2">{e.date || viewing.reportDate}</td>
                     <td className="px-3 py-2">{e.site}</td>
                     <td className="px-3 py-2">{e.timeSlot}</td>
@@ -121,20 +122,20 @@ export default function NightGuardAdminReportPage() {
           <div className="flex items-center gap-2">
             <a
               href={exportReportPdfUrl(viewing._id, API_BASE)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <FileText size={16} /> Download PDF
             </a>
             <a
               href={exportReportUrl(viewing._id, API_BASE)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <Download size={16} /> Download Excel
             </a>
             {user?.role === "Admin" && (
               <button
                 onClick={() => handleUnlock(viewing._id)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <Unlock size={16} /> Unlock for correction
               </button>

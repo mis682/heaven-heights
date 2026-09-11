@@ -172,23 +172,23 @@ export default function ScanAttendanceCore() {
   return (
     <div className="max-w-md mx-auto">
       {phase === "scanning" && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
           <div id={SCANNER_ID} className="rounded-xl overflow-hidden" />
-          <p className="text-xs text-subtext text-center mt-3">Staff ke ID card ka QR code camera ke saamne rakhein</p>
+          <p className="text-xs text-subtext dark:text-gray-400 text-center mt-3">Staff ke ID card ka QR code camera ke saamne rakhein</p>
         </div>
       )}
 
       {phase === "identified" && staff && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
           <div className="flex items-center gap-3">
             {staff.photo ? (
-              <img src={cloudinaryThumbnailUrl(staff.photo, 100)} alt="" className="w-14 h-14 rounded-full object-cover border border-gray-200" />
+              <img src={cloudinaryThumbnailUrl(staff.photo, 100)} alt="" className="w-14 h-14 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
             ) : (
-              <div className="w-14 h-14 rounded-full bg-gray-100 border border-gray-200" />
+              <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-700" />
             )}
             <div>
-              <p className="font-semibold text-heading">{staff.name}</p>
-              <p className="text-sm text-subtext">
+              <p className="font-semibold text-heading dark:text-gray-100">{staff.name}</p>
+              <p className="text-sm text-subtext dark:text-gray-400">
                 {staff.designation} • {staff.siteName}
               </p>
             </div>
@@ -196,7 +196,7 @@ export default function ScanAttendanceCore() {
 
           <div
             className={`flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold ${
-              nextType === "in" ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"
+              nextType === "in" ? "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
             }`}
           >
             {nextType === "in" ? <LogIn size={16} /> : <LogOut size={16} />}
@@ -205,17 +205,17 @@ export default function ScanAttendanceCore() {
 
           {isSecurityGuard(staff.designation) && (
             <div className="space-y-2">
-              <p className="text-xs text-center text-subtext">
+              <p className="text-xs text-center text-subtext dark:text-gray-400">
                 Guards ke liye location check nahi hota — site rotation ke karan.
               </p>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5 text-center">Shift</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 text-center">Shift</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setShift("day")}
                     className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                      shift === "day" ? "border-primary bg-primary-light text-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                      shift === "day" ? "border-primary bg-primary-light dark:bg-primary/20 text-primary" : "border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                   >
                     <Sun size={15} /> Day
@@ -224,7 +224,7 @@ export default function ScanAttendanceCore() {
                     type="button"
                     onClick={() => setShift("night")}
                     className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium border transition-colors ${
-                      shift === "night" ? "border-primary bg-primary-light text-primary" : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                      shift === "night" ? "border-primary bg-primary-light dark:bg-primary/20 text-primary" : "border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                   >
                     <Moon size={15} /> Night
@@ -237,7 +237,7 @@ export default function ScanAttendanceCore() {
           <CameraCapture label="Staff ki photo lein" onCapture={setCapture} />
 
           <div className="flex gap-2">
-            <button onClick={reset} className="flex-1 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-600">
+            <button onClick={reset} className="flex-1 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300">
               Cancel
             </button>
             <button
@@ -252,14 +252,14 @@ export default function ScanAttendanceCore() {
       )}
 
       {phase === "submitting" && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center text-subtext text-sm">Saving...</div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 text-center text-subtext dark:text-gray-400 text-sm">Saving...</div>
       )}
 
       {phase === "done" && result && staff && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center space-y-3">
-          <CheckCircle2 size={48} className="text-green-600 mx-auto" />
-          <p className="text-lg font-bold text-heading">Attendance Done</p>
-          <p className="text-sm text-subtext">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 text-center space-y-3">
+          <CheckCircle2 size={48} className="text-green-600 dark:text-green-400 mx-auto" />
+          <p className="text-lg font-bold text-heading dark:text-gray-100">Attendance Done</p>
+          <p className="text-sm text-subtext dark:text-gray-400">
             {staff.name} — {result.type === "in" ? "Punch In" : "Punch Out"} — {new Date(result.timestamp).toLocaleTimeString()}
           </p>
           <button onClick={reset} className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600">
@@ -269,9 +269,9 @@ export default function ScanAttendanceCore() {
       )}
 
       {phase === "error" && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center space-y-3">
-          <XCircle size={48} className="text-red-500 mx-auto" />
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 text-center space-y-3">
+          <XCircle size={48} className="text-red-500 dark:text-red-400 mx-auto" />
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
           <button onClick={reset} className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600">
             Try Again
           </button>

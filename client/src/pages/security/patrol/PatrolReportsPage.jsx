@@ -60,10 +60,10 @@ export default function PatrolReportsPage() {
             header: "Avg. Coverage",
             render: (r) => (
               <div className="flex items-center gap-2">
-                <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="w-24 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div className="h-full bg-primary" style={{ width: `${r.avgCoveragePct}%` }} />
                 </div>
-                <span className="text-xs text-gray-500">{r.avgCoveragePct}%</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{r.avgCoveragePct}%</span>
               </div>
             ),
           },

@@ -48,11 +48,11 @@ export default function SiteLocationsCore() {
             header: "Status",
             render: (r) =>
               r.configured ? (
-                <span className="inline-flex items-center gap-1 text-green-700 text-xs font-medium">
+                <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-400 text-xs font-medium">
                   <CheckCircle2 size={14} /> Set
                 </span>
               ) : (
-                <span className="text-xs font-medium text-amber-600">Not set</span>
+                <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Not set</span>
               ),
           },
           {
@@ -65,7 +65,7 @@ export default function SiteLocationsCore() {
                   disabled={togglingSite === r.siteName}
                   title={r.enabled ? "Location ON — click to turn OFF" : "Location OFF — click to turn ON"}
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${
-                    r.enabled ? "bg-green-500" : "bg-gray-300"
+                    r.enabled ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"
                   }`}
                 >
                   <span
@@ -75,14 +75,14 @@ export default function SiteLocationsCore() {
                   />
                 </button>
               ) : (
-                <span className="text-xs text-gray-400">—</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
               ),
           },
           {
             key: "actions",
             header: "Actions",
             render: (r) => (
-              <button onClick={() => setEditing(r)} className="text-gray-500 hover:text-primary" title="Set location">
+              <button onClick={() => setEditing(r)} className="text-gray-500 dark:text-gray-400 hover:text-primary" title="Set location">
                 <MapPin size={16} />
               </button>
             ),
@@ -160,7 +160,7 @@ function SiteLocationModal({ site, onClose, onSaved }) {
           type="button"
           onClick={useMyLocation}
           disabled={locating}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-primary text-primary font-medium text-sm hover:bg-primary-light"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-primary text-primary font-medium text-sm hover:bg-primary-light dark:hover:bg-primary/20"
         >
           <LocateFixed size={16} />
           {locating ? "Location le rahe hain..." : "Use My Current Location"}
@@ -197,7 +197,7 @@ function SiteLocationModal({ site, onClose, onSaved }) {
           />
         </Field>
 
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
 
         <button disabled={saving} className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 mt-2">
           {saving ? "Saving..." : "Save Location"}
@@ -210,7 +210,7 @@ function SiteLocationModal({ site, onClose, onSaved }) {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       {children}
     </div>
   );

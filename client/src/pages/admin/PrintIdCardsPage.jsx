@@ -106,9 +106,9 @@ export default function PrintIdCardsPage() {
             header: "Photo",
             render: (r) =>
               r.photo ? (
-                <img src={cloudinaryThumbnailUrl(r.photo, 100)} alt={r.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                <img src={cloudinaryThumbnailUrl(r.photo, 100)} alt={r.name} className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 flex items-center justify-center">
                   <User size={16} className="text-gray-400" />
                 </div>
               ),
@@ -125,7 +125,7 @@ export default function PrintIdCardsPage() {
                 href={printIdCardsUrl([r._id])}
                 target="_blank"
                 rel="noreferrer"
-                className="text-gray-500 hover:text-primary"
+                className="text-gray-500 dark:text-gray-400 hover:text-primary"
                 title="Download this ID Card"
               >
                 <IdCard size={16} />

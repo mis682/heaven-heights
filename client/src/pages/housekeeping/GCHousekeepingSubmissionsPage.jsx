@@ -5,6 +5,8 @@ import StatCard from "../../components/StatCard";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
 import PhotoLightbox from "../../components/PhotoLightbox";
+import ThemedSelect from "../../components/ThemedSelect";
+import ThemedDatePicker from "../../components/ThemedDatePicker";
 import { listGCHousekeepingSubmissions, getGCHousekeepingSubmission } from "../../api/gcHousekeeping";
 import { GC_HOUSEKEEPING_FORMS } from "../../layouts/navConfig";
 import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
@@ -55,10 +57,10 @@ export default function GCHousekeepingSubmissionsPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         {GC_HOUSEKEEPING_FORMS.map((f) => (
-          <div key={f.formNumber} className="bg-white rounded-xl border border-gray-200 p-3 flex items-center justify-between gap-2">
+          <div key={f.formNumber} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 flex items-center justify-between gap-2">
             <div>
-              <p className="text-sm font-semibold text-heading">{f.label}</p>
-              <p className="text-xs text-subtext">
+              <p className="text-sm font-semibold text-heading dark:text-gray-100">{f.label}</p>
+              <p className="text-xs text-subtext dark:text-gray-400">
                 Checkpoints {f.checkpointStart}–{f.checkpointEnd}
               </p>
             </div>
@@ -72,7 +74,7 @@ export default function GCHousekeepingSubmissionsPage() {
               </button>
               <button
                 onClick={() => window.open(`/gc-housekeeping-form/${f.formNumber}`, "_blank")}
-                className="text-xs font-semibold text-gray-500 hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:underline flex items-center gap-1"
                 title="Open form"
               >
                 <ExternalLink size={13} /> Open
@@ -87,18 +89,17 @@ export default function GCHousekeepingSubmissionsPage() {
       </div>
 
       <div className="flex items-center gap-2 mb-4 flex-wrap">
-        <span className="text-sm text-subtext">Submitted between</span>
-        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input max-w-[160px]" />
-        <span className="text-sm text-subtext">and</span>
-        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input max-w-[160px]" />
-        <select value={formFilter} onChange={(e) => setFormFilter(e.target.value)} className="input max-w-[220px]">
-          <option value="">All forms</option>
-          {GC_HOUSEKEEPING_FORMS.map((f) => (
-            <option key={f.formNumber} value={f.formNumber}>
-              {f.label}
-            </option>
-          ))}
-        </select>
+        <span className="text-sm text-subtext dark:text-gray-400">Submitted between</span>
+        <ThemedDatePicker value={dateFrom} onChange={setDateFrom} className="max-w-[160px]" />
+        <span className="text-sm text-subtext dark:text-gray-400">and</span>
+        <ThemedDatePicker value={dateTo} onChange={setDateTo} className="max-w-[160px]" />
+        <ThemedSelect
+          value={formFilter}
+          onChange={setFormFilter}
+          options={GC_HOUSEKEEPING_FORMS.map((f) => ({ value: f.formNumber, label: f.label }))}
+          placeholder="All forms"
+          className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 max-w-[220px] w-full"
+        />
       </div>
 
       <DataTable
@@ -128,11 +129,11 @@ export default function GCHousekeepingSubmissionsPage() {
       {viewing && (
         <Modal title={`${viewing.submittedBy} — ${formLabel(viewing.formNumber)}`} onClose={() => setViewing(null)} wide>
           {viewing.photos.length === 0 ? (
-            <p className="text-sm text-subtext text-center py-6">No checkpoint photos were submitted.</p>
+            <p className="text-sm text-subtext dark:text-gray-400 text-center py-6">No checkpoint photos were submitted.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {sortedPhotos(viewing.photos).map((p, idx) => (
-                <div key={idx} className="rounded-xl border border-gray-200 overflow-hidden">
+                <div key={idx} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setLightboxIndex(idx)}
@@ -144,8 +145,8 @@ export default function GCHousekeepingSubmissionsPage() {
                       <Maximize2 size={20} className="text-white opacity-0 group-hover:opacity-100" />
                     </span>
                   </button>
-                  <div className="p-2 text-xs text-gray-600 space-y-0.5">
-                    <p className="font-semibold text-heading">Checkpoint {p.checkpointId}</p>
+                  <div className="p-2 text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
+                    <p className="font-semibold text-heading dark:text-gray-100">Checkpoint {p.checkpointId}</p>
                     <p className="flex items-center gap-1">
                       <Clock3 size={12} /> {new Date(p.capturedAt).toLocaleString()}
                     </p>

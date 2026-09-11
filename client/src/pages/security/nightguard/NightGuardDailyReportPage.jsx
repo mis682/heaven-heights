@@ -4,6 +4,9 @@ import PageHeader from "../../../components/PageHeader";
 import StatusPill from "../../../components/StatusPill";
 import Modal from "../../../components/Modal";
 import PhotoLightbox from "../../../components/PhotoLightbox";
+import ThemedSelect from "../../../components/ThemedSelect";
+import ThemedDatePicker from "../../../components/ThemedDatePicker";
+import { confirmAction, alertMessage } from "../../../utils/confirmDialog";
 import { useAuth } from "../../../context/AuthContext";
 import {
   getNightGuardMeta,
@@ -111,13 +114,16 @@ export default function NightGuardDailyReportPage() {
     // losing already-finished work to a dismissed prompt.
     if (targetStatus === "submitted") {
       if (rows.length > 0 && cleanRows.length === 0) {
-        alert("Every row is missing a Date, Site, Time, Guard Name or Status — nothing was saved. Fill in all fields before saving.");
+        await alertMessage("Every row is missing a Date, Site, Time, Guard Name or Status — nothing was saved. Fill in all fields before saving.");
         return;
       }
       if (droppedCount > 0) {
-        const proceed = window.confirm(
-          `${droppedCount} row(s) are incomplete (missing Date/Site/Time/Guard Name/Status) and will NOT be included. Continue anyway?`
-        );
+        const proceed = await confirmAction({
+          title: "Incomplete rows will be skipped",
+          text: `${droppedCount} row(s) are incomplete (missing Date/Site/Time/Guard Name/Status) and will NOT be included. Continue anyway?`,
+          confirmText: "Continue",
+          danger: true,
+        });
         if (!proceed) return;
       }
     } else if (cleanRows.length === 0) {
@@ -155,26 +161,26 @@ export default function NightGuardDailyReportPage() {
       />
 
       {restoredNotice && (
-        <div className="mb-4 px-3 py-2 rounded-xl bg-blue-50 text-blue-700 text-xs font-medium">
+        <div className="mb-4 px-3 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
           Aapke pichle unsaved changes restore ho gaye hain — bhoolna mat, "Save as Draft" dabana.
         </div>
       )}
 
       {isLocked && (
         <div className="mb-4">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">
             <Lock size={12} /> Submitted — read only (ask Admin to unlock)
           </span>
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
+              <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
                 {["Date", "Site", "Time", "Status", "Guard Name", "Proof", ""].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                  <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     {h}
                   </th>
                 ))}
@@ -182,46 +188,44 @@ export default function NightGuardDailyReportPage() {
             </thead>
             <tbody>
               {rows.map((row, idx) => (
-                <tr key={idx} className="border-b border-gray-100 last:border-b-0">
+                <tr key={idx} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
                   <td className="px-4 py-2">
-                    <input
-                      type="date"
+                    <ThemedDatePicker
                       disabled={isLocked}
                       value={row.date || ""}
                       max={today()}
-                      onChange={(e) => updateRow(idx, { date: e.target.value })}
-                      className="input min-w-[150px]"
+                      onChange={(v) => updateRow(idx, { date: v })}
+                      className="min-w-[150px]"
                     />
                   </td>
                   <td className="px-4 py-2">
-                    <select
+                    <ThemedSelect
                       disabled={isLocked}
                       value={row.site}
-                      onChange={(e) => updateRow(idx, { site: e.target.value, guardName: "" })}
-                      className="input"
-                    >
-                      <option value="">Select site</option>
-                      {meta.sites.map((s) => <option key={s}>{s}</option>)}
-                    </select>
+                      onChange={(v) => updateRow(idx, { site: v, guardName: "" })}
+                      options={meta.sites}
+                      placeholder="Select site"
+                    />
                   </td>
-                  <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{row.timeSlot}</td>
+                  <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.timeSlot}</td>
                   <td className="px-4 py-2">
-                    <select disabled={isLocked} value={row.status} onChange={(e) => updateRow(idx, { status: e.target.value })} className="input">
-                      <option value="">Status</option>
-                      {meta.statusOptions.map((s) => <option key={s}>{s}</option>)}
-                    </select>
+                    <ThemedSelect
+                      disabled={isLocked}
+                      value={row.status}
+                      onChange={(v) => updateRow(idx, { status: v })}
+                      options={meta.statusOptions}
+                      placeholder="Status"
+                    />
                     {row.status && <div className="mt-1"><StatusPill status={row.status} /></div>}
                   </td>
                   <td className="px-4 py-2">
-                    <select
+                    <ThemedSelect
                       disabled={isLocked}
                       value={row.guardName}
-                      onChange={(e) => updateRow(idx, { guardName: e.target.value })}
-                      className="input"
-                    >
-                      <option value="">Select guard</option>
-                      {guards.map((g) => <option key={g._id} value={g.name}>{g.name}</option>)}
-                    </select>
+                      onChange={(v) => updateRow(idx, { guardName: v })}
+                      options={guards.map((g) => ({ value: g.name, label: g.name }))}
+                      placeholder="Select guard"
+                    />
                   </td>
                   <td className="px-4 py-2">
                     <button onClick={() => openProof(row)} className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
@@ -230,7 +234,7 @@ export default function NightGuardDailyReportPage() {
                   </td>
                   <td className="px-4 py-2">
                     {!isLocked && (
-                      <button onClick={() => removeRow(idx)} className="text-gray-400 hover:text-red-600">
+                      <button onClick={() => removeRow(idx)} className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400">
                         <Trash2 size={16} />
                       </button>
                     )}
@@ -246,7 +250,7 @@ export default function NightGuardDailyReportPage() {
         <button
           onClick={() => persist("draft")}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <Save size={16} /> {saving ? "Saving..." : "Save as Draft"}
         </button>
@@ -255,11 +259,11 @@ export default function NightGuardDailyReportPage() {
       {proofRow && (
         <Modal title={`Proof — ${proofRow.site || "Select a site"}`} onClose={() => setProofRow(null)} wide>
           {proofSubmissions.length === 0 ? (
-            <p className="text-sm text-subtext text-center py-6">No guard submissions found for this site / time.</p>
+            <p className="text-sm text-subtext dark:text-gray-400 text-center py-6">No guard submissions found for this site / time.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {proofSubmissions.map((s, idx) => (
-                <div key={s._id} className="rounded-xl border border-gray-200 overflow-hidden">
+                <div key={s._id} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setLightboxIndex(idx)}
@@ -271,8 +275,8 @@ export default function NightGuardDailyReportPage() {
                       <Maximize2 size={18} className="text-white opacity-0 group-hover:opacity-100" />
                     </span>
                   </button>
-                  <div className="p-2 text-xs text-gray-600">
-                    <p className="font-semibold text-heading">{s.guardName}</p>
+                  <div className="p-2 text-xs text-gray-600 dark:text-gray-400">
+                    <p className="font-semibold text-heading dark:text-gray-100">{s.guardName}</p>
                     <p>{new Date(s.capturedAt).toLocaleTimeString()}</p>
                   </div>
                 </div>

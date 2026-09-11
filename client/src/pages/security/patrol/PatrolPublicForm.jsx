@@ -5,6 +5,7 @@ import { getProjectBySlug } from "../../../api/projects";
 import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
 import { createPatrolSubmission } from "../../../api/patrol";
 import CameraCapture from "../../../components/CameraCapture";
+import ThemedSelect from "../../../components/ThemedSelect";
 import { saveDraft, loadDraft, clearDraft } from "../../../utils/patrolDraft";
 
 export default function PatrolPublicForm() {
@@ -100,43 +101,38 @@ export default function PatrolPublicForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] px-4 py-8">
+    <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 px-4 py-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center">
             <Building2 size={20} className="text-white" />
           </div>
           <div>
-            <p className="font-bold text-heading text-lg">{project.name} — Patrol Checkpoints</p>
-            <p className="text-sm text-subtext">Capture proof photos for each checkpoint you covered.</p>
+            <p className="font-bold text-heading dark:text-gray-100 text-lg">{project.name} — Patrol Checkpoints</p>
+            <p className="text-sm text-subtext dark:text-gray-400">Capture proof photos for each checkpoint you covered.</p>
           </div>
         </div>
 
-        <form onSubmit={submit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-5">
+        <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 space-y-5">
           {restoredNotice && (
-            <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2">
               <RefreshCw size={13} />
               Aapke pehle liye gaye photos restore ho gaye hain — bas baaki checkpoints puri karein.
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Guard Name</label>
-            <select
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Guard Name</label>
+            <ThemedSelect
               required
               value={guardName}
-              onChange={(e) => setGuardName(e.target.value)}
-              className="input"
-            >
-              <option value="">Select your name</option>
-              {guards.map((g) => (
-                <option key={g._id} value={g.name}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
+              onChange={setGuardName}
+              options={guards.map((g) => ({ value: g.name, label: g.name }))}
+              placeholder="Select your name"
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2"
+            />
             {guards.length === 0 && (
-              <p className="text-xs text-amber-600 mt-1">No guards found yet — contact your coordinator.</p>
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">No guards found yet — contact your coordinator.</p>
             )}
           </div>
 
@@ -166,11 +162,11 @@ export default function PatrolPublicForm() {
 
 function CenteredMessage({ title, message, icon }) {
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 flex items-center justify-center px-4">
       <div className="text-center max-w-sm">
         {icon && <div className="flex justify-center mb-3">{icon}</div>}
-        <p className="font-semibold text-heading text-lg">{title}</p>
-        <p className="text-sm text-subtext mt-1">{message}</p>
+        <p className="font-semibold text-heading dark:text-gray-100 text-lg">{title}</p>
+        <p className="text-sm text-subtext dark:text-gray-400 mt-1">{message}</p>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import PageHeader from "../../../components/PageHeader";
 import FilterBar, { Select } from "../../../components/FilterBar";
 import DataTable from "../../../components/DataTable";
 import PhotoLightbox from "../../../components/PhotoLightbox";
+import ThemedDatePicker from "../../../components/ThemedDatePicker";
 import { getNightGuardMeta, listNightGuardSubmissions } from "../../../api/nightguard";
 import { cloudinaryThumbnailUrl } from "../../../utils/cloudinary";
 
@@ -70,10 +71,10 @@ export default function NightGuardSubmissionsPage() {
           <>
             <Select value={site} onChange={setSite} options={sites} placeholder="All sites" />
             <Select value={guardFilter} onChange={setGuardFilter} options={guardOptions} placeholder="All guards" />
-            <span className="text-sm text-subtext">Captured between</span>
-            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input max-w-[160px]" />
-            <span className="text-sm text-subtext">and</span>
-            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input max-w-[160px]" />
+            <span className="text-sm text-subtext dark:text-gray-400">Captured between</span>
+            <ThemedDatePicker value={dateFrom} onChange={setDateFrom} className="max-w-[160px]" />
+            <span className="text-sm text-subtext dark:text-gray-400">and</span>
+            <ThemedDatePicker value={dateTo} onChange={setDateTo} className="max-w-[160px]" />
           </>
         }
       />
@@ -88,7 +89,7 @@ export default function NightGuardSubmissionsPage() {
                 src={cloudinaryThumbnailUrl(r.guardPhotoUrl, 100)}
                 alt={r.guardName}
                 onClick={() => setLightboxIndex(filteredSubmissions.indexOf(r))}
-                className="w-14 h-14 rounded-lg object-cover border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                className="w-14 h-14 rounded-lg object-cover border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
               />
             ),
           },

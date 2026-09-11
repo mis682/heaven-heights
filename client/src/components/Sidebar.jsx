@@ -31,7 +31,7 @@ function NavItem({ item, collapsed, depth = 0, onNavigate, access }) {
         <button
           onClick={() => setOpen((o) => !o)}
           className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            isActiveBranch ? "text-primary" : "text-gray-600 hover:bg-gray-100"
+            isActiveBranch ? "text-primary" : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/60"
           }`}
           style={{ paddingLeft: `${12 + depth * 12}px` }}
         >
@@ -61,8 +61,8 @@ function NavItem({ item, collapsed, depth = 0, onNavigate, access }) {
       className={({ isActive }) =>
         `flex items-center gap-2 rounded-lg text-sm font-medium py-2 border-l-[3px] transition-colors ${
           isActive
-            ? "border-primary text-primary bg-primary-light"
-            : "border-transparent text-gray-600 hover:bg-gray-100"
+            ? "border-primary text-primary bg-primary-light dark:bg-primary/15"
+            : "border-transparent text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/60"
         }`
       }
       style={{ paddingLeft: `${12 + depth * 12}px`, paddingRight: "12px" }}
@@ -81,18 +81,18 @@ export default function Sidebar({ collapsed, mobileOpen, onClose }) {
       {mobileOpen && <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={onClose} />}
 
       <aside
-        className={`fixed md:sticky top-0 left-0 h-screen z-50 w-[260px] shrink-0 border-r border-gray-200 bg-white flex flex-col transition-transform md:transition-all duration-200 ${
+        className={`fixed md:sticky top-0 md:top-1 left-0 md:left-1 h-screen md:h-[calc(100vh-0.5rem)] z-50 w-[260px] shrink-0 border border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 md:backdrop-blur-xl md:rounded-xl md:shadow-sm flex flex-col transition-transform md:transition-all duration-200 ${
           collapsed ? "md:w-[64px]" : "md:w-[260px]"
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
-        <div className="flex items-center gap-2 px-4 h-16 border-b border-gray-200">
+        <div className="flex items-center gap-2 px-4 h-16 border-b border-gray-200 dark:border-gray-700">
           <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
             <Building2 size={18} className="text-white" />
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <p className="font-bold text-heading leading-tight truncate">Heaven Heights</p>
-              <p className="text-xs text-subtext leading-tight truncate">Company Portal</p>
+              <p className="font-bold text-heading dark:text-gray-100 leading-tight truncate">Heaven Heights</p>
+              <p className="text-xs text-subtext dark:text-gray-400 leading-tight truncate">Company Portal</p>
             </div>
           )}
         </div>
@@ -101,7 +101,7 @@ export default function Sidebar({ collapsed, mobileOpen, onClose }) {
           {NAV_SECTIONS.map((section) => (
             <div key={section.id}>
               {!collapsed && section.label && (
-                <p className="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                <p className="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
                   {section.label}
                 </p>
               )}

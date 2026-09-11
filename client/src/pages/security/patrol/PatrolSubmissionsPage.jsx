@@ -4,6 +4,7 @@ import PageHeader from "../../../components/PageHeader";
 import FilterBar, { Select } from "../../../components/FilterBar";
 import DataTable from "../../../components/DataTable";
 import Modal from "../../../components/Modal";
+import ThemedDatePicker from "../../../components/ThemedDatePicker";
 import { listProjects } from "../../../api/projects";
 import { listPatrolSubmissions, getPatrolSubmission } from "../../../api/patrol";
 import { cloudinaryThumbnailUrl } from "../../../utils/cloudinary";
@@ -50,7 +51,7 @@ export default function PatrolSubmissionsPage() {
               options={projects.map((p) => ({ value: p._id, label: p.name }))}
               placeholder="All projects"
             />
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input max-w-[160px]" />
+            <ThemedDatePicker value={date} onChange={setDate} className="max-w-[160px]" />
           </>
         }
       />
@@ -86,14 +87,14 @@ export default function PatrolSubmissionsPage() {
       {viewing && (
         <Modal title={`${viewing.guardName} — ${viewing.projectName}`} onClose={() => setViewing(null)} wide>
           {viewing.photos.length === 0 ? (
-            <p className="text-sm text-subtext text-center py-6">No checkpoint photos were submitted.</p>
+            <p className="text-sm text-subtext dark:text-gray-400 text-center py-6">No checkpoint photos were submitted.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {viewing.photos.map((p, idx) => (
-                <div key={idx} className="rounded-xl border border-gray-200 overflow-hidden">
+                <div key={idx} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <img src={cloudinaryThumbnailUrl(p.photoUrl)} alt={`Checkpoint ${p.checkpointId}`} className="w-full h-32 object-cover" />
-                  <div className="p-2 text-xs text-gray-600 space-y-0.5">
-                    <p className="font-semibold text-heading">Checkpoint {p.checkpointId}</p>
+                  <div className="p-2 text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
+                    <p className="font-semibold text-heading dark:text-gray-100">Checkpoint {p.checkpointId}</p>
                     <p className="flex items-center gap-1">
                       <Clock3 size={12} /> {new Date(p.capturedAt).toLocaleString()}
                     </p>

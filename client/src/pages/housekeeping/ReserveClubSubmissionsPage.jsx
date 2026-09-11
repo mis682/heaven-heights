@@ -5,6 +5,8 @@ import StatCard from "../../components/StatCard";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
 import PhotoLightbox from "../../components/PhotoLightbox";
+import ThemedSelect from "../../components/ThemedSelect";
+import ThemedDatePicker from "../../components/ThemedDatePicker";
 import { listReserveClubSubmissions, getReserveClubSubmission } from "../../api/reserveClub";
 import { RESERVE_CLUB_FORMS } from "../../layouts/navConfig";
 import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
@@ -50,14 +52,14 @@ export default function ReserveClubSubmissionsPage() {
       />
 
       {RESERVE_CLUB_FORMS.length === 0 ? (
-        <p className="text-sm text-subtext mb-5">Koi form abhi tak add nahi hua hai.</p>
+        <p className="text-sm text-subtext dark:text-gray-400 mb-5">Koi form abhi tak add nahi hua hai.</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
           {RESERVE_CLUB_FORMS.map((f) => (
-            <div key={f.formNumber} className="bg-white rounded-xl border border-gray-200 p-3 flex items-center justify-between gap-2">
+            <div key={f.formNumber} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 flex items-center justify-between gap-2">
               <div>
-                <p className="text-sm font-semibold text-heading">{f.label}</p>
-                <p className="text-xs text-subtext">{f.checkpoints.length} checkpoints</p>
+                <p className="text-sm font-semibold text-heading dark:text-gray-100">{f.label}</p>
+                <p className="text-xs text-subtext dark:text-gray-400">{f.checkpoints.length} checkpoints</p>
               </div>
               <div className="flex flex-col gap-1 items-end">
                 <button
@@ -69,7 +71,7 @@ export default function ReserveClubSubmissionsPage() {
                 </button>
                 <button
                   onClick={() => window.open(`/reserve-club-form/${f.formNumber}`, "_blank")}
-                  className="text-xs font-semibold text-gray-500 hover:underline flex items-center gap-1"
+                  className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:underline flex items-center gap-1"
                   title="Open form"
                 >
                   <ExternalLink size={13} /> Open
@@ -85,18 +87,17 @@ export default function ReserveClubSubmissionsPage() {
       </div>
 
       <div className="flex items-center gap-2 mb-4 flex-wrap">
-        <span className="text-sm text-subtext">Submitted between</span>
-        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input max-w-[160px]" />
-        <span className="text-sm text-subtext">and</span>
-        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input max-w-[160px]" />
-        <select value={formFilter} onChange={(e) => setFormFilter(e.target.value)} className="input max-w-[220px]">
-          <option value="">All forms</option>
-          {RESERVE_CLUB_FORMS.map((f) => (
-            <option key={f.formNumber} value={f.formNumber}>
-              {f.label}
-            </option>
-          ))}
-        </select>
+        <span className="text-sm text-subtext dark:text-gray-400">Submitted between</span>
+        <ThemedDatePicker value={dateFrom} onChange={setDateFrom} className="max-w-[160px]" />
+        <span className="text-sm text-subtext dark:text-gray-400">and</span>
+        <ThemedDatePicker value={dateTo} onChange={setDateTo} className="max-w-[160px]" />
+        <ThemedSelect
+          value={formFilter}
+          onChange={setFormFilter}
+          options={RESERVE_CLUB_FORMS.map((f) => ({ value: f.formNumber, label: f.label }))}
+          placeholder="All forms"
+          className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 max-w-[220px] w-full"
+        />
       </div>
 
       <DataTable
@@ -128,19 +129,19 @@ export default function ReserveClubSubmissionsPage() {
           {viewing.textAnswers?.length > 0 && (
             <div className="mb-4 space-y-1.5">
               {viewing.textAnswers.map((t, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                  <span className="font-medium text-heading">{t.label}</span>
-                  <span className="text-gray-600">{t.value || <span className="text-gray-300">—</span>}</span>
+                <div key={idx} className="flex items-center justify-between text-sm bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2">
+                  <span className="font-medium text-heading dark:text-gray-100">{t.label}</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t.value || <span className="text-gray-300 dark:text-gray-600">—</span>}</span>
                 </div>
               ))}
             </div>
           )}
           {viewing.photos.length === 0 ? (
-            <p className="text-sm text-subtext text-center py-6">No checkpoint photos were submitted.</p>
+            <p className="text-sm text-subtext dark:text-gray-400 text-center py-6">No checkpoint photos were submitted.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {viewing.photos.map((p, idx) => (
-                <div key={idx} className="rounded-xl border border-gray-200 overflow-hidden">
+                <div key={idx} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setLightboxIndex(idx)}
@@ -152,8 +153,8 @@ export default function ReserveClubSubmissionsPage() {
                       <Maximize2 size={20} className="text-white opacity-0 group-hover:opacity-100" />
                     </span>
                   </button>
-                  <div className="p-2 text-xs text-gray-600 space-y-0.5">
-                    <p className="font-semibold text-heading">{p.checkpointLabel}</p>
+                  <div className="p-2 text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
+                    <p className="font-semibold text-heading dark:text-gray-100">{p.checkpointLabel}</p>
                     <p className="flex items-center gap-1">
                       <Clock3 size={12} /> {new Date(p.capturedAt).toLocaleString()}
                     </p>

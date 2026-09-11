@@ -16,7 +16,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F9FAFB]">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar collapsed={collapsed} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className="flex-1 min-w-0 flex flex-col">
         <Topbar onToggleSidebar={toggleSidebar} />

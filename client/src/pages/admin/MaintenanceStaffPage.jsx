@@ -166,9 +166,9 @@ export default function MaintenanceStaffPage() {
             header: "Photo",
             render: (r) =>
               r.photo ? (
-                <img src={cloudinaryThumbnailUrl(r.photo, 100)} alt={r.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+                <img src={cloudinaryThumbnailUrl(r.photo, 100)} alt={r.name} className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 flex items-center justify-center">
                   <User size={16} className="text-gray-400" />
                 </div>
               ),
@@ -197,7 +197,7 @@ export default function MaintenanceStaffPage() {
               <div className="flex gap-3 items-center">
                 {!r.photo && (
                   <label
-                    className={`cursor-pointer ${uploadingId === r._id ? "text-gray-300" : "text-gray-500 hover:text-primary"}`}
+                    className={`cursor-pointer ${uploadingId === r._id ? "text-gray-300 dark:text-gray-600" : "text-gray-500 dark:text-gray-400 hover:text-primary"}`}
                     title="Upload photo for ID card"
                   >
                     <Camera size={16} />
@@ -214,13 +214,13 @@ export default function MaintenanceStaffPage() {
                     />
                   </label>
                 )}
-                <a href={idCardUrl(r._id)} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-primary" title="Download ID Card">
+                <a href={idCardUrl(r._id)} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary" title="Download ID Card">
                   <IdCard size={16} />
                 </a>
-                <button onClick={() => { setEditing(r); setShowForm(true); }} className="text-gray-500 hover:text-primary">
+                <button onClick={() => { setEditing(r); setShowForm(true); }} className="text-gray-500 dark:text-gray-400 hover:text-primary">
                   <Pencil size={16} />
                 </button>
-                <button onClick={() => remove(r._id)} className="text-gray-500 hover:text-red-600">
+                <button onClick={() => remove(r._id)} className="text-gray-500 dark:text-gray-400 hover:text-red-600">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -287,9 +287,9 @@ function StaffFormModal({ staff, meta, onClose, onSaved }) {
         <Field label="Photo">
           <div className="flex items-center gap-3">
             {preview ? (
-              <img src={preview} alt="" className="w-16 h-16 rounded-full object-cover border border-gray-200" />
+              <img src={preview} alt="" className="w-16 h-16 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 flex items-center justify-center">
                 <User size={22} className="text-gray-400" />
               </div>
             )}
@@ -345,7 +345,7 @@ function StaffFormModal({ staff, meta, onClose, onSaved }) {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       {children}
     </div>
   );

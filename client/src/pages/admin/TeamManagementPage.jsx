@@ -4,6 +4,7 @@ import PageHeader from "../../components/PageHeader";
 import FilterBar, { Select } from "../../components/FilterBar";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
+import ThemedSelect from "../../components/ThemedSelect";
 import { listEmployees, createEmployee, updateEmployee, deleteEmployee } from "../../api/employees";
 
 const DEPARTMENTS = ["Housekeeping", "Guard", "Admin"];
@@ -62,7 +63,7 @@ export default function TeamManagementPage() {
             key: "active",
             header: "Active",
             render: (r) => (
-              <span className={`text-xs font-semibold ${r.active ? "text-green-600" : "text-gray-400"}`}>
+              <span className={`text-xs font-semibold ${r.active ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"}`}>
                 {r.active ? "Active" : "Inactive"}
               </span>
             ),
@@ -72,10 +73,10 @@ export default function TeamManagementPage() {
             header: "Actions",
             render: (r) => (
               <div className="flex gap-3">
-                <button onClick={() => { setEditing(r); setShowForm(true); }} className="text-gray-500 hover:text-primary">
+                <button onClick={() => { setEditing(r); setShowForm(true); }} className="text-gray-500 dark:text-gray-400 hover:text-primary">
                   <Pencil size={16} />
                 </button>
-                <button onClick={() => remove(r._id)} className="text-gray-500 hover:text-red-600">
+                <button onClick={() => remove(r._id)} className="text-gray-500 dark:text-gray-400 hover:text-red-600">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -129,9 +130,13 @@ function EmployeeFormModal({ employee, onClose, onSaved }) {
           <input value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} className="input" />
         </Field>
         <Field label="Department">
-          <select value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} className="input">
-            {DEPARTMENTS.map((d) => <option key={d}>{d}</option>)}
-          </select>
+          <ThemedSelect
+            value={form.department}
+            onChange={(v) => setForm({ ...form, department: v })}
+            options={DEPARTMENTS}
+            placeholder="Select department"
+            className="input"
+          />
         </Field>
         <Field label="Role">
           <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="input" />
@@ -144,7 +149,7 @@ function EmployeeFormModal({ employee, onClose, onSaved }) {
             <input type="time" value={form.shiftStart} onChange={(e) => setForm({ ...form, shiftStart: e.target.value })} className="input" />
           </Field>
         </div>
-        <label className="flex items-center gap-2 text-sm text-gray-700">
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
           <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
           Active
         </label>
@@ -159,7 +164,7 @@ function EmployeeFormModal({ employee, onClose, onSaved }) {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       {children}
     </div>
   );

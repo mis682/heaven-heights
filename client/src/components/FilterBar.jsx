@@ -1,10 +1,11 @@
 import React from "react";
 import { Filter, Search, Columns3 } from "lucide-react";
+import ThemedSelect from "./ThemedSelect";
 
 export default function FilterBar({ search, onSearchChange, placeholder = "Search...", filters, onColumns }) {
   return (
     <div className="flex flex-wrap items-center gap-2 mb-4">
-      <button className="p-2.5 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-50">
+      <button className="p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
         <Filter size={16} />
       </button>
 
@@ -14,7 +15,7 @@ export default function FilterBar({ search, onSearchChange, placeholder = "Searc
           value={search}
           onChange={(e) => onSearchChange?.(e.target.value)}
           placeholder={placeholder}
-          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/40"
         />
       </div>
 
@@ -23,7 +24,7 @@ export default function FilterBar({ search, onSearchChange, placeholder = "Searc
       {onColumns && (
         <button
           onClick={onColumns}
-          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
+          className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <Columns3 size={16} />
           Columns
@@ -33,23 +34,6 @@ export default function FilterBar({ search, onSearchChange, placeholder = "Searc
   );
 }
 
-export function Select({ value, onChange, options, placeholder, required, className }) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      required={required}
-      className={
-        className ||
-        "px-3 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/40"
-      }
-    >
-      {placeholder && <option value="">{placeholder}</option>}
-      {options.map((opt) => (
-        <option key={opt.value ?? opt} value={opt.value ?? opt}>
-          {opt.label ?? opt}
-        </option>
-      ))}
-    </select>
-  );
+export function Select(props) {
+  return <ThemedSelect {...props} />;
 }

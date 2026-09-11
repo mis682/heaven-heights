@@ -5,6 +5,9 @@ import PageHeader from "../../../components/PageHeader";
 import StatusPill from "../../../components/StatusPill";
 import Modal from "../../../components/Modal";
 import PhotoLightbox from "../../../components/PhotoLightbox";
+import ThemedSelect from "../../../components/ThemedSelect";
+import ThemedDatePicker from "../../../components/ThemedDatePicker";
+import { confirmAction, alertMessage } from "../../../utils/confirmDialog";
 import { useAuth } from "../../../context/AuthContext";
 import { getProjectBySlug } from "../../../api/projects";
 import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
@@ -135,13 +138,16 @@ export default function PatrolDailyReportBuilderPage() {
     // losing already-finished work to a dismissed prompt.
     if (targetStatus === "submitted") {
       if (rows.length > 0 && cleanRows.length === 0) {
-        alert("Every row is missing a Date, Guard Name or Time — nothing was saved. Fill all three before saving.");
+        await alertMessage("Every row is missing a Date, Guard Name or Time — nothing was saved. Fill all three before saving.");
         return;
       }
       if (droppedCount > 0) {
-        const proceed = window.confirm(
-          `${droppedCount} row(s) are missing a Date, Guard Name or Time and will NOT be included. Continue anyway?`
-        );
+        const proceed = await confirmAction({
+          title: "Incomplete rows will be skipped",
+          text: `${droppedCount} row(s) are missing a Date, Guard Name or Time and will NOT be included. Continue anyway?`,
+          confirmText: "Continue",
+          danger: true,
+        });
         if (!proceed) return;
       }
     } else if (cleanRows.length === 0) {
@@ -167,7 +173,7 @@ export default function PatrolDailyReportBuilderPage() {
   };
 
   if (!project) {
-    return <p className="text-sm text-subtext">Loading...</p>;
+    return <p className="text-sm text-subtext dark:text-gray-400">Loading...</p>;
   }
 
   return (
@@ -182,33 +188,33 @@ export default function PatrolDailyReportBuilderPage() {
       />
 
       {restoredNotice && (
-        <div className="mb-4 px-3 py-2 rounded-xl bg-blue-50 text-blue-700 text-xs font-medium">
+        <div className="mb-4 px-3 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
           Aapke pichle unsaved changes restore ho gaye hain — bhoolna mat, "Save as Draft" dabana.
         </div>
       )}
 
       {isLocked && (
         <div className="mb-4">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">
             <Lock size={12} /> Submitted — read only (ask Admin to unlock)
           </span>
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="text-sm border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 sticky left-0 bg-gray-50 whitespace-nowrap">
+              <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 sticky left-0 bg-gray-50 dark:bg-gray-900/40 whitespace-nowrap">
                   Date
                 </th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">Guard Name</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">Time</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">Checkpoint</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">Proof</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">Guard Name</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">Time</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">Checkpoint</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">Proof</th>
                 {Array.from({ length: checkpointCount }, (_, i) => (
-                  <th key={i} className="text-left px-3 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 whitespace-nowrap">
+                  <th key={i} className="text-left px-3 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">
                     Checkpoint-{i + 1}
                   </th>
                 ))}
@@ -217,46 +223,37 @@ export default function PatrolDailyReportBuilderPage() {
             </thead>
             <tbody>
               {rows.map((row, rowIdx) => (
-                <tr key={rowIdx} className="border-b border-gray-100 last:border-b-0">
-                  <td className="px-4 py-2 sticky left-0 bg-white whitespace-nowrap">
-                    <input
-                      type="date"
+                <tr key={rowIdx} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                  <td className="px-4 py-2 sticky left-0 bg-white dark:bg-gray-800 whitespace-nowrap">
+                    <ThemedDatePicker
                       disabled={isLocked}
                       value={row.date || ""}
                       max={today()}
-                      onChange={(e) => updateRow(rowIdx, { date: e.target.value })}
-                      className="input min-w-[150px]"
+                      onChange={(v) => updateRow(rowIdx, { date: v })}
+                      className="min-w-[150px]"
                     />
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
-                    <select
+                    <ThemedSelect
                       disabled={isLocked}
                       value={row.guardName}
-                      onChange={(e) => updateRow(rowIdx, { guardName: e.target.value })}
-                      className="input min-w-[160px]"
-                    >
-                      <option value="">Select guard</option>
-                      {guards.map((g) => (
-                        <option key={g._id} value={g.name}>
-                          {g.name}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(v) => updateRow(rowIdx, { guardName: v })}
+                      options={guards.map((g) => ({ value: g.name, label: g.name }))}
+                      placeholder="Select guard"
+                      className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[160px]"
+                    />
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
-                    <select
+                    <ThemedSelect
                       disabled={isLocked}
                       value={row.timeSlot}
-                      onChange={(e) => updateRow(rowIdx, { timeSlot: e.target.value })}
-                      className="input min-w-[160px]"
-                    >
-                      <option value="">Time</option>
-                      {meta.timeSlots.map((t) => (
-                        <option key={t}>{t}</option>
-                      ))}
-                    </select>
+                      onChange={(v) => updateRow(rowIdx, { timeSlot: v })}
+                      options={meta.timeSlots}
+                      placeholder="Time"
+                      className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[160px]"
+                    />
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-gray-600">
+                  <td className="px-4 py-2 whitespace-nowrap text-gray-600 dark:text-gray-300">
                     C1 TO C{checkpointCount}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
@@ -269,17 +266,14 @@ export default function PatrolDailyReportBuilderPage() {
                   </td>
                   {Array.from({ length: checkpointCount }, (_, cpIdx) => (
                     <td key={cpIdx} className="px-3 py-2 whitespace-nowrap">
-                      <select
+                      <ThemedSelect
                         disabled={isLocked}
                         value={row.checkpointStatuses[cpIdx] || ""}
-                        onChange={(e) => updateCheckpoint(rowIdx, cpIdx, e.target.value)}
-                        className="input min-w-[130px]"
-                      >
-                        <option value="">—</option>
-                        {meta.statusOptions.map((s) => (
-                          <option key={s}>{s}</option>
-                        ))}
-                      </select>
+                        onChange={(v) => updateCheckpoint(rowIdx, cpIdx, v)}
+                        options={meta.statusOptions}
+                        placeholder="—"
+                        className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[130px]"
+                      />
                       {row.checkpointStatuses[cpIdx] && (
                         <div className="mt-1">
                           <StatusPill status={row.checkpointStatuses[cpIdx]} />
@@ -306,7 +300,7 @@ export default function PatrolDailyReportBuilderPage() {
           <button
             onClick={() => persist("draft")}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <Save size={16} /> {saving ? "Saving..." : "Save as Draft"}
           </button>
@@ -315,13 +309,13 @@ export default function PatrolDailyReportBuilderPage() {
           <>
             <a
               href={exportPatrolReportPdfUrl(report._id, API_BASE)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <FileText size={16} /> Download PDF
             </a>
             <a
               href={exportPatrolReportUrl(report._id, API_BASE)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <Download size={16} /> Download Excel
             </a>
@@ -332,19 +326,19 @@ export default function PatrolDailyReportBuilderPage() {
       {proofRow && (
         <Modal title={`Proof — ${proofRow.guardName} — ${proofRow.timeSlot}`} onClose={() => setProofRow(null)} wide>
           {proofPhotos.length === 0 ? (
-            <p className="text-sm text-subtext text-center py-6">No checkpoint photos found for this guard / hour.</p>
+            <p className="text-sm text-subtext dark:text-gray-400 text-center py-6">No checkpoint photos found for this guard / hour.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {proofPhotos.map((p, idx) => (
-                <div key={idx} className="rounded-xl border border-gray-200 overflow-hidden">
+                <div key={idx} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <button type="button" onClick={() => setLightboxIndex(idx)} className="relative w-full h-28 block group" title="Click to maximize">
                     <img src={cloudinaryThumbnailUrl(p.photoUrl)} alt={`Checkpoint ${p.checkpointId}`} className="w-full h-28 object-cover" />
                     <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors">
                       <Maximize2 size={18} className="text-white opacity-0 group-hover:opacity-100" />
                     </span>
                   </button>
-                  <div className="p-2 text-xs text-gray-600">
-                    <p className="font-semibold text-heading">Checkpoint {p.checkpointId}</p>
+                  <div className="p-2 text-xs text-gray-600 dark:text-gray-300">
+                    <p className="font-semibold text-heading dark:text-gray-100">Checkpoint {p.checkpointId}</p>
                     <p>{new Date(p.capturedAt).toLocaleTimeString()}</p>
                   </div>
                 </div>

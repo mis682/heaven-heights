@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { CheckCircle2, Building2, Loader2, AlertCircle } from "lucide-react";
 import { getFireMockDrillMeta, createFireMockDrill } from "../../../api/fireMockDrill";
 import { uploadVideoDirect } from "../../../api/cloudinaryDirectUpload";
+import ThemedSelect from "../../../components/ThemedSelect";
+import ThemedDatePicker from "../../../components/ThemedDatePicker";
 
 export default function FireMockDrillPublicForm() {
   const [projects, setProjects] = useState([]);
@@ -88,39 +90,34 @@ export default function FireMockDrillPublicForm() {
 
   if (done) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] px-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] dark:bg-gray-900 px-4">
         <div className="text-center">
-          <CheckCircle2 size={56} className="text-green-600 mx-auto mb-3" />
-          <h1 className="text-xl font-bold text-heading">Submitted</h1>
-          <p className="text-subtext text-sm mt-1">Fire mock drill record saved successfully.</p>
+          <CheckCircle2 size={56} className="text-green-600 dark:text-green-400 mx-auto mb-3" />
+          <h1 className="text-xl font-bold text-heading dark:text-gray-100">Submitted</h1>
+          <p className="text-subtext dark:text-gray-400 text-sm mt-1">Fire mock drill record saved successfully.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] px-4 py-8">
-      <div className="max-w-lg mx-auto bg-white rounded-2xl border border-gray-200 p-6">
+    <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 px-4 py-8">
+      <div className="max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex flex-col items-center mb-5">
           <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-3">
             <Building2 size={22} className="text-white" />
           </div>
-          <h1 className="text-xl font-bold text-heading">Fire Mock Drill</h1>
-          <p className="text-sm text-subtext text-center">Submit drill details, panel photo, videos and report.</p>
+          <h1 className="text-xl font-bold text-heading dark:text-gray-100">Fire Mock Drill</h1>
+          <p className="text-sm text-subtext dark:text-gray-400 text-center">Submit drill details, panel photo, videos and report.</p>
         </div>
 
         <form onSubmit={submit} className="space-y-4">
           <Field label="Project">
-            <select required value={projectName} onChange={(e) => setProjectName(e.target.value)} className="input">
-              <option value="">Select project</option>
-              {projects.map((p) => (
-                <option key={p}>{p}</option>
-              ))}
-            </select>
+            <ThemedSelect required value={projectName} onChange={setProjectName} options={projects} placeholder="Select project" />
           </Field>
 
           <Field label="Date">
-            <input required type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input" />
+            <ThemedDatePicker required value={date} onChange={setDate} />
           </Field>
 
           <Field label="Panel Photo">
@@ -147,19 +144,19 @@ export default function FireMockDrillPublicForm() {
                 />
                 {v?.uploading && (
                   <div className="mt-1">
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                       <div className="h-full bg-primary transition-all" style={{ width: `${Math.round(v.progress * 100)}%` }} />
                     </div>
-                    <p className="text-[10px] text-subtext mt-0.5">Uploading {Math.round(v.progress * 100)}%</p>
+                    <p className="text-[10px] text-subtext dark:text-gray-400 mt-0.5">Uploading {Math.round(v.progress * 100)}%</p>
                   </div>
                 )}
                 {v?.url && !v.uploading && (
-                  <p className="text-[10px] text-green-600 mt-0.5 flex items-center gap-1">
+                  <p className="text-[10px] text-green-600 dark:text-green-400 mt-0.5 flex items-center gap-1">
                     <CheckCircle2 size={10} /> Uploaded
                   </p>
                 )}
                 {v?.failed && (
-                  <p className="text-[10px] text-red-600 mt-0.5 flex items-center gap-1">
+                  <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5 flex items-center gap-1">
                     <AlertCircle size={10} /> Upload failed — try again
                   </p>
                 )}
@@ -172,7 +169,7 @@ export default function FireMockDrillPublicForm() {
           </Field>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Checklist Attachment (5 pages)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Checklist Attachment (5 pages)</label>
             <div className="grid grid-cols-2 gap-3">
               {checklistPages.map((file, idx) => (
                 <Field key={idx} label={`Page ${idx + 1}`}>
@@ -183,7 +180,7 @@ export default function FireMockDrillPublicForm() {
                     className="input text-xs"
                   />
                   {file && (
-                    <p className="text-[10px] text-green-600 mt-0.5 flex items-center gap-1 truncate">
+                    <p className="text-[10px] text-green-600 dark:text-green-400 mt-0.5 flex items-center gap-1 truncate">
                       <CheckCircle2 size={10} /> {file.name}
                     </p>
                   )}
@@ -192,7 +189,7 @@ export default function FireMockDrillPublicForm() {
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <button
             disabled={submitting || videosStillUploading || !projectName || !date || !panelPhoto}
@@ -210,7 +207,7 @@ export default function FireMockDrillPublicForm() {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       {children}
     </div>
   );

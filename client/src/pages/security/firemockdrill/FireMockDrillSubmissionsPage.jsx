@@ -5,6 +5,9 @@ import DataTable from "../../../components/DataTable";
 import FilterBar, { Select } from "../../../components/FilterBar";
 import Modal from "../../../components/Modal";
 import PhotoLightbox from "../../../components/PhotoLightbox";
+import ThemedSelect from "../../../components/ThemedSelect";
+import ThemedDatePicker from "../../../components/ThemedDatePicker";
+import { confirmAction, alertMessage } from "../../../utils/confirmDialog";
 import { cloudinaryThumbnailUrl } from "../../../utils/cloudinary";
 import {
   getFireMockDrillMeta,
@@ -57,15 +60,16 @@ export default function FireMockDrillSubmissionsPage() {
   }, [projectFilter, search]);
 
   const remove = async (id) => {
-    if (!window.confirm("Delete this fire mock drill record?")) return;
+    const proceed = await confirmAction({ title: "Delete record?", text: "Delete this fire mock drill record?", confirmText: "Delete", danger: true });
+    if (!proceed) return;
     await deleteFireMockDrill(id);
     load();
   };
 
-  const copyFormLink = () => {
+  const copyFormLink = async () => {
     const url = `${window.location.origin}${PUBLIC_FORM_PATH}`;
     navigator.clipboard.writeText(url);
-    alert("Public form link copied");
+    await alertMessage("Public form link copied", { title: "Copied", icon: "success" });
   };
 
   return (
@@ -95,12 +99,12 @@ export default function FireMockDrillSubmissionsPage() {
                 <img
                   src={cloudinaryThumbnailUrl(r.panelPhoto, 100)}
                   alt=""
-                  className="w-9 h-9 rounded-lg object-cover border border-gray-200 cursor-pointer"
+                  className="w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-gray-700 cursor-pointer"
                   onClick={() => setLightboxPhoto(r.panelPhoto)}
                 />
               ) : (
-                <div className="w-9 h-9 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                  <ImageIcon size={14} className="text-gray-400" />
+                <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                  <ImageIcon size={14} className="text-gray-400 dark:text-gray-500" />
                 </div>
               ),
           },
@@ -109,11 +113,11 @@ export default function FireMockDrillSubmissionsPage() {
             header: `Video ${i + 1}`,
             render: (r) =>
               r.videos?.[i] ? (
-                <a href={r.videos[i]} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-primary">
+                <a href={r.videos[i]} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary">
                   <Video size={16} />
                 </a>
               ) : (
-                <span className="text-xs text-gray-300">—</span>
+                <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
               ),
           })),
           {
@@ -121,11 +125,11 @@ export default function FireMockDrillSubmissionsPage() {
             header: "Report Attachment",
             render: (r) =>
               r.reportAttachment ? (
-                <a href={r.reportAttachment} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-primary">
+                <a href={r.reportAttachment} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary">
                   <FileText size={16} />
                 </a>
               ) : (
-                <span className="text-xs text-gray-300">—</span>
+                <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
               ),
           },
           ...Array.from({ length: 5 }, (_, i) => ({
@@ -133,11 +137,11 @@ export default function FireMockDrillSubmissionsPage() {
             header: `Checklist Page ${i + 1}`,
             render: (r) =>
               r.checklistAttachments?.[i] ? (
-                <a href={r.checklistAttachments[i]} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-primary">
+                <a href={r.checklistAttachments[i]} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary">
                   <FileText size={16} />
                 </a>
               ) : (
-                <span className="text-xs text-gray-300">—</span>
+                <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
               ),
           })),
           {
@@ -145,7 +149,7 @@ export default function FireMockDrillSubmissionsPage() {
             header: "Actions",
             render: (r) => (
               <div className="flex gap-3">
-                <button onClick={() => setViewing(r)} className="text-gray-500 hover:text-primary" title="View">
+                <button onClick={() => setViewing(r)} className="text-gray-500 dark:text-gray-400 hover:text-primary" title="View">
                   <Eye size={16} />
                 </button>
                 {isAdmin && (
@@ -155,12 +159,12 @@ export default function FireMockDrillSubmissionsPage() {
                         setEditing(r);
                         setShowForm(true);
                       }}
-                      className="text-gray-500 hover:text-primary"
+                      className="text-gray-500 dark:text-gray-400 hover:text-primary"
                       title="Edit"
                     >
                       <Pencil size={16} />
                     </button>
-                    <button onClick={() => remove(r._id)} className="text-gray-500 hover:text-red-600" title="Delete">
+                    <button onClick={() => remove(r._id)} className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400" title="Delete">
                       <Trash2 size={16} />
                     </button>
                   </>
@@ -206,17 +210,17 @@ function ViewModal({ drill, onClose }) {
       <div className="space-y-4">
         {drill.panelPhoto && (
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-1.5">Panel Photo</p>
-            <img src={drill.panelPhoto} alt="" className="rounded-xl border border-gray-200 max-h-72 object-contain" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Panel Photo</p>
+            <img src={drill.panelPhoto} alt="" className="rounded-xl border border-gray-200 dark:border-gray-700 max-h-72 object-contain" />
           </div>
         )}
 
         {drill.videos?.length > 0 && (
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-1.5">Videos ({drill.videos.length})</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Videos ({drill.videos.length})</p>
             <div className="grid grid-cols-2 gap-3">
               {drill.videos.map((v, idx) => (
-                <video key={idx} src={v} controls className="w-full rounded-xl border border-gray-200" />
+                <video key={idx} src={v} controls className="w-full rounded-xl border border-gray-200 dark:border-gray-700" />
               ))}
             </div>
           </div>
@@ -224,7 +228,7 @@ function ViewModal({ drill, onClose }) {
 
         {drill.reportAttachment && (
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-1.5">Report Attachment</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Report Attachment</p>
             <a
               href={drill.reportAttachment}
               target="_blank"
@@ -238,7 +242,7 @@ function ViewModal({ drill, onClose }) {
 
         {drill.checklistAttachments?.length > 0 && (
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-1.5">Checklist Attachments ({drill.checklistAttachments.length})</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Checklist Attachments ({drill.checklistAttachments.length})</p>
             <div className="flex flex-wrap gap-3">
               {drill.checklistAttachments.map((url, idx) => (
                 <a
@@ -342,25 +346,20 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
       <form onSubmit={submit} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <Field label="Project">
-            <select required value={projectName} onChange={(e) => setProjectName(e.target.value)} className="input">
-              <option value="">Select project</option>
-              {projects.map((p) => (
-                <option key={p}>{p}</option>
-              ))}
-            </select>
+            <ThemedSelect required value={projectName} onChange={setProjectName} options={projects} placeholder="Select project" />
           </Field>
           <Field label="Date">
-            <input required type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input" />
+            <ThemedDatePicker required value={date} onChange={setDate} />
           </Field>
         </div>
 
         <Field label="Panel Photo">
           <div className="flex items-center gap-3">
             {panelPreview ? (
-              <img src={panelPreview} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+              <img src={panelPreview} alt="" className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-700" />
             ) : (
-              <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                <ImageIcon size={20} className="text-gray-400" />
+              <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                <ImageIcon size={20} className="text-gray-400 dark:text-gray-500" />
               </div>
             )}
             <label className="cursor-pointer text-sm font-medium text-primary hover:underline">
@@ -374,35 +373,35 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
           <div className="grid grid-cols-2 gap-2 mb-2">
             {existingVideos.map((v, idx) => (
               <div key={`existing-${idx}`} className="relative">
-                <video src={v} className="w-full h-20 rounded-lg border border-gray-200 object-cover" />
+                <video src={v} className="w-full h-20 rounded-lg border border-gray-200 dark:border-gray-700 object-cover" />
                 <button
                   type="button"
                   onClick={() => removeExistingVideo(idx)}
-                  className="absolute top-1 right-1 bg-white/90 rounded-full p-0.5 shadow hover:bg-white"
+                  className="absolute top-1 right-1 bg-white/90 dark:bg-gray-800/90 rounded-full p-0.5 shadow hover:bg-white dark:hover:bg-gray-800"
                 >
-                  <X size={12} className="text-red-600" />
+                  <X size={12} className="text-red-600 dark:text-red-400" />
                 </button>
               </div>
             ))}
             {newVideos.map((v, idx) => (
               <div key={`new-${idx}`} className="relative">
-                <video src={v.preview} className="w-full h-20 rounded-lg border border-gray-200 object-cover" />
+                <video src={v.preview} className="w-full h-20 rounded-lg border border-gray-200 dark:border-gray-700 object-cover" />
                 <button
                   type="button"
                   onClick={() => removeNewVideo(idx)}
-                  className="absolute top-1 right-1 bg-white/90 rounded-full p-0.5 shadow hover:bg-white"
+                  className="absolute top-1 right-1 bg-white/90 dark:bg-gray-800/90 rounded-full p-0.5 shadow hover:bg-white dark:hover:bg-gray-800"
                 >
-                  <X size={12} className="text-red-600" />
+                  <X size={12} className="text-red-600 dark:text-red-400" />
                 </button>
                 {v.uploading && (
                   <div className="absolute inset-x-1 bottom-1">
-                    <div className="h-1 bg-white/60 rounded-full overflow-hidden">
+                    <div className="h-1 bg-white/60 dark:bg-gray-900/60 rounded-full overflow-hidden">
                       <div className="h-full bg-primary transition-all" style={{ width: `${Math.round(v.progress * 100)}%` }} />
                     </div>
                   </div>
                 )}
                 {v.failed && (
-                  <span className="absolute inset-0 flex items-center justify-center bg-red-50/90 text-red-600 text-[10px] font-medium rounded-lg">
+                  <span className="absolute inset-0 flex items-center justify-center bg-red-50/90 dark:bg-red-900/70 text-red-600 dark:text-red-400 text-[10px] font-medium rounded-lg">
                     Upload failed
                   </span>
                 )}
@@ -432,7 +431,7 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
                 <FileText size={14} /> Current file
               </a>
             )}
-            {reportAttachment && <span className="text-sm text-gray-600">{reportAttachment.name}</span>}
+            {reportAttachment && <span className="text-sm text-gray-600 dark:text-gray-400">{reportAttachment.name}</span>}
             <label className="cursor-pointer text-sm font-medium text-primary hover:underline">
               {existingReport || reportAttachment ? "Replace file" : "Upload file"}
               <input type="file" onChange={(e) => setReportAttachment(e.target.files?.[0] || null)} className="hidden" />
@@ -448,12 +447,12 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
                   <FileText size={14} /> Page {idx + 1}
                 </a>
               ))}
-              <span className="text-xs text-gray-400">(pick new files below to replace)</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">(pick new files below to replace)</span>
             </div>
           )}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {newChecklistPages.map((file, idx) => (
-              <label key={idx} className="cursor-pointer text-xs font-medium text-primary hover:underline border border-gray-300 rounded-lg px-2 py-1.5 text-center">
+              <label key={idx} className="cursor-pointer text-xs font-medium text-primary hover:underline border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-1.5 text-center">
                 {file ? file.name : `+ Page ${idx + 1}`}
                 <input
                   type="file"
@@ -487,7 +486,7 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       {children}
     </div>
   );

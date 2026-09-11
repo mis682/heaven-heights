@@ -6,6 +6,8 @@ import FilterBar, { Select } from "../../components/FilterBar";
 import DataTable from "../../components/DataTable";
 import StatusPill from "../../components/StatusPill";
 import Modal from "../../components/Modal";
+import ThemedSelect from "../../components/ThemedSelect";
+import ThemedDatePicker from "../../components/ThemedDatePicker";
 import { listEmployees } from "../../api/employees";
 import { getAttendanceStats, listAttendance, markAttendance, updateAttendance } from "../../api/attendance";
 
@@ -81,7 +83,7 @@ export default function AttendancePage() {
         onSearchChange={() => {}}
         filters={
           <>
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input max-w-[160px]" />
+            <ThemedDatePicker value={date} onChange={setDate} className="max-w-[160px]" />
             <Select value={department} onChange={setDepartment} options={DEPARTMENTS} placeholder="All departments" />
             <Select value={status} onChange={setStatus} options={STATUSES} placeholder="All statuses" />
           </>
@@ -103,7 +105,7 @@ export default function AttendancePage() {
               render: (r) => (
                 <div className="flex items-center gap-1.5">
                   <StatusPill status={r.status} />
-                  {r.isLate && <span className="text-[10px] font-semibold text-red-600">LATE</span>}
+                  {r.isLate && <span className="text-[10px] font-semibold text-red-600 dark:text-red-400">LATE</span>}
                 </div>
               ),
             },
@@ -114,15 +116,15 @@ export default function AttendancePage() {
               render: (r) =>
                 r.status === "Leave" && r.approvalStatus === "Pending" ? (
                   <div className="flex gap-2">
-                    <button onClick={() => approveLeave(r, "Approved")} className="text-xs font-semibold text-green-600 hover:underline">
+                    <button onClick={() => approveLeave(r, "Approved")} className="text-xs font-semibold text-green-600 dark:text-green-400 hover:underline">
                       Approve
                     </button>
-                    <button onClick={() => approveLeave(r, "Rejected")} className="text-xs font-semibold text-red-600 hover:underline">
+                    <button onClick={() => approveLeave(r, "Rejected")} className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline">
                       Reject
                     </button>
                   </div>
                 ) : (
-                  <span className="text-xs text-gray-400">{r.approvalStatus !== "N/A" ? r.approvalStatus : "—"}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{r.approvalStatus !== "N/A" ? r.approvalStatus : "—"}</span>
                 ),
             },
           ]}
@@ -173,18 +175,19 @@ function MarkAttendanceModal({ employees, defaultDate, onClose, onSaved }) {
     <Modal title="Mark Attendance" onClose={onClose}>
       <form onSubmit={submit} className="space-y-3">
         <Field label="Staff">
-          <select required value={form.staff} onChange={(e) => setForm({ ...form, staff: e.target.value })} className="input">
-            <option value="">Select staff</option>
-            {employees.map((e) => <option key={e._id} value={e._id}>{e.name} ({e.department})</option>)}
-          </select>
+          <ThemedSelect
+            required
+            value={form.staff}
+            onChange={(v) => setForm({ ...form, staff: v })}
+            options={employees.map((e) => ({ value: e._id, label: `${e.name} (${e.department})` }))}
+            placeholder="Select staff"
+          />
         </Field>
         <Field label="Date">
-          <input type="date" required value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="input" />
+          <ThemedDatePicker required value={form.date} onChange={(v) => setForm({ ...form, date: v })} />
         </Field>
         <Field label="Status">
-          <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="input">
-            {STATUSES.map((s) => <option key={s}>{s}</option>)}
-          </select>
+          <ThemedSelect value={form.status} onChange={(v) => setForm({ ...form, status: v })} options={STATUSES} />
         </Field>
         {form.status !== "Absent" && form.status !== "Leave" && (
           <div className="grid grid-cols-2 gap-3">
@@ -242,25 +245,25 @@ function MonthlyCalendar({ employees, baseDate }) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-x-auto">
       <table className="text-sm border-collapse">
         <thead>
-          <tr className="bg-gray-50 border-b border-gray-200">
-            <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase text-gray-500 sticky left-0 bg-gray-50">Staff</th>
+          <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+            <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 sticky left-0 bg-gray-50 dark:bg-gray-900/40">Staff</th>
             {days.map((d) => (
-              <th key={d} className="px-2 py-3 text-[11px] font-semibold text-gray-500 text-center">{d}</th>
+              <th key={d} className="px-2 py-3 text-[11px] font-semibold text-gray-500 dark:text-gray-400 text-center">{d}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {employees.map((e) => (
-            <tr key={e._id} className="border-b border-gray-100 last:border-b-0">
-              <td className="px-4 py-2 whitespace-nowrap font-medium text-heading sticky left-0 bg-white">{e.name}</td>
+            <tr key={e._id} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+              <td className="px-4 py-2 whitespace-nowrap font-medium text-heading dark:text-gray-100 sticky left-0 bg-white dark:bg-gray-800">{e.name}</td>
               {days.map((d) => {
                 const s = cellStatus(e._id, d);
                 return (
                   <td key={d} className="px-2 py-2 text-center">
-                    {s ? <span className={`inline-block w-2.5 h-2.5 rounded-full ${dotColor[s] || "bg-gray-300"}`} title={s} /> : <span className="text-gray-300">·</span>}
+                    {s ? <span className={`inline-block w-2.5 h-2.5 rounded-full ${dotColor[s] || "bg-gray-300 dark:bg-gray-600"}`} title={s} /> : <span className="text-gray-300 dark:text-gray-600">·</span>}
                   </td>
                 );
               })}
@@ -268,7 +271,7 @@ function MonthlyCalendar({ employees, baseDate }) {
           ))}
         </tbody>
       </table>
-      {!loading && employees.length === 0 && <p className="text-sm text-subtext text-center py-10">No employees found</p>}
+      {!loading && employees.length === 0 && <p className="text-sm text-subtext dark:text-gray-400 text-center py-10">No employees found</p>}
     </div>
   );
 }
@@ -276,7 +279,7 @@ function MonthlyCalendar({ employees, baseDate }) {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       {children}
     </div>
   );

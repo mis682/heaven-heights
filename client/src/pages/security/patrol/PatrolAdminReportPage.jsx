@@ -5,6 +5,7 @@ import PageHeader from "../../../components/PageHeader";
 import DataTable from "../../../components/DataTable";
 import StatusPill from "../../../components/StatusPill";
 import Modal from "../../../components/Modal";
+import ThemedDatePicker from "../../../components/ThemedDatePicker";
 import { getProjectBySlug } from "../../../api/projects";
 import {
   listSubmittedPatrolReports,
@@ -64,7 +65,7 @@ export default function PatrolAdminReportPage() {
   };
 
   if (!project) {
-    return <p className="text-sm text-subtext">Loading...</p>;
+    return <p className="text-sm text-subtext dark:text-gray-400">Loading...</p>;
   }
 
   return (
@@ -72,10 +73,10 @@ export default function PatrolAdminReportPage() {
       <PageHeader title={`${project.name} — Admin Report View`} subtitle="Submitted daily reports for this site, read-only." />
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <span className="text-sm text-subtext">Submitted between</span>
-        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input max-w-[160px]" />
-        <span className="text-sm text-subtext">and</span>
-        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input max-w-[160px]" />
+        <span className="text-sm text-subtext dark:text-gray-400">Submitted between</span>
+        <ThemedDatePicker value={dateFrom} onChange={setDateFrom} className="max-w-[160px]" />
+        <span className="text-sm text-subtext dark:text-gray-400">and</span>
+        <ThemedDatePicker value={dateTo} onChange={setDateTo} className="max-w-[160px]" />
       </div>
 
       <DataTable
@@ -94,10 +95,10 @@ export default function PatrolAdminReportPage() {
                 <button onClick={() => view(r._id)} className="text-xs font-semibold text-primary hover:underline">
                   View
                 </button>
-                <a href={exportPatrolReportUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 hover:underline inline-flex items-center gap-1">
+                <a href={exportPatrolReportUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:underline inline-flex items-center gap-1">
                   <Download size={12} /> Excel
                 </a>
-                <a href={exportPatrolReportPdfUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 hover:underline inline-flex items-center gap-1">
+                <a href={exportPatrolReportPdfUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:underline inline-flex items-center gap-1">
                   <FileText size={12} /> PDF
                 </a>
               </div>
@@ -114,15 +115,15 @@ export default function PatrolAdminReportPage() {
           <div className="overflow-x-auto">
             <table className="text-sm mb-4 border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 sticky left-0 bg-gray-50 whitespace-nowrap">
+                <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 sticky left-0 bg-gray-50 dark:bg-gray-900/40 whitespace-nowrap">
                     Date
                   </th>
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 whitespace-nowrap">Guard Name</th>
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 whitespace-nowrap">Time</th>
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 whitespace-nowrap">Checkpoint</th>
+                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Guard Name</th>
+                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Time</th>
+                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Checkpoint</th>
                   {Array.from({ length: viewing.checkpointCount }, (_, i) => (
-                    <th key={i} className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 whitespace-nowrap">
+                    <th key={i} className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       Checkpoint-{i + 1}
                     </th>
                   ))}
@@ -130,14 +131,14 @@ export default function PatrolAdminReportPage() {
               </thead>
               <tbody>
                 {viewing.entries.map((e) => (
-                  <tr key={e._id} className="border-b border-gray-100 last:border-b-0">
-                    <td className="px-3 py-2 sticky left-0 bg-white whitespace-nowrap">{e.date || viewing.reportDate}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">{e.guardName}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">{e.timeSlot}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">C1 TO C{viewing.checkpointCount}</td>
+                  <tr key={e._id} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                    <td className="px-3 py-2 sticky left-0 bg-white dark:bg-gray-800 whitespace-nowrap text-gray-700 dark:text-gray-200">{e.date || viewing.reportDate}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-gray-700 dark:text-gray-200">{e.guardName}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-gray-700 dark:text-gray-200">{e.timeSlot}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-gray-700 dark:text-gray-200">C1 TO C{viewing.checkpointCount}</td>
                     {e.checkpointStatuses.map((status, idx) => (
                       <td key={idx} className="px-3 py-2 whitespace-nowrap">
-                        {status ? <StatusPill status={status} /> : <span className="text-gray-300">—</span>}
+                        {status ? <StatusPill status={status} /> : <span className="text-gray-300 dark:text-gray-600">—</span>}
                       </td>
                     ))}
                   </tr>
@@ -148,20 +149,20 @@ export default function PatrolAdminReportPage() {
           <div className="flex items-center gap-2">
             <a
               href={exportPatrolReportPdfUrl(viewing._id, API_BASE)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <FileText size={16} /> Download PDF
             </a>
             <a
               href={exportPatrolReportUrl(viewing._id, API_BASE)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <Download size={16} /> Download Excel
             </a>
             {user?.role === "Admin" && (
               <button
                 onClick={() => handleUnlock(viewing._id)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <Unlock size={16} /> Unlock for correction
               </button>

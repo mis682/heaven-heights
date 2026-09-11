@@ -4,6 +4,7 @@ import PageHeader from "../../components/PageHeader";
 import FilterBar, { Select } from "../../components/FilterBar";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
+import ThemedSelect from "../../components/ThemedSelect";
 import PermissionGrid from "../../components/PermissionGrid";
 import { listUsers, createUser, updateUser, deleteUser } from "../../api/users";
 import { listRoles, createRole, updateRole, deleteRole } from "../../api/roles";
@@ -24,13 +25,13 @@ export default function UserManagementPage() {
     <div>
       <PageHeader title="User Management" subtitle="Create accounts, define roles, and manage granular permissions." />
 
-      <div className="flex gap-2 mb-4 border-b border-gray-200">
+      <div className="flex gap-2 mb-4 border-b border-gray-200 dark:border-gray-700">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
-              tab === t.key ? "border-primary text-primary" : "border-transparent text-gray-500 hover:text-gray-700"
+              tab === t.key ? "border-primary text-primary" : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >
             {t.label}
@@ -107,7 +108,7 @@ function UsersTab() {
         }}
       />
 
-      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+      {error && <p className="text-sm text-red-600 dark:text-red-400 mb-3">{error}</p>}
 
       <FilterBar
         search={search}
@@ -126,7 +127,7 @@ function UsersTab() {
             key: "active",
             header: "Active",
             render: (r) => (
-              <span className={`text-xs font-semibold ${r.active ? "text-green-600" : "text-gray-400"}`}>
+              <span className={`text-xs font-semibold ${r.active ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"}`}>
                 {r.active ? "Active" : "Inactive"}
               </span>
             ),
@@ -141,14 +142,14 @@ function UsersTab() {
                     setEditing(r);
                     setShowForm(true);
                   }}
-                  className="text-gray-500 hover:text-primary"
+                  className="text-gray-500 dark:text-gray-400 hover:text-primary"
                 >
                   <Pencil size={16} />
                 </button>
                 <button
                   onClick={() => remove(r._id)}
                   disabled={r._id === currentUser?.id}
-                  className="text-gray-500 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="text-gray-500 dark:text-gray-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed"
                   title={r._id === currentUser?.id ? "You cannot delete your own account" : "Delete"}
                 >
                   <Trash2 size={16} />
@@ -274,26 +275,27 @@ function UserFormModal({ user, roles, onClose, onSaved }) {
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Department">
-            <select value={form.department} onChange={(e) => setField("department", e.target.value)} className="input">
-              <option value="">Select department</option>
-              {DEPARTMENTS.map((d) => (
-                <option key={d}>{d}</option>
-              ))}
-            </select>
+            <ThemedSelect
+              value={form.department}
+              onChange={(v) => setField("department", v)}
+              options={DEPARTMENTS}
+              placeholder="Select department"
+              className="input"
+            />
           </Field>
           <Field label="Role">
-            <select value={form.role} onChange={(e) => setField("role", e.target.value)} className="input">
-              {roles.map((r) => (
-                <option key={r._id} value={r.name}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
+            <ThemedSelect
+              value={form.role}
+              onChange={(v) => setField("role", v)}
+              options={roles.map((r) => ({ value: r.name, label: r.name }))}
+              placeholder="Select role"
+              className="input"
+            />
           </Field>
         </div>
 
         {user && (
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
             <input type="checkbox" checked={form.active} onChange={(e) => setField("active", e.target.checked)} />
             Active
           </label>
@@ -301,11 +303,11 @@ function UserFormModal({ user, roles, onClose, onSaved }) {
 
         {user && (
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
               <ShieldCheck size={14} /> Permissions
             </p>
             {selectedRole?.isSystem ? (
-              <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+              <p className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2">
                 The Admin role automatically has full access to every module.
               </p>
             ) : (
@@ -314,7 +316,7 @@ function UserFormModal({ user, roles, onClose, onSaved }) {
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
         <button
           disabled={saving}
@@ -364,7 +366,7 @@ function RolesTab() {
         }}
       />
 
-      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+      {error && <p className="text-sm text-red-600 dark:text-red-400 mb-3">{error}</p>}
 
       <DataTable
         columns={[
@@ -373,7 +375,7 @@ function RolesTab() {
             key: "isSystem",
             header: "Type",
             render: (r) => (
-              <span className={`text-xs font-semibold ${r.isSystem ? "text-gray-500" : "text-green-600"}`}>
+              <span className={`text-xs font-semibold ${r.isSystem ? "text-gray-500 dark:text-gray-400" : "text-green-600 dark:text-green-400"}`}>
                 {r.isSystem ? "System" : "Custom"}
               </span>
             ),
@@ -389,7 +391,7 @@ function RolesTab() {
                     setShowForm(true);
                   }}
                   disabled={r.isSystem}
-                  className="text-gray-500 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="text-gray-500 dark:text-gray-400 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed"
                   title={r.isSystem ? "The Admin role cannot be edited" : "Edit"}
                 >
                   <Pencil size={16} />
@@ -397,7 +399,7 @@ function RolesTab() {
                 <button
                   onClick={() => remove(r._id)}
                   disabled={r.isSystem}
-                  className="text-gray-500 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="text-gray-500 dark:text-gray-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed"
                   title={r.isSystem ? "The Admin role cannot be deleted" : "Delete"}
                 >
                   <Trash2 size={16} />
@@ -463,16 +465,16 @@ function RoleFormModal({ role, onClose, onSaved }) {
         </Field>
 
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
             <ShieldCheck size={14} /> Default Permissions
           </p>
-          <p className="text-xs text-gray-400 mb-2">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">
             Applied to new users when they're assigned this role — each user can still be fine-tuned afterward.
           </p>
           <PermissionGrid permissions={permissions} onToggle={togglePermission} />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
         <button
           disabled={saving}
@@ -488,7 +490,7 @@ function RoleFormModal({ role, onClose, onSaved }) {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       {children}
     </div>
   );

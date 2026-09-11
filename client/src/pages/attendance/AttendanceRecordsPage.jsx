@@ -4,6 +4,8 @@ import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import FilterBar, { Select } from "../../components/FilterBar";
 import PhotoLightbox from "../../components/PhotoLightbox";
+import ThemedDatePicker from "../../components/ThemedDatePicker";
+import { confirmAction } from "../../utils/confirmDialog";
 import { listAttendanceScanRecords, deleteAttendanceScanRecord } from "../../api/attendanceScan";
 import { listSiteLocations } from "../../api/siteLocations";
 import { useAuth } from "../../context/AuthContext";
@@ -20,7 +22,7 @@ function formatTotalHours(inRecord, outRecord) {
 }
 
 function PunchCell({ record, onPhotoClick, onDelete, canDelete }) {
-  if (!record) return <span className="text-xs text-gray-400">—</span>;
+  if (!record) return <span className="text-xs text-gray-400 dark:text-gray-500">—</span>;
 
   return (
     <div className="flex items-center gap-2 group">
@@ -28,16 +30,16 @@ function PunchCell({ record, onPhotoClick, onDelete, canDelete }) {
         <img
           src={cloudinaryThumbnailUrl(record.photo, 100)}
           alt=""
-          className="w-8 h-8 rounded-full object-cover border border-gray-200 cursor-pointer shrink-0"
+          className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700 cursor-pointer shrink-0"
           onClick={() => onPhotoClick(record)}
         />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
-          <User size={14} className="text-gray-400" />
+        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
+          <User size={14} className="text-gray-400 dark:text-gray-500" />
         </div>
       )}
       <div className="min-w-0">
-        <p className="text-sm font-medium text-heading flex items-center gap-1">
+        <p className="text-sm font-medium text-heading dark:text-gray-100 flex items-center gap-1">
           {new Date(record.timestamp).toLocaleTimeString()}
           {record.shift === "day" && <Sun size={12} className="text-amber-500" />}
           {record.shift === "night" && <Moon size={12} className="text-indigo-500" />}
@@ -48,18 +50,18 @@ function PunchCell({ record, onPhotoClick, onDelete, canDelete }) {
             target="_blank"
             rel="noreferrer"
             title={record.address || `${record.latitude}, ${record.longitude}`}
-            className="text-xs text-gray-500 hover:text-primary hover:underline line-clamp-1 max-w-[160px] block"
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary hover:underline line-clamp-1 max-w-[160px] block"
           >
             {record.address || `${record.latitude.toFixed(5)}, ${record.longitude.toFixed(5)}`}
           </a>
         )}
         {record.withinGeofence != null &&
           (record.withinGeofence ? (
-            <span className="inline-flex items-center gap-1 text-green-700 text-xs">
+            <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-400 text-xs">
               <CheckCircle2 size={12} /> On site
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-red-600 text-xs">
+            <span className="inline-flex items-center gap-1 text-red-600 dark:text-red-400 text-xs">
               <XCircle size={12} /> Off site
             </span>
           ))}
@@ -67,7 +69,7 @@ function PunchCell({ record, onPhotoClick, onDelete, canDelete }) {
       {canDelete && (
         <button
           onClick={() => onDelete(record)}
-          className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 shrink-0"
+          className="opacity-0 group-hover:opacity-100 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 shrink-0"
           title="Delete this punch"
         >
           <Trash2 size={14} />
@@ -142,7 +144,13 @@ export default function AttendanceRecordsPage() {
   const photosWithRecord = records.filter((r) => r.photo);
 
   const handleDelete = async (record) => {
-    if (!window.confirm(`Delete ${record.type === "in" ? "Punch In" : "Punch Out"} for ${record.name}?`)) return;
+    const proceed = await confirmAction({
+      title: "Delete record?",
+      text: `Delete ${record.type === "in" ? "Punch In" : "Punch Out"} for ${record.name}?`,
+      confirmText: "Delete",
+      danger: true,
+    });
+    if (!proceed) return;
     await deleteAttendanceScanRecord(record._id);
     load();
   };
@@ -197,7 +205,7 @@ export default function AttendanceRecordsPage() {
         filters={
           <>
             <Select value={siteFilter} onChange={setSiteFilter} options={sites} placeholder="All sites" />
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input" />
+            <ThemedDatePicker value={date} onChange={setDate} />
           </>
         }
       />
@@ -239,7 +247,7 @@ export default function AttendanceRecordsPage() {
           {
             key: "totalHours",
             header: "Total Hours",
-            render: (r) => <span className="text-sm font-medium text-heading">{formatTotalHours(r.in, r.out)}</span>,
+            render: (r) => <span className="text-sm font-medium text-heading dark:text-gray-100">{formatTotalHours(r.in, r.out)}</span>,
           },
         ]}
         rows={loading ? [] : rows}

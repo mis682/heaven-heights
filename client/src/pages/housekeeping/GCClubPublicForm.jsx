@@ -96,30 +96,30 @@ export default function GCClubPublicForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] px-4 py-8">
+    <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 px-4 py-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center">
             <ClipboardList size={20} className="text-white" />
           </div>
           <div>
-            <p className="font-bold text-heading text-lg">Garden City Club — {form.label}</p>
-            <p className="text-sm text-subtext">Capture a photo (or fill the answer) for each checkpoint below.</p>
+            <p className="font-bold text-heading dark:text-gray-100 text-lg">Garden City Club — {form.label}</p>
+            <p className="text-sm text-subtext dark:text-gray-400">Capture a photo (or fill the answer) for each checkpoint below.</p>
           </div>
         </div>
 
-        <form onSubmit={submit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-5">
+        <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 space-y-5">
           {restoredNotice && (
-            <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2">
               <RefreshCw size={13} />
               Aapka pehle bhara hua data restore ho gaya hai — bas baaki checkpoints puri karein.
             </div>
           )}
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Aapka Naam</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Aapka Naam</label>
             <input
               required
               type="text"
@@ -134,7 +134,7 @@ export default function GCClubPublicForm() {
             <div className="space-y-3">
               {textCheckpoints.map((c) => (
                 <div key={c.label}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{c.label}</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{c.label}</label>
                   <input
                     type="text"
                     value={textAnswers[c.label] || ""}
@@ -160,7 +160,7 @@ export default function GCClubPublicForm() {
           </div>
 
           {!allDone && (
-            <p className="text-xs text-amber-600 text-center">
+            <p className="text-xs text-amber-600 dark:text-amber-400 text-center">
               Baaki {missingCount} checkpoint{missingCount > 1 ? "s" : ""} complete karna zaroori hai submit karne se pehle.
             </p>
           )}
@@ -180,11 +180,11 @@ export default function GCClubPublicForm() {
 
 function CenteredMessage({ title, message, icon }) {
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 flex items-center justify-center px-4">
       <div className="text-center max-w-sm">
         {icon && <div className="flex justify-center mb-3">{icon}</div>}
-        <p className="font-semibold text-heading text-lg">{title}</p>
-        <p className="text-sm text-subtext mt-1">{message}</p>
+        <p className="font-semibold text-heading dark:text-gray-100 text-lg">{title}</p>
+        <p className="text-sm text-subtext dark:text-gray-400 mt-1">{message}</p>
       </div>
     </div>
   );

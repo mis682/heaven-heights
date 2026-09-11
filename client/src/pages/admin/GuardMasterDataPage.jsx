@@ -4,6 +4,7 @@ import PageHeader from "../../components/PageHeader";
 import FilterBar, { Select } from "../../components/FilterBar";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
+import ThemedSelect from "../../components/ThemedSelect";
 import { listGuards, createGuard, updateGuard, deleteGuard, bulkImportGuards } from "../../api/guards";
 
 const MODULES = [
@@ -74,7 +75,7 @@ export default function GuardMasterDataPage() {
       />
 
       <input ref={fileRef} type="file" accept=".csv" onChange={handleImport} className="hidden" />
-      {importMessage && <p className="text-sm text-subtext mb-3">{importMessage}</p>}
+      {importMessage && <p className="text-sm text-subtext dark:text-gray-400 mb-3">{importMessage}</p>}
 
       <FilterBar
         search={search}
@@ -97,7 +98,7 @@ export default function GuardMasterDataPage() {
             key: "formActive",
             header: "Form Active",
             render: (r) => (
-              <span className={`text-xs font-semibold ${r.formActive ? "text-green-600" : "text-gray-400"}`}>
+              <span className={`text-xs font-semibold ${r.formActive ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"}`}>
                 {r.formActive ? "Yes" : "No"}
               </span>
             ),
@@ -107,10 +108,10 @@ export default function GuardMasterDataPage() {
             header: "Actions",
             render: (r) => (
               <div className="flex gap-3">
-                <button onClick={() => { setEditing(r); setShowForm(true); }} className="text-gray-500 hover:text-primary">
+                <button onClick={() => { setEditing(r); setShowForm(true); }} className="text-gray-500 dark:text-gray-400 hover:text-primary">
                   <Pencil size={16} />
                 </button>
-                <button onClick={() => remove(r._id)} className="text-gray-500 hover:text-red-600">
+                <button onClick={() => remove(r._id)} className="text-gray-500 dark:text-gray-400 hover:text-red-600">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -167,11 +168,15 @@ function GuardFormModal({ guard, onClose, onSaved }) {
           <input required value={form.siteName} onChange={(e) => setForm({ ...form, siteName: e.target.value })} className="input" />
         </Field>
         <Field label="Module">
-          <select value={form.module} onChange={(e) => setForm({ ...form, module: e.target.value })} className="input">
-            {MODULES.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
-          </select>
+          <ThemedSelect
+            value={form.module}
+            onChange={(v) => setForm({ ...form, module: v })}
+            options={MODULES}
+            placeholder="Select module"
+            className="input"
+          />
         </Field>
-        <label className="flex items-center gap-2 text-sm text-gray-700">
+        <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
           <input type="checkbox" checked={form.formActive} onChange={(e) => setForm({ ...form, formActive: e.target.checked })} />
           Form Active
         </label>
@@ -186,7 +191,7 @@ function GuardFormModal({ guard, onClose, onSaved }) {
 function Field({ label, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       {children}
     </div>
   );

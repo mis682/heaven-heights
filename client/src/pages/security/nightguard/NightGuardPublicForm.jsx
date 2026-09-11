@@ -3,6 +3,7 @@ import { Building2, CheckCircle2, RefreshCw } from "lucide-react";
 import { getNightGuardMeta, createNightGuardSubmission } from "../../../api/nightguard";
 import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
 import CameraCapture from "../../../components/CameraCapture";
+import ThemedSelect from "../../../components/ThemedSelect";
 import { saveDraft, loadDraft, clearDraft } from "../../../utils/nightGuardDraft";
 
 export default function NightGuardPublicForm() {
@@ -78,56 +79,57 @@ export default function NightGuardPublicForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] px-4 py-8">
+    <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 px-4 py-8">
       <div className="max-w-md mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center">
             <Building2 size={20} className="text-white" />
           </div>
           <div>
-            <p className="font-bold text-heading text-lg">Night Guard Check-in</p>
-            <p className="text-sm text-subtext">Submit your proof-of-presence photo for this shift.</p>
+            <p className="font-bold text-heading dark:text-gray-100 text-lg">Night Guard Check-in</p>
+            <p className="text-sm text-subtext dark:text-gray-400">Submit your proof-of-presence photo for this shift.</p>
           </div>
         </div>
 
-        <form onSubmit={submit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
+        <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 space-y-4">
           {restoredNotice && (
-            <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2">
               <RefreshCw size={13} />
               Aapki pehle bhari hui details restore ho gayi hain.
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
-            <select
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Project Name</label>
+            <ThemedSelect
               required
               value={projectName}
-              onChange={(e) => {
-                setProjectName(e.target.value);
+              onChange={(v) => {
+                setProjectName(v);
                 setGuardName("");
               }}
-              className="input"
-            >
-              <option value="">Select project</option>
-              {sites.map((s) => <option key={s}>{s}</option>)}
-            </select>
+              options={sites}
+              placeholder="Select project"
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Guard Name</label>
-            <select required value={guardName} onChange={(e) => setGuardName(e.target.value)} className="input">
-              <option value="">Select your name</option>
-              {guards.map((g) => <option key={g._id} value={g.name}>{g.name}</option>)}
-            </select>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Guard Name</label>
+            <ThemedSelect
+              required
+              value={guardName}
+              onChange={setGuardName}
+              options={guards.map((g) => ({ value: g.name, label: g.name }))}
+              placeholder="Select your name"
+            />
             {guards.length === 0 && (
-              <p className="text-xs text-amber-600 mt-1">No guards found — contact your coordinator.</p>
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">No guards found — contact your coordinator.</p>
             )}
           </div>
 
           <CameraCapture label="Your proof-of-presence photo" onCapture={setCapture} disabled={!guardName} initialCapture={capture} />
 
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
 
           <button
             type="submit"
@@ -144,11 +146,11 @@ export default function NightGuardPublicForm() {
 
 function CenteredMessage({ title, message, icon }) {
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 flex items-center justify-center px-4">
       <div className="text-center max-w-sm">
         {icon && <div className="flex justify-center mb-3">{icon}</div>}
-        <p className="font-semibold text-heading text-lg">{title}</p>
-        <p className="text-sm text-subtext mt-1">{message}</p>
+        <p className="font-semibold text-heading dark:text-gray-100 text-lg">{title}</p>
+        <p className="text-sm text-subtext dark:text-gray-400 mt-1">{message}</p>
       </div>
     </div>
   );
