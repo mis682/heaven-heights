@@ -180,32 +180,31 @@ async function computeFixedHourGuardKpi({ projectId, projectSlug, from, to, chec
     // photo has also already passed.
     if (rounds[rounds.length - 1].end > now) continue;
 
+    const nightStart = rounds[0].start;
+    const nightEnd = rounds[rounds.length - 1].end;
+
     for (let cp = 1; cp <= checkpointCount; cp += 1) {
-      const captures = byCheckpoint.get(cp) || [];
+      // Scoped to just this one night, and paired with this night's rounds
+      // in chronological order (round 1 with capture 1, round 2 with
+      // capture 2, ...) — never by clock-window lookup — so a single photo
+      // can only ever settle one round. Matching by window instead would
+      // let one late photo simultaneously read as "late" for the round it
+      // was owed to AND "on time" for the following round it happens to
+      // land inside, double-counting the same capture.
+      const captures = (byCheckpoint.get(cp) || []).filter((c) => c.capturedAt >= nightStart && c.capturedAt < nightEnd);
 
       rounds.forEach((round, roundIdx) => {
-        const onTimeMatch = captures.find((c) => c.capturedAt >= round.start && c.capturedAt < round.end);
-        if (onTimeMatch) {
-          credit(onTimeMatch.guardName, "onTime");
-          return;
-        }
-
-        let lateMatch = null;
-        for (let j = roundIdx + 1; j < rounds.length; j += 1) {
-          const later = rounds[j];
-          const match = captures.find((c) => c.capturedAt >= later.start && c.capturedAt < later.end);
-          if (match) {
-            lateMatch = match;
-            break;
-          }
-        }
-
-        if (lateMatch) {
-          const lateByMinutes = Math.round((lateMatch.capturedAt - round.end) / 60000);
-          credit(lateMatch.guardName, "late", { date: dateKey, checkpointId: cp, roundStart: round.start, lateByMinutes });
-        } else {
+        const capture = captures[roundIdx];
+        if (!capture) {
           const assignedGuard = findAssignedGuard(entriesByDate.get(dateKey), round.start);
           credit(assignedGuard, "missed", { date: dateKey, checkpointId: cp, roundStart: round.start, lateByMinutes: null });
+          return;
+        }
+        if (capture.capturedAt < round.end) {
+          credit(capture.guardName, "onTime");
+        } else {
+          const lateByMinutes = Math.round((capture.capturedAt - round.end) / 60000);
+          credit(capture.guardName, "late", { date: dateKey, checkpointId: cp, roundStart: round.start, lateByMinutes });
         }
       });
     }
