@@ -184,22 +184,31 @@ async function computeFixedHourGuardKpi({ projectId, projectSlug, from, to, chec
     const nightEnd = rounds[rounds.length - 1].end;
 
     for (let cp = 1; cp <= checkpointCount; cp += 1) {
-      // Scoped to just this one night, and paired with this night's rounds
-      // in chronological order (round 1 with capture 1, round 2 with
-      // capture 2, ...) — never by clock-window lookup — so a single photo
-      // can only ever settle one round. Matching by window instead would
-      // let one late photo simultaneously read as "late" for the round it
-      // was owed to AND "on time" for the following round it happens to
-      // land inside, double-counting the same capture.
-      const captures = (byCheckpoint.get(cp) || []).filter((c) => c.capturedAt >= nightStart && c.capturedAt < nightEnd);
+      // Scoped to just this one night. Each round claims the EARLIEST
+      // not-yet-claimed capture that happened before the next round takes
+      // over (not simply "the i-th capture for the i-th round" by array
+      // position) — so a single photo can only ever settle one round, and a
+      // genuinely skipped early round doesn't shift every later round's
+      // photo out of place. Plain index pairing broke exactly that case: if
+      // round 1 was skipped, round 2's photo would slide into round 1's
+      // slot, round 3's into round 2's, and so on, cascading a "missed" all
+      // the way to the last round of the night even though its own photo
+      // was genuinely taken on time.
+      const captures = (byCheckpoint.get(cp) || [])
+        .filter((c) => c.capturedAt >= nightStart && c.capturedAt < nightEnd)
+        .map((c) => ({ ...c, used: false }));
 
       rounds.forEach((round, roundIdx) => {
-        const capture = captures[roundIdx];
+        const boundary = roundIdx + 1 < rounds.length ? rounds[roundIdx + 1].start : nightEnd;
+        const capture = captures.find((c) => !c.used && c.capturedAt < boundary);
+
         if (!capture) {
           const assignedGuard = findAssignedGuard(entriesByDate.get(dateKey), round.start);
           credit(assignedGuard, "missed", { date: dateKey, checkpointId: cp, roundStart: round.start, lateByMinutes: null });
           return;
         }
+
+        capture.used = true;
         if (capture.capturedAt < round.end) {
           credit(capture.guardName, "onTime");
         } else {
