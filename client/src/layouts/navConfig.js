@@ -363,6 +363,7 @@ export const NAV_SECTIONS = [
                 permission: { module: "nightGuard", action: "edit" },
               },
               { label: "Admin Report View", path: "/security/night-guard/admin-report" },
+              { label: "Guard KPI", path: "/security/night-guard/guard-kpi" },
             ],
           },
           { label: "Fire Mock Drill", path: "/security/fire-mock-drill/submissions" },

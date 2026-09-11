@@ -32,6 +32,7 @@ import NightGuardPublicForm from "./pages/security/nightguard/NightGuardPublicFo
 import NightGuardSubmissionsPage from "./pages/security/nightguard/NightGuardSubmissionsPage";
 import NightGuardDailyReportPage from "./pages/security/nightguard/NightGuardDailyReportPage";
 import NightGuardAdminReportPage from "./pages/security/nightguard/NightGuardAdminReportPage";
+import NightGuardGuardKpiPage from "./pages/security/nightguard/NightGuardGuardKpiPage";
 
 import FireMockDrillPublicForm from "./pages/security/firemockdrill/FireMockDrillPublicForm";
 import FireMockDrillSubmissionsPage from "./pages/security/firemockdrill/FireMockDrillSubmissionsPage";
@@ -182,6 +183,7 @@ export default function App() {
           }
         />
         <Route path="/security/night-guard/admin-report" element={<NightGuardAdminReportPage />} />
+        <Route path="/security/night-guard/guard-kpi" element={<NightGuardGuardKpiPage />} />
 
         <Route path="/security/fire-mock-drill/submissions" element={<FireMockDrillSubmissionsPage />} />
 

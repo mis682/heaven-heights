@@ -5,6 +5,7 @@ const { upload } = require("../middleware/upload");
 const asyncHandler = require("../utils/asyncHandler");
 
 router.get("/meta", asyncHandler(ctrl.meta));
+router.get("/guard-kpi", asyncHandler(ctrl.getGuardKpi));
 
 router.post("/submissions", upload.single("guardPhoto"), asyncHandler(ctrl.createSubmission));
 router.get("/submissions", asyncHandler(ctrl.listSubmissions));

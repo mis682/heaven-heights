@@ -5,6 +5,7 @@ const { fileToUrl } = require("../middleware/upload");
 const { notifyWebhook } = require("../utils/webhook");
 const { buildNightGuardReportPdf } = require("../utils/nightGuardReportPdf");
 const { buildIstDateRangeFilter } = require("../utils/istDateRange");
+const { computeNightGuardKpi } = require("../utils/nightGuardKpi");
 
 exports.meta = async (req, res) => {
   res.json({
@@ -70,6 +71,17 @@ function formatHour(date) {
   if (h === 0) h = 12;
   return `${h}:00 ${ampm}`;
 }
+
+// Guard KPI — there's no fixed schedule or checkpoint list here, just a
+// guard expected to check in roughly hourly for as long as their shift
+// runs; see computeNightGuardKpi for how that cadence is judged directly
+// from actual submission timestamps.
+exports.getGuardKpi = async (req, res) => {
+  const { from, to } = req.query;
+  if (!from || !to) return res.status(400).json({ message: "from and to are required" });
+  const rows = await computeNightGuardKpi({ from, to });
+  res.json({ rows });
+};
 
 // --- Coordinator daily report builder ---
 
