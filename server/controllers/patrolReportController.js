@@ -2,7 +2,9 @@ const ExcelJS = require("exceljs");
 const PatrolDailyReport = require("../models/PatrolDailyReport");
 const PatrolSubmission = require("../models/PatrolSubmission");
 const Project = require("../models/Project");
+const Checkpoint = require("../models/Checkpoint");
 const { buildCheckpointReportPdf } = require("../utils/checkpointReportPdf");
+const { computeGenericGuardKpi } = require("../utils/patrolRoundSla");
 
 // Every patrol site uses the default hourly grid except where noted here —
 // Nature Park's actual patrol round runs on irregular, non-hourly time ranges.
@@ -181,6 +183,50 @@ exports.exportReport = async (req, res) => {
   res.setHeader("Content-Disposition", `attachment; filename=patrol-report-${report.projectName}-${filenameDate}.xlsx`);
   await workbook.xlsx.write(res);
   res.end();
+};
+
+// Guard KPI for the generic (non-Garden-City) patrol sites. There's no
+// externally fixed per-checkpoint schedule here (unlike Garden City), and
+// the coordinator's manually-picked time-slot label on a daily-report entry
+// turns out not to reliably reflect when a round actually happened either —
+// so the KPI is computed purely from each guard's own actual checkpoint
+// photos: a round starts at checkpoint 1, and every other checkpoint is
+// expected to follow within an hour of that (see computeGenericGuardKpi).
+exports.getGuardKpi = async (req, res) => {
+  const { projectSlug, from, to } = req.query;
+  if (!projectSlug || !from || !to) {
+    return res.status(400).json({ message: "projectSlug, from and to are required" });
+  }
+
+  const project = await Project.findOne({ slug: projectSlug });
+  if (!project) return res.status(404).json({ message: "Project not found" });
+
+  const checkpoints = await Checkpoint.find({ projectId: project._id }).sort({ order: 1 });
+  const checkpointLabel = (id) => checkpoints.find((c) => c.checkpointId === id)?.name || `Checkpoint ${id}`;
+
+  const rows = await computeGenericGuardKpi({
+    projectId: project._id,
+    from,
+    to,
+    checkpointCount: project.checkpointCount,
+  });
+
+  const formatted = rows.map((r) => ({
+    ...r,
+    lateDetails: r.lateDetails.map((d) => ({
+      date: d.roundStart.toISOString().slice(0, 10),
+      checkpointLabel: checkpointLabel(d.checkpointId),
+      scheduledTime: `Round started ${d.roundStart.toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })}`,
+      lateByMinutes: d.lateByMinutes,
+    })),
+  }));
+
+  res.json({ rows: formatted });
 };
 
 exports.exportReportPdf = async (req, res) => {

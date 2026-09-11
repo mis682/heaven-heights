@@ -26,6 +26,7 @@ import PatrolAdminReportPage from "./pages/security/patrol/PatrolAdminReportPage
 import GardenCityDailyReportPage from "./pages/security/patrol/GardenCityDailyReportPage";
 import GardenCityAdminReportPage from "./pages/security/patrol/GardenCityAdminReportPage";
 import GardenCityGuardKpiPage from "./pages/security/patrol/GardenCityGuardKpiPage";
+import PatrolGuardKpiPage from "./pages/security/patrol/PatrolGuardKpiPage";
 
 import NightGuardPublicForm from "./pages/security/nightguard/NightGuardPublicForm";
 import NightGuardSubmissionsPage from "./pages/security/nightguard/NightGuardSubmissionsPage";
@@ -160,6 +161,7 @@ export default function App() {
         />
         <Route path="/security/patrol/garden-city/admin-report" element={<GardenCityAdminReportPage />} />
         <Route path="/security/patrol/garden-city/guard-kpi" element={<GardenCityGuardKpiPage />} />
+        <Route path="/security/patrol/:project/guard-kpi" element={<PatrolGuardKpiPage />} />
         <Route
           path="/security/patrol/:project/daily-report"
           element={

@@ -292,11 +292,11 @@ function patrolSiteNavItem({ label, slug }) {
         permission: { module: "patrol", action: "edit" },
       },
       { label: "Admin Report View", path: `/security/patrol/${slug}/admin-report` },
-      // Guard KPI (checkpoint punctuality vs. schedule) only exists for
-      // Garden City so far — its fixed per-checkpoint schedule is what the
-      // SLA comparison is built against; other sites use hour-window rounds
-      // instead, which isn't wired up yet.
-      ...(slug === "garden-city" ? [{ label: "Guard KPI", path: `/security/patrol/${slug}/guard-kpi` }] : []),
+      // Garden City has its own fixed 51-slot schedule and dedicated KPI
+      // page; every other site instead checks each submitted round (a
+      // guard's assigned date + hourly time-slot) against that slot's own
+      // window — no per-checkpoint schedule needed there.
+      { label: "Guard KPI", path: `/security/patrol/${slug}/guard-kpi` },
     ],
   };
 }
