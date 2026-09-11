@@ -1,107 +1,227 @@
 const PatrolSubmission = require("../models/PatrolSubmission");
+const PatrolDailyReport = require("../models/PatrolDailyReport");
 
-// A generic patrol site has no externally fixed per-checkpoint schedule the
-// way Garden City does, and (unlike Garden City) the coordinator's manually
-// picked time-slot label on a daily-report entry turns out not to reliably
-// reflect when a guard's round actually happened either — so neither is a
-// trustworthy "expected time" to diff against.
-//
-// Instead, a round is defined purely from the guard's own actual photos:
-// it starts the moment they capture checkpoint 1, and every other
-// checkpoint is expected to follow within this many minutes of that.
-const ROUND_WINDOW_MINUTES = 60;
+// Each site's real, empirically-observed night-patrol window (checked
+// against actual checkpoint-photo capture hours) — not the full 24-hour
+// dropdown grid the Daily Report builder offers, which covers far more
+// hours than guards actually patrol. Regal Garden/Wildflower/School use a
+// plain hourly grid; Nature Park already has its own irregular round
+// schedule (mirrors SITE_TIME_SLOTS in patrolReportController.js).
+const NIGHT_SCHEDULES = {
+  "regal-garden": { startHour: 21, endHour: 6 }, // 9 PM - 6 AM, hourly
+  wildflower: { startHour: 21, endHour: 5 }, // 9 PM - 5 AM, hourly
+  school: { startHour: 21, endHour: 5 }, // 9 PM - 5 AM, hourly
+  "nature-park": {
+    customBlocks: [
+      { sh: 21, sm: 0, eh: 22, em: 30 },
+      { sh: 22, sm: 30, eh: 23, em: 55 },
+      { sh: 0, sm: 30, eh: 2, em: 0 },
+      { sh: 2, sm: 0, eh: 3, em: 30 },
+      { sh: 3, sm: 30, eh: 5, em: 0 },
+      { sh: 5, sm: 30, eh: 7, em: 0 },
+    ],
+  },
+};
 
-// Computes Guard KPI for a project directly from PatrolSubmission photos —
-// no daily-report data involved. For each guard, every checkpoint-1 capture
-// within [from, to] starts a round; the round's window runs until the next
-// round starts (so a very late checkpoint is still attributed to the round
-// it belongs to, not miscounted into the next one) or a 24h cap for the
-// last round. Every checkpoint captured within ROUND_WINDOW_MINUTES of the
-// round's start is on time; captured later (but still within the round's
-// window) is late; never captured within the round's window is no_photo —
-// each checkpoint counts independently, so a handful of late/missed
-// checkpoints only dent that round's contribution, not the whole thing.
-async function computeGenericGuardKpi({ projectId, from, to, checkpointCount }) {
+function addDaysToDateKey(dateKey, days) {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return dt.toISOString().slice(0, 10);
+}
+
+function pad(n) {
+  return String(n).padStart(2, "0");
+}
+
+function toDate(dateKey, hour, minute) {
+  return new Date(`${dateKey}T${pad(hour)}:${pad(minute)}:00+05:30`);
+}
+
+// Builds one night's fixed round windows, anchored to dateKey, correctly
+// rolling AM hours (and Nature Park's custom AM blocks) onto dateKey + 1.
+function buildNightRounds(dateKey, schedule) {
+  const rounds = [];
+
+  if (schedule.customBlocks) {
+    let dayOffset = 0;
+    let prevStartMinutes = -1;
+    schedule.customBlocks.forEach((b) => {
+      const startMinutes = b.sh * 60 + b.sm;
+      if (startMinutes <= prevStartMinutes) dayOffset = 1;
+      prevStartMinutes = startMinutes;
+      const startDateKey = dayOffset === 0 ? dateKey : addDaysToDateKey(dateKey, dayOffset);
+      const start = toDate(startDateKey, b.sh, b.sm);
+      const endMinutes = b.eh * 60 + b.em;
+      const endDateKey = endMinutes <= startMinutes ? addDaysToDateKey(startDateKey, 1) : startDateKey;
+      const end = toDate(endDateKey, b.eh, b.em);
+      rounds.push({ start, end });
+    });
+    return rounds;
+  }
+
+  let hour = schedule.startHour;
+  let dayOffset = 0;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const startDateKey = dayOffset === 0 ? dateKey : addDaysToDateKey(dateKey, dayOffset);
+    const start = toDate(startDateKey, hour, 0);
+    const nextHour = (hour + 1) % 24;
+    const nextDayOffset = nextHour === 0 ? dayOffset + 1 : dayOffset;
+    const endDateKey = nextDayOffset === 0 ? dateKey : addDaysToDateKey(dateKey, nextDayOffset);
+    const end = toDate(endDateKey, nextHour, 0);
+    rounds.push({ start, end });
+    if (nextHour === schedule.endHour) break;
+    hour = nextHour;
+    dayOffset = nextDayOffset;
+  }
+  return rounds;
+}
+
+function istHour(date) {
+  return new Date(date.getTime() + 5.5 * 60 * 60 * 1000).getUTCHours();
+}
+
+function parseSlotLabel(label) {
+  const match = String(label || "")
+    .trim()
+    .match(/^(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!match) return null;
+  let hour = parseInt(match[1], 10);
+  const ampm = match[3].toUpperCase();
+  if (ampm === "PM" && hour !== 12) hour += 12;
+  if (ampm === "AM" && hour === 12) hour = 0;
+  return hour;
+}
+
+// A missed checkpoint has no photo at all, so there's no guard to credit it
+// to directly — the closest available signal is who the coordinator's
+// daily-report entries say was assigned to this site that night, picking
+// whichever entry's own (unreliable-for-timing-but-still-indicative) label
+// is closest in hour-of-day to the round that got missed.
+function findAssignedGuard(entriesForDate, roundStart) {
+  if (!entriesForDate || entriesForDate.length === 0) return null;
+  const roundHour = istHour(roundStart);
+  let best = null;
+  let bestDiff = Infinity;
+  entriesForDate.forEach((e) => {
+    const hour = parseSlotLabel(e.timeSlot);
+    if (hour == null) return;
+    const diff = Math.min(Math.abs(hour - roundHour), 24 - Math.abs(hour - roundHour));
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = e.guardName;
+    }
+  });
+  return best;
+}
+
+// Guard KPI for a generic (non-Garden-City) patrol site, using each site's
+// real fixed night-round schedule (NIGHT_SCHEDULES) rather than either a
+// coordinator-typed label or a guard-relative "first checkpoint" anchor.
+// For every date + fixed round + checkpoint: a photo within the round's own
+// window is on time; not found there but found in a later round the same
+// night is late; never found at all is missed (attributed to whichever
+// guard the daily report shows was assigned closest to that round).
+async function computeFixedHourGuardKpi({ projectId, projectSlug, from, to, checkpointCount }) {
+  const schedule = NIGHT_SCHEDULES[projectSlug];
+  if (!schedule) return [];
+
   const rangeStart = new Date(`${from}T00:00:00+05:30`);
-  const rangeEnd = new Date(`${to}T23:59:59.999+05:30`);
-  // A trailing buffer so the last in-range round has a real "next round"
-  // (or at least more data) to bound its window against, instead of always
-  // falling back to the 24h cap.
-  const fetchEnd = new Date(rangeEnd.getTime() + 6 * 60 * 60 * 1000);
+  const fetchEnd = new Date(`${addDaysToDateKey(to, 2)}T00:00:00+05:30`);
 
   const docs = await PatrolSubmission.find({
     projectId,
     "photos.capturedAt": { $gte: rangeStart, $lt: fetchEnd },
   }).select("guardName photos");
 
-  const byGuard = new Map();
+  const byCheckpoint = new Map();
   docs.forEach((doc) => {
     doc.photos.forEach((p) => {
       if (p.capturedAt < rangeStart || p.capturedAt >= fetchEnd) return;
-      if (!byGuard.has(doc.guardName)) byGuard.set(doc.guardName, []);
-      byGuard.get(doc.guardName).push({ checkpointId: p.checkpointId, capturedAt: p.capturedAt });
-    });
-  });
-
-  const rows = [];
-
-  byGuard.forEach((photos, guardName) => {
-    photos.sort((a, b) => a.capturedAt - b.capturedAt);
-
-    const allRoundStarts = photos.filter((p) => p.checkpointId === 1).map((p) => p.capturedAt);
-    // A round whose checkpoint 1 only exists to bound the previous round's
-    // window (i.e. it fell in the trailing buffer, after `to`) isn't itself
-    // reported on.
-    const countedRoundStarts = allRoundStarts.filter((t) => t >= rangeStart && t <= rangeEnd);
-    if (countedRoundStarts.length === 0) return;
-
-    const byCheckpoint = new Map();
-    photos.forEach((p) => {
       if (!byCheckpoint.has(p.checkpointId)) byCheckpoint.set(p.checkpointId, []);
-      byCheckpoint.get(p.checkpointId).push(p.capturedAt);
+      byCheckpoint.get(p.checkpointId).push({ capturedAt: p.capturedAt, guardName: doc.guardName });
     });
+  });
+  byCheckpoint.forEach((arr) => arr.sort((a, b) => a.capturedAt - b.capturedAt));
 
-    let total = 0;
-    let onTime = 0;
-    let late = 0;
-    let noPhoto = 0;
-    const lateDetails = [];
-
-    countedRoundStarts.forEach((start) => {
-      const startIdx = allRoundStarts.indexOf(start);
-      const windowEnd = allRoundStarts[startIdx + 1] || new Date(start.getTime() + 24 * 60 * 60 * 1000);
-      const onTimeCutoff = new Date(start.getTime() + ROUND_WINDOW_MINUTES * 60 * 1000);
-
-      for (let cp = 1; cp <= checkpointCount; cp += 1) {
-        total += 1;
-        const captures = byCheckpoint.get(cp) || [];
-        const match = captures.find((t) => t >= start && t < windowEnd);
-
-        if (!match) {
-          noPhoto += 1;
-          lateDetails.push({ roundStart: start, checkpointId: cp, lateByMinutes: null });
-        } else if (match > onTimeCutoff) {
-          late += 1;
-          lateDetails.push({ roundStart: start, checkpointId: cp, lateByMinutes: Math.round((match - onTimeCutoff) / 60000) });
-        } else {
-          onTime += 1;
-        }
-      }
-    });
-
-    rows.push({
-      guardName,
-      total,
-      onTime,
-      late,
-      noPhoto,
-      onTimePercent: total > 0 ? Math.round((onTime / total) * 100) : 0,
-      lateDetails,
+  const reports = await PatrolDailyReport.find({ projectId, status: "submitted" }).select("entries");
+  const entriesByDate = new Map();
+  reports.forEach((r) => {
+    r.entries.forEach((e) => {
+      if (!entriesByDate.has(e.date)) entriesByDate.set(e.date, []);
+      entriesByDate.get(e.date).push(e);
     });
   });
 
+  const byGuard = new Map();
+  const credit = (guardName, type, detail) => {
+    const name = guardName || "Unassigned";
+    if (!byGuard.has(name)) byGuard.set(name, { total: 0, onTime: 0, late: 0, noPhoto: 0, lateDetails: [] });
+    const bucket = byGuard.get(name);
+    bucket.total += 1;
+    if (type === "onTime") bucket.onTime += 1;
+    else if (type === "late") {
+      bucket.late += 1;
+      bucket.lateDetails.push(detail);
+    } else {
+      bucket.noPhoto += 1;
+      bucket.lateDetails.push(detail);
+    }
+  };
+
+  const now = new Date();
+
+  for (let dateKey = from; dateKey <= to; dateKey = addDaysToDateKey(dateKey, 1)) {
+    const rounds = buildNightRounds(dateKey, schedule);
+    // A night that hasn't fully finished yet (still in progress, or hasn't
+    // started at all) can't fairly be judged — an empty round is only ever
+    // really "missed" once every later round that could have caught a late
+    // photo has also already passed.
+    if (rounds[rounds.length - 1].end > now) continue;
+
+    for (let cp = 1; cp <= checkpointCount; cp += 1) {
+      const captures = byCheckpoint.get(cp) || [];
+
+      rounds.forEach((round, roundIdx) => {
+        const onTimeMatch = captures.find((c) => c.capturedAt >= round.start && c.capturedAt < round.end);
+        if (onTimeMatch) {
+          credit(onTimeMatch.guardName, "onTime");
+          return;
+        }
+
+        let lateMatch = null;
+        for (let j = roundIdx + 1; j < rounds.length; j += 1) {
+          const later = rounds[j];
+          const match = captures.find((c) => c.capturedAt >= later.start && c.capturedAt < later.end);
+          if (match) {
+            lateMatch = match;
+            break;
+          }
+        }
+
+        if (lateMatch) {
+          const lateByMinutes = Math.round((lateMatch.capturedAt - round.end) / 60000);
+          credit(lateMatch.guardName, "late", { date: dateKey, checkpointId: cp, roundStart: round.start, lateByMinutes });
+        } else {
+          const assignedGuard = findAssignedGuard(entriesByDate.get(dateKey), round.start);
+          credit(assignedGuard, "missed", { date: dateKey, checkpointId: cp, roundStart: round.start, lateByMinutes: null });
+        }
+      });
+    }
+  }
+
+  const rows = [...byGuard.entries()].map(([guardName, b]) => ({
+    guardName,
+    total: b.total,
+    onTime: b.onTime,
+    late: b.late,
+    noPhoto: b.noPhoto,
+    onTimePercent: b.total > 0 ? Math.round((b.onTime / b.total) * 100) : 0,
+    lateDetails: b.lateDetails,
+  }));
   rows.sort((a, b) => a.guardName.localeCompare(b.guardName));
   return rows;
 }
 
-module.exports = { computeGenericGuardKpi, ROUND_WINDOW_MINUTES };
+module.exports = { computeFixedHourGuardKpi };

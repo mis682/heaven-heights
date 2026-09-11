@@ -74,7 +74,7 @@ export default function PatrolGuardKpiPage() {
     <div>
       <PageHeader
         title={`${project?.name || "Patrol"} — Guard KPI`}
-        subtitle="Har round guard ke pehle checkpoint se shuru hota hai — agle 60 minute ke andar baaki saare checkpoints cover hone chahiye. Miss ya late hone par us guard ka KPI kam hota hai."
+        subtitle="Har fixed hour-block (jaise 9-10 PM) mein site ke saare checkpoints cover hone chahiye. Apne hour mein na hua to agle hour mein dhundha jata hai (Late) — wahan bhi na mile to Missed."
         primaryAction={
           rows.length > 0
             ? { label: "Export CSV", icon: <Download size={16} />, onClick: () => downloadCsv(rows, project?.name || "patrol", from, to) }

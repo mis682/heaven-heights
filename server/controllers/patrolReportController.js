@@ -4,7 +4,7 @@ const PatrolSubmission = require("../models/PatrolSubmission");
 const Project = require("../models/Project");
 const Checkpoint = require("../models/Checkpoint");
 const { buildCheckpointReportPdf } = require("../utils/checkpointReportPdf");
-const { computeGenericGuardKpi } = require("../utils/patrolRoundSla");
+const { computeFixedHourGuardKpi } = require("../utils/patrolRoundSla");
 
 // Every patrol site uses the default hourly grid except where noted here —
 // Nature Park's actual patrol round runs on irregular, non-hourly time ranges.
@@ -185,13 +185,10 @@ exports.exportReport = async (req, res) => {
   res.end();
 };
 
-// Guard KPI for the generic (non-Garden-City) patrol sites. There's no
-// externally fixed per-checkpoint schedule here (unlike Garden City), and
-// the coordinator's manually-picked time-slot label on a daily-report entry
-// turns out not to reliably reflect when a round actually happened either —
-// so the KPI is computed purely from each guard's own actual checkpoint
-// photos: a round starts at checkpoint 1, and every other checkpoint is
-// expected to follow within an hour of that (see computeGenericGuardKpi).
+// Guard KPI for the generic (non-Garden-City) patrol sites, using each
+// site's real fixed night-round schedule (see NIGHT_SCHEDULES in
+// patrolRoundSla.js) rather than a coordinator-typed label or a
+// guard-relative anchor — both turned out not to reliably reflect reality.
 exports.getGuardKpi = async (req, res) => {
   const { projectSlug, from, to } = req.query;
   if (!projectSlug || !from || !to) {
@@ -204,8 +201,9 @@ exports.getGuardKpi = async (req, res) => {
   const checkpoints = await Checkpoint.find({ projectId: project._id }).sort({ order: 1 });
   const checkpointLabel = (id) => checkpoints.find((c) => c.checkpointId === id)?.name || `Checkpoint ${id}`;
 
-  const rows = await computeGenericGuardKpi({
+  const rows = await computeFixedHourGuardKpi({
     projectId: project._id,
+    projectSlug,
     from,
     to,
     checkpointCount: project.checkpointCount,
@@ -214,9 +212,9 @@ exports.getGuardKpi = async (req, res) => {
   const formatted = rows.map((r) => ({
     ...r,
     lateDetails: r.lateDetails.map((d) => ({
-      date: d.roundStart.toISOString().slice(0, 10),
+      date: d.date,
       checkpointLabel: checkpointLabel(d.checkpointId),
-      scheduledTime: `Round started ${d.roundStart.toLocaleString("en-IN", {
+      scheduledTime: `Round ${d.roundStart.toLocaleString("en-IN", {
         timeZone: "Asia/Kolkata",
         hour: "2-digit",
         minute: "2-digit",
