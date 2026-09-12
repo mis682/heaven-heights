@@ -27,7 +27,24 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
     if (!open) return;
     const updateCoords = () => {
       const rect = triggerRef.current?.getBoundingClientRect();
-      if (rect) setCoords({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+      if (!rect) return;
+      const GAP = 4;
+      const MARGIN = 8;
+      const PREFERRED = 320;
+      const spaceBelow = window.innerHeight - rect.bottom - GAP - MARGIN;
+      const spaceAbove = rect.top - GAP - MARGIN;
+      // Open downward (like a native <select>) unless there isn't enough
+      // room below but there IS more room above — otherwise a trigger near
+      // the bottom of the viewport (e.g. the last rows of a long table)
+      // pops open mostly or entirely off-screen.
+      const openUpward = spaceBelow < 150 && spaceAbove > spaceBelow;
+      const maxHeight = Math.max(120, Math.min(PREFERRED, openUpward ? spaceAbove : spaceBelow));
+      setCoords({
+        left: rect.left,
+        width: rect.width,
+        maxHeight,
+        ...(openUpward ? { bottom: window.innerHeight - rect.top + GAP } : { top: rect.bottom + GAP }),
+      });
     };
     updateCoords();
     window.addEventListener("resize", updateCoords);
@@ -88,24 +105,34 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
         createPortal(
           <div
             ref={popupRef}
-            style={{ position: "fixed", top: coords.top, left: coords.left, minWidth: coords.width }}
-            className="z-[60] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden animate-fade-in-down"
+            style={{
+              position: "fixed",
+              top: coords.top,
+              bottom: coords.bottom,
+              left: coords.left,
+              minWidth: coords.width,
+              maxHeight: coords.maxHeight,
+            }}
+            className="z-[60] flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden animate-fade-in-down"
           >
             {showSearch && (
-              <div className="p-2 border-b border-gray-100 dark:border-gray-700">
+              <div className="p-2 border-b border-gray-100 dark:border-gray-700 shrink-0">
                 <div className="relative">
                   <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     autoFocus
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && filtered.length > 0) pick(filtered[0]);
+                    }}
                     placeholder="Search..."
                     className="w-full pl-8 pr-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
                 </div>
               </div>
             )}
-            <div className="max-h-64 overflow-y-auto custom-scrollbar py-1">
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar py-1">
               {placeholder && (
                 <button
                   type="button"
