@@ -7,7 +7,25 @@ function photo(label, opts = {}) {
   return { label, type: "photo", ...opts };
 }
 
-const REGAL_GARDEN_CLUB_FORMS = [];
+const REGAL_GARDEN_CLUB_FORMS = [
+  {
+    formNumber: 1,
+    label: "RG Club Form",
+    checkpoints: [
+      "Main Entrance Area (1st Floor)",
+      "Lift Cleaning",
+      "Zym Room Cleaning",
+      "Resturant Room Cleaning (2nd Floor)-1",
+      "Resturant Room Cleaning (2nd Floor)-2",
+      "2nd Floor-1",
+      "2nd Floor-2",
+      "Terrace Image-1",
+      "Terrace Image-2",
+      "Swimming Pool Filter Room",
+      "Sports Area",
+    ].map(photo),
+  },
+];
 
 function getFormByNumber(formNumber) {
   return REGAL_GARDEN_CLUB_FORMS.find((f) => f.formNumber === Number(formNumber));

@@ -350,7 +350,25 @@ export const RESERVE_CLUB_FORMS = [
 // checklists per form). Mirrors server/constants/regalGardenClubForms.js —
 // kept in sync manually. Starts empty; 2 forms get appended here as
 // provided.
-export const REGAL_GARDEN_CLUB_FORMS = [];
+export const REGAL_GARDEN_CLUB_FORMS = [
+  {
+    formNumber: 1,
+    label: "RG Club Form",
+    checkpoints: [
+      "Main Entrance Area (1st Floor)",
+      "Lift Cleaning",
+      "Zym Room Cleaning",
+      "Resturant Room Cleaning (2nd Floor)-1",
+      "Resturant Room Cleaning (2nd Floor)-2",
+      "2nd Floor-1",
+      "2nd Floor-2",
+      "Terrace Image-1",
+      "Terrace Image-2",
+      "Swimming Pool Filter Room",
+      "Sports Area",
+    ].map(photo),
+  },
+];
 
 function patrolSiteNavItem({ label, slug }) {
   return {
