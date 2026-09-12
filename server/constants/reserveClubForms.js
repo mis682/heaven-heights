@@ -99,6 +99,29 @@ const RESERVE_CLUB_FORMS = [
       photo("PH level"),
     ],
   },
+  {
+    formNumber: 6,
+    label: "Ground Floor Washroom Form",
+    checkpoints: [
+      "WC-1 (Male Washroom)",
+      "WC-2 (Male Washroom)",
+      "Washbasin+Mirror (Male Washroom)",
+      "Dustbin (Male Washroom)",
+      "Floor (Male Washroom)",
+      "Urinal -1+2 (Male Washroom)",
+      "WC-1 (Female Washroom)",
+      "WC-2 (Female Washroom)",
+      "Washbasin+Mirror (Female Washroom)",
+      "Dustbin (Female Washroom)",
+      "Floor (Female Washroom)",
+      "Sofa",
+      "Floor",
+      "Reception",
+      "Front Gate Mirror",
+      "CCTV Display",
+      "Stair Case",
+    ].map(photo),
+  },
 ];
 
 function getFormByNumber(formNumber) {
