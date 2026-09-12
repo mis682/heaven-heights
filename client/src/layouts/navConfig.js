@@ -422,6 +422,11 @@ export const NAV_SECTIONS = [
               { label: "Admin Report View", path: "/housekeeping/garden-city/admin-report" },
             ],
           },
+        ],
+      },
+      {
+        label: "Hospitality",
+        children: [
           {
             label: "Garden City Club",
             permission: { module: "gcClub", action: "view" },
