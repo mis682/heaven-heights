@@ -368,6 +368,18 @@ export const REGAL_GARDEN_CLUB_FORMS = [
       "Sports Area",
     ].map(photo),
   },
+  {
+    formNumber: 2,
+    label: "Swimming Pool Form",
+    checkpoints: [
+      photo("Swimming Pool Image-1"),
+      photo("Swimming Pool Image-2"),
+      { label: "PH Level (Short Answer)", type: "text" },
+      photo("PH level Pic"),
+      photo("Pool Outside Area"),
+      photo("Shower Area"),
+    ],
+  },
 ];
 
 function patrolSiteNavItem({ label, slug }) {
