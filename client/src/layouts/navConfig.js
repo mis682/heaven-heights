@@ -321,6 +321,29 @@ export const RESERVE_CLUB_FORMS = [
       "Stair Case",
     ].map(photo),
   },
+  {
+    formNumber: 8,
+    label: "Terrace Washroom Form",
+    checkpoints: [
+      photo("WC (Male Washroom)"),
+      photo("Washbasin+Mirror (Male Washroom)"),
+      photo("Dustbin (Male Washroom)"),
+      photo("Floor (Male Washroom)"),
+      photo("Changing room (Male Washroom)"),
+      photo("Urinal (Male Washroom)"),
+      photo("WC (Female Washroom)"),
+      photo("Washbasin+Mirror (Female Washroom)"),
+      photo("Dustbin (Female Washroom)"),
+      photo("Floor (Female Washroom)"),
+      photo("Changing Room (Female Washroom)"),
+      photo("WC (Common Washroom)"),
+      photo("Mirror (Common Washroom)"),
+      photo("Floor (Common Washroom)"),
+      photo("Floor"),
+      photo("Stair Case"),
+      photo("Signage Board", { required: false }),
+    ],
+  },
 ];
 
 function patrolSiteNavItem({ label, slug }) {
