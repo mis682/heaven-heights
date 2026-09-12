@@ -302,6 +302,25 @@ export const RESERVE_CLUB_FORMS = [
       "Stair Case",
     ].map(photo),
   },
+  {
+    formNumber: 7,
+    label: "First Floor Washroom Form",
+    checkpoints: [
+      "WC-1 (Male Washroom)",
+      "WC-2 (Male Washroom)",
+      "Washbasin 1,2+Mirror (Male Washroom)",
+      "Dustbin (Male Washroom)",
+      "Floor (Male Washroom)",
+      "Urinal 1+2 (Male Washroom)",
+      "WC-1 (Female Washroom)",
+      "WC-2 (Female Washroom)",
+      "Washbasin+Mirror (Female Washroom)",
+      "Dustbin (Female Washroom)",
+      "Floor (Female Washroom)",
+      "Floor",
+      "Stair Case",
+    ].map(photo),
+  },
 ];
 
 function patrolSiteNavItem({ label, slug }) {
