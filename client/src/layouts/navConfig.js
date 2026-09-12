@@ -346,6 +346,12 @@ export const RESERVE_CLUB_FORMS = [
   },
 ];
 
+// Regal Garden Club forms — same shape as RESERVE_CLUB_FORMS (named
+// checklists per form). Mirrors server/constants/regalGardenClubForms.js —
+// kept in sync manually. Starts empty; 2 forms get appended here as
+// provided.
+export const REGAL_GARDEN_CLUB_FORMS = [];
+
 function patrolSiteNavItem({ label, slug }) {
   return {
     label,
@@ -410,6 +416,19 @@ export const NAV_SECTIONS = [
                 permission: { module: "reserveClub", action: "edit" },
               },
               { label: "Admin Report View", path: "/housekeeping/reserve-club/admin-report" },
+            ],
+          },
+          {
+            label: "Regal Garden Club",
+            permission: { module: "regalGardenClub", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/regal-garden-club/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/regal-garden-club/daily-report",
+                permission: { module: "regalGardenClub", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/regal-garden-club/admin-report" },
             ],
           },
         ],

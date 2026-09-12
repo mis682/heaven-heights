@@ -18,6 +18,10 @@ import ReserveClubPublicForm from "./pages/housekeeping/ReserveClubPublicForm";
 import ReserveClubSubmissionsPage from "./pages/housekeeping/ReserveClubSubmissionsPage";
 import ReserveClubDailyReportPage from "./pages/housekeeping/ReserveClubDailyReportPage";
 import ReserveClubAdminReportPage from "./pages/housekeeping/ReserveClubAdminReportPage";
+import RegalGardenClubPublicForm from "./pages/housekeeping/RegalGardenClubPublicForm";
+import RegalGardenClubSubmissionsPage from "./pages/housekeeping/RegalGardenClubSubmissionsPage";
+import RegalGardenClubDailyReportPage from "./pages/housekeeping/RegalGardenClubDailyReportPage";
+import RegalGardenClubAdminReportPage from "./pages/housekeeping/RegalGardenClubAdminReportPage";
 
 import PatrolPublicForm from "./pages/security/patrol/PatrolPublicForm";
 import PatrolSitePage from "./pages/security/patrol/PatrolSitePage";
@@ -62,6 +66,7 @@ export default function App() {
       <Route path="/gc-housekeeping-form/:formNumber" element={<GCHousekeepingPublicForm />} />
       <Route path="/gc-club-form/:formNumber" element={<GCClubPublicForm />} />
       <Route path="/reserve-club-form/:formNumber" element={<ReserveClubPublicForm />} />
+      <Route path="/regal-garden-club-form/:formNumber" element={<RegalGardenClubPublicForm />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -145,6 +150,31 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "reserveClub", action: "view" }}>
               <ReserveClubAdminReportPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/regal-garden-club/submissions"
+          element={
+            <RequireAuth permission={{ module: "regalGardenClub", action: "view" }}>
+              <RegalGardenClubSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/regal-garden-club/daily-report"
+          element={
+            <RequireAuth permission={{ module: "regalGardenClub", action: "edit" }}>
+              <RegalGardenClubDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/regal-garden-club/admin-report"
+          element={
+            <RequireAuth permission={{ module: "regalGardenClub", action: "view" }}>
+              <RegalGardenClubAdminReportPage />
             </RequireAuth>
           }
         />

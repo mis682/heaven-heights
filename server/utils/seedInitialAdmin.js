@@ -30,6 +30,7 @@ const BUILT_IN_ROLES = [
       gcHousekeeping: { view: true, edit: false, delete: false },
       gcClub: { view: true, edit: false, delete: false },
       reserveClub: { view: true, edit: false, delete: false },
+      regalGardenClub: { view: true, edit: false, delete: false },
     },
   },
   {
@@ -40,6 +41,7 @@ const BUILT_IN_ROLES = [
       gcHousekeeping: { view: true, edit: true, delete: false },
       gcClub: { view: true, edit: true, delete: false },
       reserveClub: { view: true, edit: true, delete: false },
+      regalGardenClub: { view: true, edit: true, delete: false },
       patrol: { view: true, edit: true, delete: false },
       nightGuard: { view: true, edit: true, delete: false },
       attendance: { view: true, edit: false, delete: false },

@@ -6,6 +6,7 @@ const PERMISSION_MODULES = [
   { key: "gcHousekeeping", label: "Garden City Housekeeping" },
   { key: "gcClub", label: "Garden City Club" },
   { key: "reserveClub", label: "Neoteric Reserve Club" },
+  { key: "regalGardenClub", label: "Regal Garden Club" },
   { key: "maintenanceStaff", label: "Maintenance Staff" },
   { key: "guards", label: "Guard Master Data" },
   { key: "projects", label: "Projects" },
