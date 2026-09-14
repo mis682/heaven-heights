@@ -4,6 +4,7 @@ import { Building2, CheckCircle2, RefreshCw } from "lucide-react";
 import { getProjectBySlug } from "../../../api/projects";
 import { listMaintenanceStaff } from "../../../api/maintenanceStaff";
 import { createPatrolSubmission } from "../../../api/patrol";
+import { uploadFileDirect } from "../../../api/cloudinaryDirectUpload";
 import CameraCapture from "../../../components/CameraCapture";
 import ThemedSelect from "../../../components/ThemedSelect";
 import { saveDraft, loadDraft, clearDraft } from "../../../utils/patrolDraft";
@@ -76,21 +77,19 @@ export default function PatrolPublicForm() {
   const submit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const form = new FormData();
-    form.append("guardName", guardName);
-    form.append("projectId", project._id);
-    form.append("projectName", project.name);
-
-    const meta = [];
-    Object.entries(captures).forEach(([checkpointId, cap]) => {
-      if (!cap) return;
-      form.append("photos", cap.file);
-      meta.push({ checkpointId: Number(checkpointId), capturedAt: cap.capturedAt, geoLocation: cap.geoLocation });
-    });
-    form.append("meta", JSON.stringify(meta));
 
     try {
-      await createPatrolSubmission(form);
+      const entries = Object.entries(captures).filter(([, cap]) => cap);
+      const photos = await Promise.all(
+        entries.map(async ([checkpointId, cap]) => ({
+          checkpointId: Number(checkpointId),
+          photoUrl: await uploadFileDirect(cap.file, { account: "main", resourceType: "image" }),
+          capturedAt: cap.capturedAt,
+          geoLocation: cap.geoLocation,
+        }))
+      );
+
+      await createPatrolSubmission({ guardName, projectId: project._id, projectName: project.name, photos });
       clearDraft(slug);
       setDone(true);
     } catch {

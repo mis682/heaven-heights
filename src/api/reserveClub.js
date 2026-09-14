@@ -1,7 +1,6 @@
 import api from "./client";
 
-export const createReserveClubSubmission = (formData) =>
-  api.post("/reserve-club/submissions", formData, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data);
+export const createReserveClubSubmission = (payload) => api.post("/reserve-club/submissions", payload).then((r) => r.data);
 
 export const listReserveClubSubmissions = (params = {}) => api.get("/reserve-club/submissions", { params }).then((r) => r.data);
 

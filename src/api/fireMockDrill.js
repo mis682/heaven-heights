@@ -6,24 +6,13 @@ export const listFireMockDrills = (params = {}) => api.get("/fire-mock-drill", {
 
 export const getFireMockDrill = (id) => api.get(`/fire-mock-drill/${id}`).then((r) => r.data);
 
-function buildForm(data, files = {}) {
-  const form = new FormData();
-  Object.entries(data).forEach(([k, v]) => form.append(k, v ?? ""));
-  if (files.panelPhoto) form.append("panelPhoto", files.panelPhoto);
-  if (files.reportAttachment) form.append("reportAttachment", files.reportAttachment);
-  if (files.checklistAttachments) files.checklistAttachments.forEach((f) => form.append("checklistAttachments", f));
-  if (files.videoUrls) form.append("videoUrls", JSON.stringify(files.videoUrls));
-  return form;
-}
+// `urls` carries whatever already-uploaded Cloudinary URLs this submission
+// has (panelPhoto, reportAttachment, checklistAttachments, videoUrls) — the
+// files themselves went straight from the browser to Cloudinary before this
+// is ever called, so this is a small JSON payload, not a file upload.
+export const createFireMockDrill = (data, urls) => api.post("/fire-mock-drill", { ...data, ...urls }).then((r) => r.data);
 
-export const createFireMockDrill = (data, files) =>
-  api
-    .post("/fire-mock-drill", buildForm(data, files), { headers: { "Content-Type": "multipart/form-data" } })
-    .then((r) => r.data);
-
-export const updateFireMockDrill = (id, data, files) =>
-  api
-    .put(`/fire-mock-drill/${id}`, buildForm(data, files), { headers: { "Content-Type": "multipart/form-data" } })
-    .then((r) => r.data);
+export const updateFireMockDrill = (id, data, urls) =>
+  api.put(`/fire-mock-drill/${id}`, { ...data, ...urls }).then((r) => r.data);
 
 export const deleteFireMockDrill = (id) => api.delete(`/fire-mock-drill/${id}`).then((r) => r.data);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CheckCircle2, Building2, Loader2, AlertCircle } from "lucide-react";
 import { getFireMockDrillMeta, createFireMockDrill } from "../../../api/fireMockDrill";
-import { uploadVideoDirect } from "../../../api/cloudinaryDirectUpload";
+import { uploadVideoDirect, uploadFileDirect } from "../../../api/cloudinaryDirectUpload";
 import ThemedSelect from "../../../components/ThemedSelect";
 import ThemedDatePicker from "../../../components/ThemedDatePicker";
 
@@ -78,8 +78,20 @@ export default function FireMockDrillPublicForm() {
     setError("");
     try {
       const videoUrls = videos.filter((v) => v?.url).map((v) => v.url);
-      const checklistAttachments = checklistPages.filter(Boolean);
-      await createFireMockDrill({ projectName, date }, { panelPhoto, reportAttachment, checklistAttachments, videoUrls });
+      const [panelPhotoUrl, reportAttachmentUrl, checklistAttachmentUrls] = await Promise.all([
+        uploadFileDirect(panelPhoto, { account: "main", resourceType: "image" }),
+        reportAttachment ? uploadFileDirect(reportAttachment, { account: "main", resourceType: "raw" }) : Promise.resolve(""),
+        Promise.all(checklistPages.filter(Boolean).map((f) => uploadFileDirect(f, { account: "main", resourceType: "raw" }))),
+      ]);
+      await createFireMockDrill(
+        { projectName, date },
+        {
+          panelPhoto: panelPhotoUrl,
+          reportAttachment: reportAttachmentUrl,
+          checklistAttachments: checklistAttachmentUrls,
+          videoUrls,
+        }
+      );
       setDone(true);
     } catch {
       setError("Submission failed. Please try again.");

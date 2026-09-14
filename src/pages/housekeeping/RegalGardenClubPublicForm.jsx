@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { ClipboardList, CheckCircle2, RefreshCw } from "lucide-react";
 import CameraCapture from "../../components/CameraCapture";
 import { createRegalGardenClubSubmission } from "../../api/regalGardenClub";
+import { uploadFileDirect } from "../../api/cloudinaryDirectUpload";
 import { REGAL_GARDEN_CLUB_FORMS } from "../../layouts/navConfig";
 import { saveDraft, loadDraft, clearDraft } from "../../utils/regalGardenClubDraft";
 
@@ -68,24 +69,24 @@ export default function RegalGardenClubPublicForm() {
   const submit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const body = new FormData();
-    body.append("formNumber", form.formNumber);
-    body.append("submittedBy", submittedBy);
-
-    const meta = [];
-    Object.entries(captures).forEach(([checkpointLabel, cap]) => {
-      if (!cap) return;
-      body.append("photos", cap.file);
-      meta.push({ checkpointLabel, capturedAt: cap.capturedAt, geoLocation: cap.geoLocation });
-    });
-    body.append("meta", JSON.stringify(meta));
-    body.append(
-      "textAnswers",
-      JSON.stringify(textCheckpoints.map((c) => ({ label: c.label, value: textAnswers[c.label] || "" })))
-    );
 
     try {
-      await createRegalGardenClubSubmission(body);
+      const entries = Object.entries(captures).filter(([, cap]) => cap);
+      const photos = await Promise.all(
+        entries.map(async ([checkpointLabel, cap]) => ({
+          checkpointLabel,
+          photoUrl: await uploadFileDirect(cap.file, { account: "housekeeping", resourceType: "image" }),
+          capturedAt: cap.capturedAt,
+          geoLocation: cap.geoLocation,
+        }))
+      );
+
+      await createRegalGardenClubSubmission({
+        formNumber: form.formNumber,
+        submittedBy,
+        photos,
+        textAnswers: textCheckpoints.map((c) => ({ label: c.label, value: textAnswers[c.label] || "" })),
+      });
       clearDraft(form.formNumber);
       setDone(true);
     } catch {

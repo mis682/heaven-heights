@@ -16,7 +16,7 @@ import {
   updateFireMockDrill,
   deleteFireMockDrill,
 } from "../../../api/fireMockDrill";
-import { uploadVideoDirect } from "../../../api/cloudinaryDirectUpload";
+import { uploadVideoDirect, uploadFileDirect } from "../../../api/cloudinaryDirectUpload";
 import { useAuth } from "../../../context/AuthContext";
 
 const PUBLIC_FORM_PATH = "/fire-mock-drill-form";
@@ -331,11 +331,22 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
     const data = { projectName, date };
     const videoUrls = [...existingVideos, ...newVideos.filter((v) => v.url).map((v) => v.url)];
     const newChecklist = newChecklistPages.filter(Boolean);
-    const files = { panelPhoto, reportAttachment, checklistAttachments: newChecklist.length ? newChecklist : undefined, videoUrls };
+
+    const [panelPhotoUrl, reportAttachmentUrl, checklistUrls] = await Promise.all([
+      panelPhoto ? uploadFileDirect(panelPhoto, { account: "main", resourceType: "image" }) : Promise.resolve(drill?.panelPhoto || ""),
+      reportAttachment ? uploadFileDirect(reportAttachment, { account: "main", resourceType: "raw" }) : Promise.resolve(existingReport),
+      newChecklist.length
+        ? Promise.all(newChecklist.map((f) => uploadFileDirect(f, { account: "main", resourceType: "raw" })))
+        : Promise.resolve(null),
+    ]);
+
+    const urls = { panelPhoto: panelPhotoUrl, reportAttachment: reportAttachmentUrl, videoUrls };
+    if (checklistUrls) urls.checklistAttachments = checklistUrls;
+
     if (drill) {
-      await updateFireMockDrill(drill._id, data, files);
+      await updateFireMockDrill(drill._id, data, urls);
     } else {
-      await createFireMockDrill(data, files);
+      await createFireMockDrill(data, urls);
     }
     setSaving(false);
     onSaved();
