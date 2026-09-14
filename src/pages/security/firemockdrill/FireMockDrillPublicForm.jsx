@@ -1,0 +1,214 @@
+import React, { useEffect, useState } from "react";
+import { CheckCircle2, Building2, Loader2, AlertCircle } from "lucide-react";
+import { getFireMockDrillMeta, createFireMockDrill } from "../../../api/fireMockDrill";
+import { uploadVideoDirect } from "../../../api/cloudinaryDirectUpload";
+import ThemedSelect from "../../../components/ThemedSelect";
+import ThemedDatePicker from "../../../components/ThemedDatePicker";
+
+export default function FireMockDrillPublicForm() {
+  const [projects, setProjects] = useState([]);
+  const [projectName, setProjectName] = useState("");
+  const [date, setDate] = useState("");
+  const [panelPhoto, setPanelPhoto] = useState(null);
+  const [videos, setVideos] = useState(Array(8).fill(null));
+  const [reportAttachment, setReportAttachment] = useState(null);
+  const [checklistPages, setChecklistPages] = useState(Array(5).fill(null));
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    getFireMockDrillMeta().then((m) => setProjects(m.projects));
+  }, []);
+
+  // Videos start uploading straight to Cloudinary the moment they're picked
+  // (not on final submit) so the transfer overlaps with the rest of the form
+  // being filled in, instead of adding to submit-time wait.
+  const setVideoAt = (idx, file) => {
+    if (!file) {
+      setVideos((prev) => {
+        const next = [...prev];
+        next[idx] = null;
+        return next;
+      });
+      return;
+    }
+
+    setVideos((prev) => {
+      const next = [...prev];
+      next[idx] = { name: file.name, progress: 0, uploading: true, url: null, failed: false };
+      return next;
+    });
+
+    uploadVideoDirect(file, (progress) => {
+      setVideos((prev) => {
+        const next = [...prev];
+        if (next[idx]) next[idx] = { ...next[idx], progress };
+        return next;
+      });
+    })
+      .then((url) => {
+        setVideos((prev) => {
+          const next = [...prev];
+          if (next[idx]) next[idx] = { ...next[idx], url, uploading: false, progress: 1 };
+          return next;
+        });
+      })
+      .catch(() => {
+        setVideos((prev) => {
+          const next = [...prev];
+          if (next[idx]) next[idx] = { ...next[idx], uploading: false, failed: true };
+          return next;
+        });
+      });
+  };
+
+  const videosStillUploading = videos.some((v) => v?.uploading);
+
+  const setChecklistPageAt = (idx, file) =>
+    setChecklistPages((prev) => {
+      const next = [...prev];
+      next[idx] = file;
+      return next;
+    });
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError("");
+    try {
+      const videoUrls = videos.filter((v) => v?.url).map((v) => v.url);
+      const checklistAttachments = checklistPages.filter(Boolean);
+      await createFireMockDrill({ projectName, date }, { panelPhoto, reportAttachment, checklistAttachments, videoUrls });
+      setDone(true);
+    } catch {
+      setError("Submission failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] dark:bg-gray-900 px-4">
+        <div className="text-center">
+          <CheckCircle2 size={56} className="text-green-600 dark:text-green-400 mx-auto mb-3" />
+          <h1 className="text-xl font-bold text-heading dark:text-gray-100">Submitted</h1>
+          <p className="text-subtext dark:text-gray-400 text-sm mt-1">Fire mock drill record saved successfully.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 px-4 py-8">
+      <div className="max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex flex-col items-center mb-5">
+          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mb-3">
+            <Building2 size={22} className="text-white" />
+          </div>
+          <h1 className="text-xl font-bold text-heading dark:text-gray-100">Fire Mock Drill</h1>
+          <p className="text-sm text-subtext dark:text-gray-400 text-center">Submit drill details, panel photo, videos and report.</p>
+        </div>
+
+        <form onSubmit={submit} className="space-y-4">
+          <Field label="Project">
+            <ThemedSelect required value={projectName} onChange={setProjectName} options={projects} placeholder="Select project" />
+          </Field>
+
+          <Field label="Date">
+            <ThemedDatePicker required value={date} onChange={setDate} />
+          </Field>
+
+          <Field label="Panel Photo">
+            <input
+              required
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPanelPhoto(e.target.files?.[0] || null)}
+              className="input"
+            />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-3">
+            {videos.map((v, idx) => (
+              <Field key={idx} label={`Video ${idx + 1}`}>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={(e) => {
+                    setVideoAt(idx, e.target.files?.[0] || null);
+                    e.target.value = "";
+                  }}
+                  className="input text-xs"
+                />
+                {v?.uploading && (
+                  <div className="mt-1">
+                    <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary transition-all" style={{ width: `${Math.round(v.progress * 100)}%` }} />
+                    </div>
+                    <p className="text-[10px] text-subtext dark:text-gray-400 mt-0.5">Uploading {Math.round(v.progress * 100)}%</p>
+                  </div>
+                )}
+                {v?.url && !v.uploading && (
+                  <p className="text-[10px] text-green-600 dark:text-green-400 mt-0.5 flex items-center gap-1">
+                    <CheckCircle2 size={10} /> Uploaded
+                  </p>
+                )}
+                {v?.failed && (
+                  <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5 flex items-center gap-1">
+                    <AlertCircle size={10} /> Upload failed — try again
+                  </p>
+                )}
+              </Field>
+            ))}
+          </div>
+
+          <Field label="Report Attachment">
+            <input type="file" onChange={(e) => setReportAttachment(e.target.files?.[0] || null)} className="input" />
+          </Field>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Checklist Attachment (5 pages)</label>
+            <div className="grid grid-cols-2 gap-3">
+              {checklistPages.map((file, idx) => (
+                <Field key={idx} label={`Page ${idx + 1}`}>
+                  <input
+                    type="file"
+                    accept="image/*,.pdf,application/pdf"
+                    onChange={(e) => setChecklistPageAt(idx, e.target.files?.[0] || null)}
+                    className="input text-xs"
+                  />
+                  {file && (
+                    <p className="text-[10px] text-green-600 dark:text-green-400 mt-0.5 flex items-center gap-1 truncate">
+                      <CheckCircle2 size={10} /> {file.name}
+                    </p>
+                  )}
+                </Field>
+              ))}
+            </div>
+          </div>
+
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+
+          <button
+            disabled={submitting || videosStillUploading || !projectName || !date || !panelPhoto}
+            className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {videosStillUploading && <Loader2 size={15} className="animate-spin" />}
+            {submitting ? "Submitting..." : videosStillUploading ? "Videos uploading..." : "Submit"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+      {children}
+    </div>
+  );
+}

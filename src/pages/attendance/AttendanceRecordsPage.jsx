@@ -1,0 +1,271 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { User, CheckCircle2, XCircle, Trash2, Sun, Moon } from "lucide-react";
+import PageHeader from "../../components/PageHeader";
+import DataTable from "../../components/DataTable";
+import FilterBar, { Select } from "../../components/FilterBar";
+import PhotoLightbox from "../../components/PhotoLightbox";
+import ThemedDatePicker from "../../components/ThemedDatePicker";
+import { confirmAction } from "../../utils/confirmDialog";
+import { listAttendanceScanRecords, deleteAttendanceScanRecord } from "../../api/attendanceScan";
+import { listSiteLocations } from "../../api/siteLocations";
+import { useAuth } from "../../context/AuthContext";
+import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
+
+function formatTotalHours(inRecord, outRecord) {
+  if (!inRecord || !outRecord) return "—";
+  const ms = new Date(outRecord.timestamp) - new Date(inRecord.timestamp);
+  if (ms <= 0) return "—";
+  const totalMinutes = Math.round(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h ${minutes}m`;
+}
+
+function PunchCell({ record, onPhotoClick, onDelete, canDelete }) {
+  if (!record) return <span className="text-xs text-gray-400 dark:text-gray-500">—</span>;
+
+  return (
+    <div className="flex items-center gap-2 group">
+      {record.photo ? (
+        <img
+          src={cloudinaryThumbnailUrl(record.photo, 100)}
+          alt=""
+          className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700 cursor-pointer shrink-0"
+          onClick={() => onPhotoClick(record)}
+        />
+      ) : (
+        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 flex items-center justify-center shrink-0">
+          <User size={14} className="text-gray-400 dark:text-gray-500" />
+        </div>
+      )}
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-heading dark:text-gray-100 flex items-center gap-1">
+          {new Date(record.timestamp).toLocaleTimeString()}
+          {record.shift === "day" && <Sun size={12} className="text-amber-500" />}
+          {record.shift === "night" && <Moon size={12} className="text-indigo-500" />}
+        </p>
+        {record.latitude != null && (
+          <a
+            href={`https://www.google.com/maps?q=${record.latitude},${record.longitude}`}
+            target="_blank"
+            rel="noreferrer"
+            title={record.address || `${record.latitude}, ${record.longitude}`}
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-primary hover:underline line-clamp-1 max-w-[160px] block"
+          >
+            {record.address || `${record.latitude.toFixed(5)}, ${record.longitude.toFixed(5)}`}
+          </a>
+        )}
+        {record.withinGeofence != null &&
+          (record.withinGeofence ? (
+            <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-400 text-xs">
+              <CheckCircle2 size={12} /> On site
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-red-600 dark:text-red-400 text-xs">
+              <XCircle size={12} /> Off site
+            </span>
+          ))}
+      </div>
+      {canDelete && (
+        <button
+          onClick={() => onDelete(record)}
+          className="opacity-0 group-hover:opacity-100 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 shrink-0"
+          title="Delete this punch"
+        >
+          <Trash2 size={14} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Walks a staff/day's scans in chronological order and pairs each "in" with
+// the "out" immediately after it into its own session — so a guard who
+// worked, say, a Day shift and then a Night shift on the same calendar day
+// gets two separate sessions instead of one bogus ~23h block spanning both.
+// An "in" with nothing after it (still open) or a leading/lone "out" (no
+// preceding "in" in this group) becomes a session with just that one side.
+function pairSessions(sorted) {
+  const sessions = [];
+  let i = 0;
+  while (i < sorted.length) {
+    const cur = sorted[i];
+    if (cur.type === "in" && sorted[i + 1]?.type === "out") {
+      sessions.push({ in: cur, out: sorted[i + 1] });
+      i += 2;
+    } else {
+      sessions.push(cur.type === "out" ? { in: null, out: cur } : { in: cur, out: null });
+      i += 1;
+    }
+  }
+  return sessions;
+}
+
+export default function AttendanceRecordsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
+  const [records, setRecords] = useState([]);
+  const [sites, setSites] = useState([]);
+  const [siteFilter, setSiteFilter] = useState("");
+  const [date, setDate] = useState("");
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  useEffect(() => {
+    listSiteLocations().then((data) => setSites(data.map((s) => s.siteName)));
+  }, []);
+
+  // Fast typing in the search box fires a request per keystroke; nothing
+  // guarantees they resolve in the order they were sent, so an earlier
+  // (shorter, broader) search's response can land after a later one and
+  // overwrite it with stale results. A request counter lets only the
+  // most-recently-started request's response ever get applied.
+  const requestIdRef = useRef(0);
+
+  const load = async () => {
+    const requestId = ++requestIdRef.current;
+    setLoading(true);
+    const data = await listAttendanceScanRecords({
+      siteName: siteFilter || undefined,
+      date: date || undefined,
+      search: search || undefined,
+    });
+    if (requestId !== requestIdRef.current) return; // a newer request superseded this one
+    setRecords(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [siteFilter, date, search]);
+
+  const photosWithRecord = records.filter((r) => r.photo);
+
+  const handleDelete = async (record) => {
+    const proceed = await confirmAction({
+      title: "Delete record?",
+      text: `Delete ${record.type === "in" ? "Punch In" : "Punch Out"} for ${record.name}?`,
+      confirmText: "Delete",
+      danger: true,
+    });
+    if (!proceed) return;
+    await deleteAttendanceScanRecord(record._id);
+    load();
+  };
+
+  // Group scans by staff + shift day, then pair each session (In/Out) within
+  // that day into its own row — see pairSessions above. A night shift's
+  // later scans carry shiftDate copied from the original "in", so they group
+  // with that day even though they happened after midnight.
+  const rows = useMemo(() => {
+    const byKey = new Map();
+    records.forEach((r) => {
+      const dateKey = r.shiftDate || new Date(r.timestamp).toISOString().slice(0, 10);
+      const key = `${r.employeeId}__${dateKey}`;
+      if (!byKey.has(key)) {
+        byKey.set(key, { employeeId: r.employeeId, name: r.name, siteName: r.siteName, dateKey, scans: [] });
+      }
+      byKey.get(key).scans.push(r);
+    });
+
+    const allRows = [];
+    byKey.forEach((group) => {
+      const sorted = [...group.scans].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      pairSessions(sorted).forEach((session, idx) => {
+        const latestTimestamp = (session.out || session.in).timestamp;
+        allRows.push({
+          key: `${group.employeeId}__${group.dateKey}__${idx}`,
+          employeeId: group.employeeId,
+          name: group.name,
+          siteName: group.siteName,
+          dateKey: group.dateKey,
+          in: session.in,
+          out: session.out,
+          latestTimestamp,
+        });
+      });
+    });
+
+    return allRows.sort((a, b) => {
+      if (a.dateKey !== b.dateKey) return a.dateKey < b.dateKey ? 1 : -1;
+      return new Date(b.latestTimestamp) - new Date(a.latestTimestamp);
+    });
+  }, [records]);
+
+  return (
+    <div>
+      <PageHeader title="Attendance Records" subtitle="QR scan se capture hui saari punch in/out entries." />
+
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        placeholder="Search by name, employee ID or site..."
+        filters={
+          <>
+            <Select value={siteFilter} onChange={setSiteFilter} options={sites} placeholder="All sites" />
+            <ThemedDatePicker value={date} onChange={setDate} />
+          </>
+        }
+      />
+
+      <DataTable
+        columns={[
+          { key: "name", header: "Name" },
+          { key: "employeeId", header: "Employee ID" },
+          { key: "siteName", header: "Site" },
+          {
+            key: "dateKey",
+            header: "Date",
+            render: (r) => new Date(r.dateKey).toLocaleDateString(),
+          },
+          {
+            key: "in",
+            header: "Punch In",
+            render: (r) => (
+              <PunchCell
+                record={r.in}
+                onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))}
+                onDelete={handleDelete}
+                canDelete={isAdmin}
+              />
+            ),
+          },
+          {
+            key: "out",
+            header: "Punch Out",
+            render: (r) => (
+              <PunchCell
+                record={r.out}
+                onPhotoClick={(rec) => setLightboxIndex(photosWithRecord.indexOf(rec))}
+                onDelete={handleDelete}
+                canDelete={isAdmin}
+              />
+            ),
+          },
+          {
+            key: "totalHours",
+            header: "Total Hours",
+            render: (r) => <span className="text-sm font-medium text-heading dark:text-gray-100">{formatTotalHours(r.in, r.out)}</span>,
+          },
+        ]}
+        rows={loading ? [] : rows}
+        rowKey="key"
+        emptyMessage={loading ? "Loading..." : "Koi attendance record nahi mila"}
+        emptyHint={loading ? "" : "Scan Attendance page se QR scan karke shuru karein"}
+      />
+
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={photosWithRecord.map((r) => ({ photoUrl: r.photo }))}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={setLightboxIndex}
+          caption={(_, idx) => `${photosWithRecord[idx].name} — ${new Date(photosWithRecord[idx].timestamp).toLocaleString()}`}
+          downloadName={(_, idx) => `${photosWithRecord[idx].employeeId}-${photosWithRecord[idx].type}`}
+        />
+      )}
+    </div>
+  );
+}
