@@ -385,6 +385,7 @@ export const REGAL_GARDEN_CLUB_FORMS = [
 function patrolSiteNavItem({ label, slug }) {
   return {
     label,
+    permission: { module: "patrol", action: "view" },
     children: [
       { label: "Submissions", path: `/security/patrol/${slug}/submissions` },
       {
@@ -474,6 +475,7 @@ export const NAV_SECTIONS = [
           ...PATROL_SITES.map(patrolSiteNavItem),
           {
             label: "Night Guard",
+            permission: { module: "nightGuard", action: "view" },
             children: [
               { label: "Submissions", path: "/security/night-guard/submissions" },
               {
@@ -485,7 +487,11 @@ export const NAV_SECTIONS = [
               { label: "Guard KPI", path: "/security/night-guard/guard-kpi" },
             ],
           },
-          { label: "Fire Mock Drill", path: "/security/fire-mock-drill/submissions" },
+          {
+            label: "Fire Mock Drill",
+            path: "/security/fire-mock-drill/submissions",
+            permission: { module: "fireMockDrill", action: "view" },
+          },
         ],
       },
       {
