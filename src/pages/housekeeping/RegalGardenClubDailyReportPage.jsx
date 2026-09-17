@@ -62,25 +62,30 @@ export default function RegalGardenClubDailyReportPage() {
 
   const persist = async (targetStatus) => {
     setSaving(true);
-    const saved = await saveRegalGardenClubReportDraft({
-      formNumber,
-      reportDate: date,
-      entries,
-      preparedBy: user?.name || "",
-    });
-    if (targetStatus === "submitted") {
-      try {
-        const submitted = await submitRegalGardenClubReport(saved._id);
-        setReport(submitted);
-        setEntries(submitted.entries.map((e) => ({ ...e })));
-      } catch (err) {
-        await alertMessage(err.response?.data?.message || "Submit failed — fill at least one row first.");
+    try {
+      const saved = await saveRegalGardenClubReportDraft({
+        formNumber,
+        reportDate: date,
+        entries,
+        preparedBy: user?.name || "",
+      });
+      if (targetStatus === "submitted") {
+        try {
+          const submitted = await submitRegalGardenClubReport(saved._id);
+          setReport(submitted);
+          setEntries(submitted.entries.map((e) => ({ ...e })));
+        } catch (err) {
+          await alertMessage(err.response?.data?.message || "Submit failed — fill at least one row first.");
+          setReport(saved);
+        }
+      } else {
         setReport(saved);
       }
-    } else {
-      setReport(saved);
+    } catch (err) {
+      await alertMessage(err.response?.data?.message || "Saving failed — please try again.");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   if (!metaLoaded) {
