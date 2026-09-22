@@ -26,4 +26,5 @@ export const listSubmittedGardenCityReports = (params = {}) =>
   api.get("/garden-city-patrol-report/submitted", { params }).then((r) => r.data);
 
 export const gardenCityReportExportUrl = (id) => `${apiOrigin}/api/garden-city-patrol-report/${id}/export`;
-export const gardenCityReportExportPdfUrl = (id) => `${apiOrigin}/api/garden-city-patrol-report/${id}/export-pdf`;
+export const gardenCityReportExportPdfUrl = (id, format) =>
+  `${apiOrigin}/api/garden-city-patrol-report/${id}/export-pdf${format === "card" ? "?format=card" : ""}`;
