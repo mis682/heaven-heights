@@ -18,6 +18,11 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
 
   const normalized = normalizeOptions(options || []);
   const selected = normalized.find((o) => String(o.value) === String(value));
+  // A freshly-created value (picked via "+ Add") won't be in `options` yet
+  // — it only shows up there once the parent's data reloads after saving —
+  // so falling back to `value` itself keeps it visible instead of the
+  // trigger silently reverting to the placeholder.
+  const displayLabel = selected ? selected.label : value || null;
   const showSearch = creatable || normalized.length > 8;
   const filtered = showSearch
     ? normalized.filter((o) => String(o.label).toLowerCase().includes(search.toLowerCase()))
@@ -100,8 +105,8 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
           "px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         }
       >
-        <span className={`truncate ${!selected ? "text-gray-400 dark:text-gray-500" : ""}`}>
-          {selected ? selected.label : placeholder || "Select"}
+        <span className={`truncate ${!displayLabel ? "text-gray-400 dark:text-gray-500" : ""}`}>
+          {displayLabel || placeholder || "Select"}
         </span>
         <ChevronDown size={14} className={`shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
