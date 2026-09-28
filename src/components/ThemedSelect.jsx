@@ -9,7 +9,7 @@ function normalizeOptions(options) {
   }));
 }
 
-export default function ThemedSelect({ value, onChange, options, placeholder, required, className, disabled }) {
+export default function ThemedSelect({ value, onChange, options, placeholder, required, className, disabled, creatable }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [coords, setCoords] = useState(null);
@@ -18,10 +18,17 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
 
   const normalized = normalizeOptions(options || []);
   const selected = normalized.find((o) => String(o.value) === String(value));
-  const showSearch = normalized.length > 8;
+  const showSearch = creatable || normalized.length > 8;
   const filtered = showSearch
     ? normalized.filter((o) => String(o.label).toLowerCase().includes(search.toLowerCase()))
     : normalized;
+  const trimmedSearch = search.trim();
+  // Offers "+ Add "X"" only when typing something genuinely new (not just a
+  // different-case/whitespace variant of an option that already exists) —
+  // picking it hands the raw typed string back through onChange exactly
+  // like picking any other option would.
+  const canCreate =
+    creatable && trimmedSearch.length > 0 && !normalized.some((o) => String(o.label).toLowerCase() === trimmedSearch.toLowerCase());
 
   useEffect(() => {
     if (!open) return;
@@ -124,7 +131,9 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && filtered.length > 0) pick(filtered[0]);
+                      if (e.key !== "Enter") return;
+                      if (filtered.length > 0) pick(filtered[0]);
+                      else if (canCreate) pick({ value: trimmedSearch, label: trimmedSearch });
                     }}
                     placeholder="Search..."
                     className="w-full pl-8 pr-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -158,7 +167,16 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
                   </button>
                 );
               })}
-              {filtered.length === 0 && (
+              {canCreate && (
+                <button
+                  type="button"
+                  onClick={() => pick({ value: trimmedSearch, label: trimmedSearch })}
+                  className="w-full text-left px-3 py-2 text-sm text-primary font-medium hover:bg-gray-50 dark:hover:bg-gray-700 border-t border-gray-100 dark:border-gray-700"
+                >
+                  + Add "{trimmedSearch}"
+                </button>
+              )}
+              {filtered.length === 0 && !canCreate && (
                 <p className="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">No options found</p>
               )}
             </div>

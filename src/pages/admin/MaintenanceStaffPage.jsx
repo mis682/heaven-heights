@@ -315,10 +315,11 @@ function StaffFormModal({ staff, meta, onClose, onSaved }) {
         <Field label="Designation">
           <Select
             required
+            creatable
             value={form.designation}
             onChange={(v) => setForm({ ...form, designation: v })}
             options={meta.designations}
-            placeholder="Select designation"
+            placeholder="Select or type a designation"
             className="input"
           />
         </Field>
