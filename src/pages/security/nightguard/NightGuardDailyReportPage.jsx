@@ -55,6 +55,11 @@ export default function NightGuardDailyReportPage() {
   // actually decided what rows should start out as — otherwise it would
   // overwrite a real local draft with [] the instant this page mounts.
   const [loaded, setLoaded] = useState(false);
+  // A transient failure (cold-start timeout, network blip) here used to
+  // leave the table silently stuck empty forever, with nothing on screen
+  // telling the coordinator anything went wrong or how to recover short of
+  // knowing to hit browser refresh — this surfaces it with a retry instead.
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     // Sourced from Maintenance Staff (Security Guard designation), not
@@ -62,8 +67,9 @@ export default function NightGuardDailyReportPage() {
     listMaintenanceStaff({ designation: "Security Guard" }).then(setGuards);
   }, []);
 
-  useEffect(() => {
-    (async () => {
+  const loadAll = async () => {
+    setLoadError(false);
+    try {
       const [m, r] = await Promise.all([getNightGuardMeta(), getOpenDraft()]);
       setMeta(m);
       setReport(r);
@@ -77,7 +83,13 @@ export default function NightGuardDailyReportPage() {
         setRows(r && r.entries.length > 0 ? r.entries.map((e) => ({ ...e })) : makeShiftSet(m.timeSlots));
       }
       setLoaded(true);
-    })();
+    } catch (err) {
+      setLoadError(true);
+    }
+  };
+
+  useEffect(() => {
+    loadAll();
   }, []);
 
   const isLocked = report?.status === "submitted";
@@ -163,6 +175,15 @@ export default function NightGuardDailyReportPage() {
       {restoredNotice && (
         <div className="mb-4 px-3 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-xs font-medium">
           Aapke pichle unsaved changes restore ho gaye hain — bhoolna mat, "Save as Draft" dabana.
+        </div>
+      )}
+
+      {loadError && (
+        <div className="mb-4 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/40 text-red-700 dark:text-red-400 text-xs font-medium flex items-center justify-between gap-3">
+          <span>Report load nahi ho paya (network ya server issue). Dobara try karein.</span>
+          <button onClick={loadAll} className="font-semibold underline shrink-0">
+            Retry
+          </button>
         </div>
       )}
 
