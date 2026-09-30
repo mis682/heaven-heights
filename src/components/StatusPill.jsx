@@ -12,6 +12,7 @@ const STATUS_STYLES = {
   Leave: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
   NA: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
   Holiday: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
+  "Week off": "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
   "Not ok": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
   "Timestamp missing": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
   "Form not fill": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
