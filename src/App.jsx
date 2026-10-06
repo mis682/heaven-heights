@@ -22,6 +22,10 @@ import RegalGardenClubPublicForm from "./pages/housekeeping/RegalGardenClubPubli
 import RegalGardenClubSubmissionsPage from "./pages/housekeeping/RegalGardenClubSubmissionsPage";
 import RegalGardenClubDailyReportPage from "./pages/housekeeping/RegalGardenClubDailyReportPage";
 import RegalGardenClubAdminReportPage from "./pages/housekeeping/RegalGardenClubAdminReportPage";
+import OneBusinessCenterPublicForm from "./pages/housekeeping/OneBusinessCenterPublicForm";
+import OneBusinessCenterSubmissionsPage from "./pages/housekeeping/OneBusinessCenterSubmissionsPage";
+import OneBusinessCenterDailyReportPage from "./pages/housekeeping/OneBusinessCenterDailyReportPage";
+import OneBusinessCenterAdminReportPage from "./pages/housekeeping/OneBusinessCenterAdminReportPage";
 
 import PatrolPublicForm from "./pages/security/patrol/PatrolPublicForm";
 import PatrolSitePage from "./pages/security/patrol/PatrolSitePage";
@@ -67,6 +71,7 @@ export default function App() {
       <Route path="/gc-club-form/:formNumber" element={<GCClubPublicForm />} />
       <Route path="/reserve-club-form/:formNumber" element={<ReserveClubPublicForm />} />
       <Route path="/regal-garden-club-form/:formNumber" element={<RegalGardenClubPublicForm />} />
+      <Route path="/one-business-center-form/:formNumber" element={<OneBusinessCenterPublicForm />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -175,6 +180,31 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "regalGardenClub", action: "view" }}>
               <RegalGardenClubAdminReportPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/one-business-center/submissions"
+          element={
+            <RequireAuth permission={{ module: "oneBusinessCenter", action: "view" }}>
+              <OneBusinessCenterSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/one-business-center/daily-report"
+          element={
+            <RequireAuth permission={{ module: "oneBusinessCenter", action: "edit" }}>
+              <OneBusinessCenterDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/one-business-center/admin-report"
+          element={
+            <RequireAuth permission={{ module: "oneBusinessCenter", action: "view" }}>
+              <OneBusinessCenterAdminReportPage />
             </RequireAuth>
           }
         />

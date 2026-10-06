@@ -380,6 +380,30 @@ export const REGAL_GARDEN_CLUB_FORMS = [
   },
 ];
 
+// One Business Center forms — same shape as RESERVE_CLUB_FORMS (named
+// checklists per form). Mirrors server/constants/oneBusinessCenterForms.js —
+// kept in sync manually. Starts with 1 form; 7 total expected.
+export const ONE_BUSINESS_CENTER_FORMS = [
+  {
+    formNumber: 1,
+    label: "Basement Form",
+    checkpoints: [
+      "Ramp (Basement-1)",
+      "Basement Pic-1 (Basement-1)",
+      "Basement Pic-2 (Basement-1)",
+      "Basement Pic-3 (Basement-1)",
+      "Basement Lift Lobby (Basement-1)",
+      "Basement -(2) Pic 1 (Basement -2)",
+      "Basement -(2) Pic 2 (Basement -2)",
+      "Basement -(2) Lift Lobby (Basement -2)",
+      "Fire Room (Basement-2)",
+      "Mid Stair (Basement-2)",
+      "Right Side Stair (Basement-2)",
+      "Left Side Stair (Basement-2)",
+    ].map(photo),
+  },
+];
+
 function patrolSiteNavItem({ label, slug }) {
   return {
     label,
@@ -463,6 +487,19 @@ export const NAV_SECTIONS = [
                 permission: { module: "regalGardenClub", action: "edit" },
               },
               { label: "Admin Report View", path: "/housekeeping/regal-garden-club/admin-report" },
+            ],
+          },
+          {
+            label: "One Business Center",
+            permission: { module: "oneBusinessCenter", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/one-business-center/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/one-business-center/daily-report",
+                permission: { module: "oneBusinessCenter", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/one-business-center/admin-report" },
             ],
           },
         ],
