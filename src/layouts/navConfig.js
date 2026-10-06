@@ -420,6 +420,16 @@ export const ONE_BUSINESS_CENTER_FORMS = [
       "Control Room (Ground Floor)",
     ].map(photo),
   },
+  {
+    formNumber: 3,
+    label: "First Floor Form",
+    checkpoints: [
+      "Lift Lobby (First Floor)",
+      "Lift Lobby to Left Side (First Floor)",
+      "Lift Lobby to Right Side (First Floor)",
+      "CCTV Monitor Screen Pic",
+    ].map(photo),
+  },
 ];
 
 function patrolSiteNavItem({ label, slug }) {
