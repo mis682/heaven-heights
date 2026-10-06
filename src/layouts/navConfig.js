@@ -445,6 +445,19 @@ export const NAV_SECTIONS = [
               { label: "Admin Report View", path: "/housekeeping/garden-city/admin-report" },
             ],
           },
+          {
+            label: "One Business Center",
+            permission: { module: "oneBusinessCenter", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/one-business-center/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/one-business-center/daily-report",
+                permission: { module: "oneBusinessCenter", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/one-business-center/admin-report" },
+            ],
+          },
         ],
       },
       {
@@ -487,19 +500,6 @@ export const NAV_SECTIONS = [
                 permission: { module: "regalGardenClub", action: "edit" },
               },
               { label: "Admin Report View", path: "/housekeeping/regal-garden-club/admin-report" },
-            ],
-          },
-          {
-            label: "One Business Center",
-            permission: { module: "oneBusinessCenter", action: "view" },
-            children: [
-              { label: "Submissions", path: "/housekeeping/one-business-center/submissions" },
-              {
-                label: "Daily Report",
-                path: "/housekeeping/one-business-center/daily-report",
-                permission: { module: "oneBusinessCenter", action: "edit" },
-              },
-              { label: "Admin Report View", path: "/housekeeping/one-business-center/admin-report" },
             ],
           },
         ],
