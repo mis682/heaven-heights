@@ -382,7 +382,7 @@ export const REGAL_GARDEN_CLUB_FORMS = [
 
 // One Business Center forms — same shape as RESERVE_CLUB_FORMS (named
 // checklists per form). Mirrors server/constants/oneBusinessCenterForms.js —
-// kept in sync manually. Starts with 1 form; 7 total expected.
+// kept in sync manually. All 7 forms present.
 export const ONE_BUSINESS_CENTER_FORMS = [
   {
     formNumber: 1,
@@ -480,6 +480,11 @@ export const ONE_BUSINESS_CENTER_FORMS = [
       "Handicap Washroom (7th Floor)",
       "Lift Lobby (7th Floor)",
     ].map(photo),
+  },
+  {
+    formNumber: 7,
+    label: "Lift Form",
+    checkpoints: ["Lift-1", "Lift-2", "Lift-3", "Lift-4", "Lift-5 (Service Lift)"].map(photo),
   },
 ];
 
