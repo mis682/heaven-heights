@@ -430,6 +430,26 @@ export const ONE_BUSINESS_CENTER_FORMS = [
       "CCTV Monitor Screen Pic",
     ].map(photo),
   },
+  {
+    formNumber: 4,
+    label: "2nd and 3rd Floor",
+    checkpoints: [
+      "Lift Lobby (2nd Floor)",
+      "Handicap Washroom (2nd Floor)",
+      "Female Washroom (2nd Floor)",
+      "Male Washroom (2nd Floor)",
+      "Lift Lobby To Right Side (2nd Floor)",
+      "Lift Lobby To Left Side (2nd Floor)",
+      "Lift Lobby (3rd Floor)",
+      "Handicap Washroom (3rd Floor)",
+      "Female Washroom (3rd Floor)",
+      "Male Washroom (3rd Floor)",
+      "Lift Lobby To Right Side (3rd Floor)",
+      "Lift Lobby To Left Side (3rd Floor)",
+      "Right Side of Balcony (3rd Floor)",
+      "Left Side of Balcony (3rd Floor)",
+    ].map(photo),
+  },
 ];
 
 function patrolSiteNavItem({ label, slug }) {
