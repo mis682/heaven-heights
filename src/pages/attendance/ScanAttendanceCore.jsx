@@ -75,21 +75,28 @@ export default function ScanAttendanceCore() {
         // width/height here throws "object should have exactly 1 key".
         { facingMode: "environment" },
         {
-          fps: 10,
+          // Lowered from 10 — each fps tick allocates a fresh canvas-sized
+          // frame buffer for QR detection; on a low-RAM phone that adds up
+          // fast. 5/sec is still plenty responsive for someone holding an ID
+          // card steady in front of the camera.
+          fps: 5,
           qrbox: 220,
           // Capped resolution via videoConstraints (the library's actual
           // extension point for this) — QR detection doesn't need a
           // high-res stream, but without a cap the browser defaults to the
           // camera's max resolution, which crashes low-RAM Android phones
           // ("Unable to complete previous operation due to low memory")
-          // once continuous per-frame scanning kicks in. `ideal` only (no
-          // `max`, which is a hard constraint and can throw
-          // OverconstrainedError on devices whose camera can't hit that
-          // exact range).
+          // once continuous per-frame scanning kicks in. Dropped further
+          // from 640x480 to 320x240 — that first cap still wasn't low enough
+          // on at least one real budget device (Realme) hitting the same
+          // crash; 320x240 is still far more than enough detail to read a
+          // QR code held a few inches from the lens. `ideal` only (no `max`,
+          // which is a hard constraint and can throw OverconstrainedError on
+          // devices whose camera can't hit that exact range).
           videoConstraints: {
             facingMode: "environment",
-            width: { ideal: 640 },
-            height: { ideal: 480 },
+            width: { ideal: 320 },
+            height: { ideal: 240 },
           },
         },
         async (decodedText) => {
