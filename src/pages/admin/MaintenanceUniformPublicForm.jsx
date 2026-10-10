@@ -1,20 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Shirt, CheckCircle2 } from "lucide-react";
 import CameraCapture from "../../components/CameraCapture";
 import ThemedSelect from "../../components/ThemedSelect";
 import { createMaintenanceUniformSubmission } from "../../api/maintenanceUniform";
 import { uploadFileDirect } from "../../api/cloudinaryDirectUpload";
+import { listMaintenanceStaff } from "../../api/maintenanceStaff";
 import { MAINTENANCE_UNIFORM_SITES, MAINTENANCE_UNIFORM_DESIGNATIONS } from "../../constants/maintenanceUniform";
 
 export default function MaintenanceUniformPublicForm() {
   const [siteName, setSiteName] = useState("");
   const [designation, setDesignation] = useState("");
   const [staffName, setStaffName] = useState("");
+  const [staff, setStaff] = useState([]);
   const [shift, setShift] = useState("");
   const [capture, setCapture] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!designation) {
+      setStaff([]);
+      return;
+    }
+    listMaintenanceStaff({ designation }).then((list) =>
+      setStaff([...list].sort((a, b) => a.name.localeCompare(b.name)))
+    );
+  }, [designation]);
 
   if (done) {
     return (
@@ -74,7 +86,10 @@ export default function MaintenanceUniformPublicForm() {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Designation</label>
             <ThemedSelect
               value={designation}
-              onChange={setDesignation}
+              onChange={(v) => {
+                setDesignation(v);
+                setStaffName("");
+              }}
               options={MAINTENANCE_UNIFORM_DESIGNATIONS}
               placeholder="Select designation"
               className="input"
@@ -83,14 +98,17 @@ export default function MaintenanceUniformPublicForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff Name</label>
-            <input
-              required
-              type="text"
+            <ThemedSelect
               value={staffName}
-              onChange={(e) => setStaffName(e.target.value)}
+              onChange={setStaffName}
+              options={staff.map((s) => ({ value: s.name, label: s.name }))}
+              placeholder={designation ? "Select staff" : "Select designation first"}
+              disabled={!designation}
               className="input"
-              placeholder="Staff ka naam likhein"
             />
+            {designation && staff.length === 0 && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">No staff found for this designation — contact your coordinator.</p>
+            )}
           </div>
 
           <div>
