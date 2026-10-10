@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Download, FileText, Unlock } from "lucide-react";
+import { Download, FileText, Unlock, Shield, Sparkles, Leaf, Users } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import StatusPill from "../../components/StatusPill";
@@ -48,6 +48,22 @@ export default function MaintenanceUniformAdminReportPage() {
     load();
   };
 
+  const DESIGNATION_META = {
+    "Security Guard": { icon: Shield, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/20" },
+    "House Keeping": { icon: Sparkles, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20" },
+    Gardener: { icon: Leaf, color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-900/20" },
+  };
+
+  const groupedEntries = (entries) => {
+    const groups = [];
+    for (const e of entries) {
+      const last = groups[groups.length - 1];
+      if (last && last.designation === e.designation) last.rows.push(e);
+      else groups.push({ designation: e.designation, rows: [e] });
+    }
+    return groups;
+  };
+
   return (
     <div>
       <PageHeader title="Maintenance Uniform — Admin Report View" subtitle="Submitted daily reports, read-only." />
@@ -89,43 +105,36 @@ export default function MaintenanceUniformAdminReportPage() {
 
       {viewing && (
         <Modal title={`Maintenance Uniform — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
-          <div className="overflow-x-auto max-h-[60vh]">
-            <table className="text-sm mb-4 border-collapse w-full">
-              <thead className="sticky top-0">
-                <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Staff Name</th>
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Site Name</th>
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">{viewing.reportDate}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(() => {
-                  let lastDesignation = null;
-                  return viewing.entries.map((e, idx) => {
-                    const showHeader = e.designation !== lastDesignation;
-                    lastDesignation = e.designation;
-                    return (
-                      <React.Fragment key={idx}>
-                        {showHeader && (
-                          <tr className="bg-gray-100 dark:bg-gray-900/60">
-                            <td colSpan={3} className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-300">
-                              {e.designation}
-                            </td>
-                          </tr>
-                        )}
-                        <tr className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-                          <td className="px-3 py-2 whitespace-nowrap font-medium text-heading dark:text-gray-100">{e.staffName}</td>
-                          <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-400">{e.siteName}</td>
-                          <td className="px-3 py-2 whitespace-nowrap">
-                            {e.status ? <StatusPill status={e.status} /> : <span className="text-gray-300 dark:text-gray-600">—</span>}
-                          </td>
-                        </tr>
-                      </React.Fragment>
-                    );
-                  });
-                })()}
-              </tbody>
-            </table>
+          <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
+            {groupedEntries(viewing.entries).map((group) => {
+              const meta = DESIGNATION_META[group.designation] || { icon: Users, color: "text-gray-600 dark:text-gray-400", bg: "bg-gray-50 dark:bg-gray-900/30" };
+              const Icon = meta.icon;
+              const okCount = group.rows.filter((r) => r.status === "OK").length;
+              return (
+                <div key={group.designation} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div className={`flex items-center justify-between px-4 py-2.5 ${meta.bg}`}>
+                    <div className="flex items-center gap-2">
+                      <Icon size={16} className={meta.color} />
+                      <span className="text-sm font-semibold text-heading dark:text-gray-100">{group.designation}</span>
+                    </div>
+                    <span className="text-xs text-subtext dark:text-gray-400">
+                      {okCount}/{group.rows.length} OK
+                    </span>
+                  </div>
+                  <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {group.rows.map((e, idx) => (
+                      <div key={idx} className="flex items-center justify-between px-4 py-2.5 bg-white dark:bg-gray-800">
+                        <div>
+                          <p className="text-sm font-medium text-heading dark:text-gray-100">{e.staffName}</p>
+                          <p className="text-xs text-subtext dark:text-gray-400">{e.siteName}</p>
+                        </div>
+                        {e.status ? <StatusPill status={e.status} /> : <span className="text-sm text-gray-300 dark:text-gray-600">—</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
           <div className="flex items-center gap-2">
             <a
