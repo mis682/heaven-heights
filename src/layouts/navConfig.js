@@ -624,6 +624,20 @@ export const NAV_SECTIONS = [
         ],
       },
       {
+        label: "Maintenance Uniform",
+        permission: { module: "maintenanceUniform", action: "view" },
+        children: [
+          { label: "Submissions", path: "/admin/maintenance-uniform/submissions" },
+          {
+            label: "Daily Report",
+            path: "/admin/maintenance-uniform/daily-report",
+            permission: { module: "maintenanceUniform", action: "edit" },
+          },
+          { label: "Admin Report View", path: "/admin/maintenance-uniform/admin-report" },
+          { label: "Staff List", path: "/admin/maintenance-uniform/staff-list" },
+        ],
+      },
+      {
         label: "Maintenance Staff",
         path: "/admin/maintenance-staff",
         permission: { module: "maintenanceStaff", action: "view" },

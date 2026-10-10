@@ -26,6 +26,11 @@ import OneBusinessCenterPublicForm from "./pages/housekeeping/OneBusinessCenterP
 import OneBusinessCenterSubmissionsPage from "./pages/housekeeping/OneBusinessCenterSubmissionsPage";
 import OneBusinessCenterDailyReportPage from "./pages/housekeeping/OneBusinessCenterDailyReportPage";
 import OneBusinessCenterAdminReportPage from "./pages/housekeeping/OneBusinessCenterAdminReportPage";
+import MaintenanceUniformPublicForm from "./pages/admin/MaintenanceUniformPublicForm";
+import MaintenanceUniformSubmissionsPage from "./pages/admin/MaintenanceUniformSubmissionsPage";
+import MaintenanceUniformDailyReportPage from "./pages/admin/MaintenanceUniformDailyReportPage";
+import MaintenanceUniformAdminReportPage from "./pages/admin/MaintenanceUniformAdminReportPage";
+import MaintenanceUniformStaffListPage from "./pages/admin/MaintenanceUniformStaffListPage";
 
 import PatrolPublicForm from "./pages/security/patrol/PatrolPublicForm";
 import PatrolSitePage from "./pages/security/patrol/PatrolSitePage";
@@ -72,6 +77,7 @@ export default function App() {
       <Route path="/reserve-club-form/:formNumber" element={<ReserveClubPublicForm />} />
       <Route path="/regal-garden-club-form/:formNumber" element={<RegalGardenClubPublicForm />} />
       <Route path="/one-business-center-form/:formNumber" element={<OneBusinessCenterPublicForm />} />
+      <Route path="/maintenance-uniform-form" element={<MaintenanceUniformPublicForm />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -205,6 +211,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "oneBusinessCenter", action: "view" }}>
               <OneBusinessCenterAdminReportPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/admin/maintenance-uniform/submissions"
+          element={
+            <RequireAuth permission={{ module: "maintenanceUniform", action: "view" }}>
+              <MaintenanceUniformSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/maintenance-uniform/daily-report"
+          element={
+            <RequireAuth permission={{ module: "maintenanceUniform", action: "edit" }}>
+              <MaintenanceUniformDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/maintenance-uniform/admin-report"
+          element={
+            <RequireAuth permission={{ module: "maintenanceUniform", action: "view" }}>
+              <MaintenanceUniformAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/maintenance-uniform/staff-list"
+          element={
+            <RequireAuth permission={{ module: "maintenanceUniform", action: "view" }}>
+              <MaintenanceUniformStaffListPage />
             </RequireAuth>
           }
         />
