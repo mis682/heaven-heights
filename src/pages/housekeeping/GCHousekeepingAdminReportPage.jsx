@@ -23,6 +23,10 @@ export default function GCHousekeepingAdminReportPage() {
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState(null);
+  // Which layout the currently-open report is displayed in — "classic" (the
+  // existing flat table) or "card" (a grid of small checkpoint cards).
+  // Defaults to classic on every open.
+  const [layout, setLayout] = useState("classic");
 
   useEffect(() => {
     getGCHousekeepingReportMeta().then((m) => setStatusOptions(m.statusOptions));
@@ -40,7 +44,10 @@ export default function GCHousekeepingAdminReportPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateFrom, dateTo]);
 
-  const view = async (id) => setViewing(await getGCHousekeepingReport(id));
+  const view = async (id) => {
+    setLayout("classic");
+    setViewing(await getGCHousekeepingReport(id));
+  };
 
   const handleUnlock = async (id) => {
     await unlockGCHousekeepingReport(id);
@@ -89,26 +96,70 @@ export default function GCHousekeepingAdminReportPage() {
 
       {viewing && (
         <Modal title={`Garden City Housekeeping — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
-          <div className="overflow-x-auto max-h-[60vh]">
-            <table className="text-sm mb-4 border-collapse w-full">
-              <thead className="sticky top-0">
-                <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Checkpoint</th>
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">{viewing.reportDate}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {viewing.entries.map((e, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-                    <td className="px-3 py-2 whitespace-nowrap font-medium text-heading dark:text-gray-100">Checkpoint-{e.checkpointId}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      {e.status ? <StatusPill status={e.status} /> : <span className="text-gray-300 dark:text-gray-600">—</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex justify-end mb-3">
+            <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-gray-100 dark:bg-gray-900/40">
+              <button
+                onClick={() => setLayout("classic")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
+                  layout === "classic" ? "bg-white dark:bg-gray-800 text-heading dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                Classic
+              </button>
+              <button
+                onClick={() => setLayout("card")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
+                  layout === "card" ? "bg-white dark:bg-gray-800 text-heading dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                Card view
+              </button>
+            </div>
           </div>
+
+          {layout === "classic" ? (
+            <div className="overflow-x-auto max-h-[60vh]">
+              <table className="text-sm mb-4 border-collapse w-full">
+                <thead className="sticky top-0">
+                  <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Checkpoint</th>
+                    <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">{viewing.reportDate}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {viewing.entries.map((e, idx) => (
+                    <tr key={idx} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                      <td className="px-3 py-2 whitespace-nowrap font-medium text-heading dark:text-gray-100">Checkpoint-{e.checkpointId}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        {e.status ? <StatusPill status={e.status} /> : <span className="text-gray-300 dark:text-gray-600">—</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-y-auto mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pr-1">
+              {viewing.entries.map((e, idx) => {
+                const isGood = e.status === statusOptions[0];
+                const flagged = e.status && !isGood;
+                return (
+                  <div
+                    key={idx}
+                    className={`rounded-lg border p-3 flex flex-col gap-1.5 ${
+                      flagged
+                        ? "border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/10"
+                        : "border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <span className="text-xs font-semibold text-heading dark:text-gray-100 truncate">Checkpoint-{e.checkpointId}</span>
+                    {e.status ? <StatusPill status={e.status} /> : <span className="text-xs text-gray-300 dark:text-gray-600">—</span>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <div className="flex items-center gap-2">
             <a
               href={gcHousekeepingReportExportPdfUrl(viewing._id)}

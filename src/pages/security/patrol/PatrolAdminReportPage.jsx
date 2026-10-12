@@ -25,6 +25,35 @@ function dateRangeLabel(report) {
   return min === max ? min : `${min} to ${max}`;
 }
 
+// Same flat entries, grouped by guard so each guard's rounds collapse onto
+// one card instead of repeating the guard name across separate table rows.
+function groupByGuard(entries) {
+  const guardOrder = [];
+  const byGuard = new Map();
+  entries.forEach((e) => {
+    const name = e.guardName || "Unassigned";
+    if (!byGuard.has(name)) {
+      byGuard.set(name, []);
+      guardOrder.push(name);
+    }
+    byGuard.get(name).push(e);
+  });
+
+  return guardOrder.map((guardName) => {
+    const visits = byGuard.get(guardName);
+    let presentCount = 0;
+    let total = 0;
+    visits.forEach((v) => {
+      v.checkpointStatuses.forEach((s) => {
+        if (!s) return;
+        total += 1;
+        if (s === "Present") presentCount += 1;
+      });
+    });
+    return { guardName, visits, presentCount, total };
+  });
+}
+
 export default function PatrolAdminReportPage() {
   const { project: slug } = useParams();
   const { user } = useAuth();
@@ -34,6 +63,11 @@ export default function PatrolAdminReportPage() {
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState(null);
+  // Which layout the currently-open report is displayed in — "classic" (the
+  // existing wide table) or "card" (grouped by guard). Defaults to classic
+  // on every open.
+  const [layout, setLayout] = useState("classic");
+  const viewingGuards = viewing ? groupByGuard(viewing.entries) : [];
 
   useEffect(() => {
     getProjectBySlug(slug).then((d) => setProject(d.project));
@@ -56,7 +90,10 @@ export default function PatrolAdminReportPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, dateFrom, dateTo]);
 
-  const view = async (id) => setViewing(await getPatrolReport(id));
+  const view = async (id) => {
+    setLayout("classic");
+    setViewing(await getPatrolReport(id));
+  };
 
   const handleUnlock = async (id) => {
     await unlockPatrolReport(id);
@@ -112,40 +149,116 @@ export default function PatrolAdminReportPage() {
 
       {viewing && (
         <Modal title={`${viewing.projectName} — ${dateRangeLabel(viewing)}`} onClose={() => setViewing(null)} wide>
-          <div className="overflow-x-auto">
-            <table className="text-sm mb-4 border-collapse">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 sticky left-0 bg-gray-50 dark:bg-gray-900/40 whitespace-nowrap">
-                    Date
-                  </th>
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Guard Name</th>
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Time</th>
-                  <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Checkpoint</th>
-                  {Array.from({ length: viewing.checkpointCount }, (_, i) => (
-                    <th key={i} className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                      Checkpoint-{i + 1}
+          <div className="flex justify-end mb-3">
+            <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-gray-100 dark:bg-gray-900/40">
+              <button
+                onClick={() => setLayout("classic")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
+                  layout === "classic" ? "bg-white dark:bg-gray-800 text-heading dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                Classic
+              </button>
+              <button
+                onClick={() => setLayout("card")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
+                  layout === "card" ? "bg-white dark:bg-gray-800 text-heading dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                Card view
+              </button>
+            </div>
+          </div>
+
+          {layout === "classic" ? (
+            <div className="overflow-x-auto">
+              <table className="text-sm mb-4 border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 sticky left-0 bg-gray-50 dark:bg-gray-900/40 whitespace-nowrap">
+                      Date
                     </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {viewing.entries.map((e) => (
-                  <tr key={e._id} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-                    <td className="px-3 py-2 sticky left-0 bg-white dark:bg-gray-800 whitespace-nowrap text-gray-700 dark:text-gray-200">{e.date || viewing.reportDate}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-gray-700 dark:text-gray-200">{e.guardName}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-gray-700 dark:text-gray-200">{e.timeSlot}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-gray-700 dark:text-gray-200">C1 TO C{viewing.checkpointCount}</td>
-                    {e.checkpointStatuses.map((status, idx) => (
-                      <td key={idx} className="px-3 py-2 whitespace-nowrap">
-                        {status ? <StatusPill status={status} /> : <span className="text-gray-300 dark:text-gray-600">—</span>}
-                      </td>
+                    <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Guard Name</th>
+                    <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Time</th>
+                    <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">Checkpoint</th>
+                    {Array.from({ length: viewing.checkpointCount }, (_, i) => (
+                      <th key={i} className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                        Checkpoint-{i + 1}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {viewing.entries.map((e) => (
+                    <tr key={e._id} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                      <td className="px-3 py-2 sticky left-0 bg-white dark:bg-gray-800 whitespace-nowrap text-gray-700 dark:text-gray-200">{e.date || viewing.reportDate}</td>
+                      <td className="px-3 py-2 whitespace-nowrap text-gray-700 dark:text-gray-200">{e.guardName}</td>
+                      <td className="px-3 py-2 whitespace-nowrap text-gray-700 dark:text-gray-200">{e.timeSlot}</td>
+                      <td className="px-3 py-2 whitespace-nowrap text-gray-700 dark:text-gray-200">C1 TO C{viewing.checkpointCount}</td>
+                      {e.checkpointStatuses.map((status, idx) => (
+                        <td key={idx} className="px-3 py-2 whitespace-nowrap">
+                          {status ? <StatusPill status={status} /> : <span className="text-gray-300 dark:text-gray-600">—</span>}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-y-auto mb-4 space-y-3 pr-1">
+              {viewingGuards.map((guard) => {
+                const flagged = guard.total - guard.presentCount;
+                return (
+                  <div
+                    key={guard.guardName}
+                    className={`rounded-lg border overflow-hidden ${
+                      flagged > 0 ? "border-red-200 dark:border-red-900/50" : "border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <div
+                      className={`flex items-center justify-between px-3 py-2 ${
+                        flagged > 0 ? "bg-red-50 dark:bg-red-900/20" : "bg-gray-50 dark:bg-gray-900/40"
+                      }`}
+                    >
+                      <span className={`text-sm font-semibold ${flagged > 0 ? "text-red-700 dark:text-red-400" : "text-heading dark:text-gray-100"}`}>
+                        {guard.guardName}
+                      </span>
+                      <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                        {guard.presentCount} / {guard.total} Present
+                      </span>
+                    </div>
+                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                      {guard.visits.map((v) => (
+                        <div key={v._id} className="flex items-center gap-3 px-3 py-2 flex-wrap">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 w-24 flex-shrink-0">
+                            {v.date || viewing.reportDate} {v.timeSlot}
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {v.checkpointStatuses.map((status, idx) =>
+                              status ? (
+                                <span
+                                  key={idx}
+                                  className={`text-[11px] font-mono px-2 py-0.5 rounded ${
+                                    status === "Present"
+                                      ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                      : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                  }`}
+                                >
+                                  C{idx + 1}: {status}
+                                </span>
+                              ) : null
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <div className="flex items-center gap-2">
             <a
               href={exportPatrolReportPdfUrl(viewing._id, API_BASE)}

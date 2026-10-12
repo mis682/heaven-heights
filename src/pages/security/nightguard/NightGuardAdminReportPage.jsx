@@ -19,6 +19,27 @@ function dateRangeLabel(report) {
   return min === max ? min : `${min} to ${max}`;
 }
 
+// Same flat entries, grouped by guard so each guard's visits collapse onto
+// one card instead of repeating the guard name across separate table rows.
+function groupByGuard(entries) {
+  const guardOrder = [];
+  const byGuard = new Map();
+  entries.forEach((e) => {
+    const name = e.guardName || "Unassigned";
+    if (!byGuard.has(name)) {
+      byGuard.set(name, []);
+      guardOrder.push(name);
+    }
+    byGuard.get(name).push(e);
+  });
+
+  return guardOrder.map((guardName) => {
+    const visits = byGuard.get(guardName);
+    const presentCount = visits.filter((v) => v.status === "Present").length;
+    return { guardName, visits, presentCount, total: visits.length };
+  });
+}
+
 export default function NightGuardAdminReportPage() {
   const { user } = useAuth();
   const [reports, setReports] = useState([]);
@@ -28,6 +49,11 @@ export default function NightGuardAdminReportPage() {
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState(null);
+  // Which layout the currently-open report is displayed in — "classic" (the
+  // existing flat table) or "card" (grouped by guard). Defaults to classic
+  // on every open.
+  const [layout, setLayout] = useState("classic");
+  const viewingGuards = viewing ? groupByGuard(viewing.entries) : [];
 
   useEffect(() => {
     getNightGuardMeta().then((m) => setSites(m.sites));
@@ -44,7 +70,10 @@ export default function NightGuardAdminReportPage() {
     load();
   }, [site, dateFrom, dateTo]);
 
-  const view = async (id) => setViewing(await getReport(id));
+  const view = async (id) => {
+    setLayout("classic");
+    setViewing(await getReport(id));
+  };
 
   const handleUnlock = async (id) => {
     await unlockReport(id);
@@ -97,28 +126,94 @@ export default function NightGuardAdminReportPage() {
 
       {viewing && (
         <Modal title={`Report — ${dateRangeLabel(viewing)}`} onClose={() => setViewing(null)} wide>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm mb-4">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
-                  {["Date", "Site", "Time", "Status", "Guard Name"].map((h) => (
-                    <th key={h} className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {viewing.entries.map((e) => (
-                  <tr key={e._id} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-                    <td className="px-3 py-2">{e.date || viewing.reportDate}</td>
-                    <td className="px-3 py-2">{e.site}</td>
-                    <td className="px-3 py-2">{e.timeSlot}</td>
-                    <td className="px-3 py-2"><StatusPill status={e.status} /></td>
-                    <td className="px-3 py-2">{e.guardName}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex justify-end mb-3">
+            <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-gray-100 dark:bg-gray-900/40">
+              <button
+                onClick={() => setLayout("classic")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
+                  layout === "classic" ? "bg-white dark:bg-gray-800 text-heading dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                Classic
+              </button>
+              <button
+                onClick={() => setLayout("card")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
+                  layout === "card" ? "bg-white dark:bg-gray-800 text-heading dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                Card view
+              </button>
+            </div>
           </div>
+
+          {layout === "classic" ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm mb-4">
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+                    {["Date", "Site", "Time", "Status", "Guard Name"].map((h) => (
+                      <th key={h} className="text-left px-3 py-2 text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {viewing.entries.map((e) => (
+                    <tr key={e._id} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                      <td className="px-3 py-2">{e.date || viewing.reportDate}</td>
+                      <td className="px-3 py-2">{e.site}</td>
+                      <td className="px-3 py-2">{e.timeSlot}</td>
+                      <td className="px-3 py-2"><StatusPill status={e.status} /></td>
+                      <td className="px-3 py-2">{e.guardName}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-y-auto mb-4 space-y-3 pr-1">
+              {viewingGuards.map((guard) => {
+                const flagged = guard.total - guard.presentCount;
+                return (
+                  <div
+                    key={guard.guardName}
+                    className={`rounded-lg border overflow-hidden ${
+                      flagged > 0 ? "border-red-200 dark:border-red-900/50" : "border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <div
+                      className={`flex items-center justify-between px-3 py-2 ${
+                        flagged > 0 ? "bg-red-50 dark:bg-red-900/20" : "bg-gray-50 dark:bg-gray-900/40"
+                      }`}
+                    >
+                      <span className={`text-sm font-semibold ${flagged > 0 ? "text-red-700 dark:text-red-400" : "text-heading dark:text-gray-100"}`}>
+                        {guard.guardName}
+                      </span>
+                      <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                        {guard.presentCount} / {guard.total} Present
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 px-3 py-2">
+                      {guard.visits.map((v) => (
+                        <span
+                          key={v._id}
+                          className={`text-[11px] font-mono px-2 py-0.5 rounded ${
+                            v.status === "Present"
+                              ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          }`}
+                        >
+                          {v.date || viewing.reportDate} · {v.site} · {v.timeSlot}
+                          {v.status !== "Present" ? ` — ${v.status}` : ""}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <div className="flex items-center gap-2">
             <a
               href={exportReportPdfUrl(viewing._id, API_BASE)}
