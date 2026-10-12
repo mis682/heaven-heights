@@ -2,10 +2,11 @@ import api, { apiOrigin } from "./client";
 
 export const getMaintenanceUniformReportMeta = () => api.get("/maintenance-uniform-report/meta").then((r) => r.data);
 
-export const getMaintenanceUniformStaffList = () => api.get("/maintenance-uniform-report/staff-list").then((r) => r.data);
+export const getMaintenanceUniformStaffList = (params = {}) =>
+  api.get("/maintenance-uniform-report/staff-list", { params }).then((r) => r.data);
 
-export const getMaintenanceUniformReportByDate = (date) =>
-  api.get("/maintenance-uniform-report/by-date", { params: { date } }).then((r) => r.data);
+export const getMaintenanceUniformReportByDate = (date, reportName) =>
+  api.get("/maintenance-uniform-report/by-date", { params: { date, reportName } }).then((r) => r.data);
 
 export const saveMaintenanceUniformReportDraft = (data) =>
   api.post("/maintenance-uniform-report/draft", data).then((r) => r.data);

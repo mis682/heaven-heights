@@ -5,7 +5,9 @@ import DataTable from "../../components/DataTable";
 import StatusPill from "../../components/StatusPill";
 import Modal from "../../components/Modal";
 import ThemedDatePicker from "../../components/ThemedDatePicker";
+import ThemedSelect from "../../components/ThemedSelect";
 import { useAuth } from "../../context/AuthContext";
+import { MAINTENANCE_UNIFORM_REPORT_FORMATS } from "../../constants/maintenanceUniform";
 import {
   getMaintenanceUniformReportMeta,
   listSubmittedMaintenanceUniformReports,
@@ -15,10 +17,13 @@ import {
   maintenanceUniformReportExportPdfUrl,
 } from "../../api/maintenanceUniformReport";
 
+const REPORT_NAMES = Object.keys(MAINTENANCE_UNIFORM_REPORT_FORMATS);
+
 export default function MaintenanceUniformAdminReportPage() {
   const { user } = useAuth();
   const [meta, setMeta] = useState({ statusOptions: [] });
   const [reports, setReports] = useState([]);
+  const [reportName, setReportName] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
@@ -30,7 +35,11 @@ export default function MaintenanceUniformAdminReportPage() {
 
   const load = async () => {
     setLoading(true);
-    const data = await listSubmittedMaintenanceUniformReports({ from: dateFrom || undefined, to: dateTo || undefined });
+    const data = await listSubmittedMaintenanceUniformReports({
+      from: dateFrom || undefined,
+      to: dateTo || undefined,
+      reportName: reportName || undefined,
+    });
     setReports(data);
     setLoading(false);
   };
@@ -38,7 +47,7 @@ export default function MaintenanceUniformAdminReportPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, reportName]);
 
   const view = async (id) => setViewing(await getMaintenanceUniformReport(id));
 
@@ -69,6 +78,7 @@ export default function MaintenanceUniformAdminReportPage() {
       <PageHeader title="Maintenance Uniform — Admin Report View" subtitle="Submitted daily reports, read-only." />
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
+        <ThemedSelect value={reportName} onChange={setReportName} options={REPORT_NAMES} placeholder="All reports" className="max-w-[200px]" />
         <ThemedDatePicker value={dateFrom} onChange={setDateFrom} className="max-w-[160px]" />
         <span className="text-sm text-subtext dark:text-gray-400">to</span>
         <ThemedDatePicker value={dateTo} onChange={setDateTo} className="max-w-[160px]" />
@@ -77,6 +87,7 @@ export default function MaintenanceUniformAdminReportPage() {
       <DataTable
         columns={[
           { key: "reportDate", header: "Date" },
+          { key: "reportName", header: "Report" },
           { key: "preparedBy", header: "Prepared By" },
           ...meta.statusOptions.map((s) => ({ key: s, header: s, render: (r) => r.counts?.[s] ?? 0 })),
           { key: "submittedAt", header: "Submitted At", render: (r) => new Date(r.submittedAt).toLocaleString() },
@@ -104,7 +115,7 @@ export default function MaintenanceUniformAdminReportPage() {
       />
 
       {viewing && (
-        <Modal title={`Maintenance Uniform — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
+        <Modal title={`Maintenance Uniform — ${viewing.reportName} — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
           <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
             {groupedEntries(viewing.entries).map((group) => {
               const meta = DESIGNATION_META[group.designation] || { icon: Users, color: "text-gray-600 dark:text-gray-400", bg: "bg-gray-50 dark:bg-gray-900/30" };
