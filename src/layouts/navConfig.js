@@ -488,6 +488,11 @@ export const ONE_BUSINESS_CENTER_FORMS = [
   },
 ];
 
+// Nature Park forms — same shape as ONE_BUSINESS_CENTER_FORMS. Mirrors
+// backend/constants/natureParkForms.js — kept in sync manually. Starts
+// empty; forms are added as the coordinator shares them.
+export const NATURE_PARK_FORMS = [];
+
 function patrolSiteNavItem({ label, slug }) {
   return {
     label,
@@ -540,6 +545,19 @@ export const NAV_SECTIONS = [
                 permission: { module: "oneBusinessCenter", action: "edit" },
               },
               { label: "Admin Report View", path: "/housekeeping/one-business-center/admin-report" },
+            ],
+          },
+          {
+            label: "Nature Park",
+            permission: { module: "naturePark", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/nature-park/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/nature-park/daily-report",
+                permission: { module: "naturePark", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/nature-park/admin-report" },
             ],
           },
         ],

@@ -26,6 +26,10 @@ import OneBusinessCenterPublicForm from "./pages/housekeeping/OneBusinessCenterP
 import OneBusinessCenterSubmissionsPage from "./pages/housekeeping/OneBusinessCenterSubmissionsPage";
 import OneBusinessCenterDailyReportPage from "./pages/housekeeping/OneBusinessCenterDailyReportPage";
 import OneBusinessCenterAdminReportPage from "./pages/housekeeping/OneBusinessCenterAdminReportPage";
+import NatureParkPublicForm from "./pages/housekeeping/NatureParkPublicForm";
+import NatureParkSubmissionsPage from "./pages/housekeeping/NatureParkSubmissionsPage";
+import NatureParkDailyReportPage from "./pages/housekeeping/NatureParkDailyReportPage";
+import NatureParkAdminReportPage from "./pages/housekeeping/NatureParkAdminReportPage";
 import MaintenanceUniformPublicForm from "./pages/admin/MaintenanceUniformPublicForm";
 import MaintenanceUniformSubmissionsPage from "./pages/admin/MaintenanceUniformSubmissionsPage";
 import MaintenanceUniformDailyReportPage from "./pages/admin/MaintenanceUniformDailyReportPage";
@@ -77,6 +81,7 @@ export default function App() {
       <Route path="/reserve-club-form/:formNumber" element={<ReserveClubPublicForm />} />
       <Route path="/regal-garden-club-form/:formNumber" element={<RegalGardenClubPublicForm />} />
       <Route path="/one-business-center-form/:formNumber" element={<OneBusinessCenterPublicForm />} />
+      <Route path="/nature-park-form/:formNumber" element={<NatureParkPublicForm />} />
       <Route path="/maintenance-uniform-form" element={<MaintenanceUniformPublicForm />} />
 
       <Route path="/login" element={<Login />} />
@@ -211,6 +216,31 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "oneBusinessCenter", action: "view" }}>
               <OneBusinessCenterAdminReportPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/nature-park/submissions"
+          element={
+            <RequireAuth permission={{ module: "naturePark", action: "view" }}>
+              <NatureParkSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/nature-park/daily-report"
+          element={
+            <RequireAuth permission={{ module: "naturePark", action: "edit" }}>
+              <NatureParkDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/nature-park/admin-report"
+          element={
+            <RequireAuth permission={{ module: "naturePark", action: "view" }}>
+              <NatureParkAdminReportPage />
             </RequireAuth>
           }
         />
