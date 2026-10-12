@@ -7,6 +7,9 @@ export const MAINTENANCE_UNIFORM_SITES = [
   "One Business Center",
   "Neoteric Reserve",
   "Garden City Club",
+  "GST",
+  "Hyde Park",
+  "Milestone",
 ];
 
 export const MAINTENANCE_UNIFORM_DESIGNATIONS = ["Security Guard", "House Keeping", "Gardener"];
