@@ -41,6 +41,7 @@ import RegalGardenSubmissionsPage from "./pages/housekeeping/RegalGardenSubmissi
 import RegalGardenDailyReportPage from "./pages/housekeeping/RegalGardenDailyReportPage";
 import RegalGardenAdminReportPage from "./pages/housekeeping/RegalGardenAdminReportPage";
 import RegalGardenKpiPage from "./pages/housekeeping/RegalGardenKpiPage";
+import PropertyManagementFormEntry from "./pages/housekeeping/PropertyManagementFormEntry";
 import PmRegalGardenPublicForm from "./pages/housekeeping/PmRegalGardenPublicForm";
 import PmRegalGardenSubmissionsPage from "./pages/housekeeping/PmRegalGardenSubmissionsPage";
 import PmRegalGardenDailyReportPage from "./pages/housekeeping/PmRegalGardenDailyReportPage";
@@ -107,6 +108,7 @@ export default function App() {
       <Route path="/one-business-center-form/:formNumber" element={<OneBusinessCenterPublicForm />} />
       <Route path="/nature-park-form/:formNumber" element={<NatureParkPublicForm />} />
       <Route path="/regal-garden-form/:formNumber" element={<RegalGardenPublicForm />} />
+      <Route path="/property-management-form" element={<PropertyManagementFormEntry />} />
       <Route path="/pm-regal-garden-form/:formNumber" element={<PmRegalGardenPublicForm />} />
       <Route path="/pm-eden-garden-form/:formNumber" element={<PmEdenGardenPublicForm />} />
       <Route path="/pm-garden-city-form/:formNumber" element={<PmGardenCityPublicForm />} />

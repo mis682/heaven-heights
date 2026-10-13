@@ -544,11 +544,34 @@ export const REGAL_GARDEN_FORMS = [
 
 // Property Management forms — Regal Garden / Eden Garden / Garden City.
 // Unrelated to the Housekeeping "Regal Garden" / "Garden City" modules above
-// (hence the pm* prefix on every identifier) — form content not yet shared
-// by the coordinator, starts empty, to be populated once it's provided.
-export const PM_REGAL_GARDEN_FORMS = [];
-export const PM_EDEN_GARDEN_FORMS = [];
-export const PM_GARDEN_CITY_FORMS = [];
+// (hence the pm* prefix on every identifier). All 3 projects share the same
+// single form ("Unit Photographs Form") — a shared entry page lets the field
+// staffer pick their Project first, then routes them to that project's own
+// public form (see PropertyManagementFormEntry.jsx), so the submission lands
+// in the right project's own Submissions/Daily Report/Admin Report.
+const PM_UNIT_PHOTOS_CHECKPOINTS = [
+  { label: "Unit No.", type: "text" },
+  { label: "Kitchen Photo", type: "photo", required: false },
+  { label: "Washroom Photo-1", type: "photo", required: false },
+  { label: "Washroom Photo-2", type: "photo", required: false },
+  { label: "Washroom Photo-3", type: "photo", required: false },
+  { label: "Balcony", type: "photo", required: false },
+  { label: "Photo-1", type: "photo", required: false },
+  { label: "Photo-2", type: "photo", required: false },
+  { label: "Photo-3", type: "photo", required: false },
+];
+export const PM_REGAL_GARDEN_FORMS = [{ formNumber: 1, label: "Unit Photographs Form", checkpoints: PM_UNIT_PHOTOS_CHECKPOINTS }];
+export const PM_EDEN_GARDEN_FORMS = [{ formNumber: 1, label: "Unit Photographs Form", checkpoints: PM_UNIT_PHOTOS_CHECKPOINTS }];
+export const PM_GARDEN_CITY_FORMS = [{ formNumber: 1, label: "Unit Photographs Form", checkpoints: PM_UNIT_PHOTOS_CHECKPOINTS }];
+
+// Maps the Project dropdown on the shared Property Management entry form to
+// that project's own public-form route, so one shared link/QR code can route
+// to any of the 3 projects' existing Submission pipelines.
+export const PM_PROJECT_FORM_ROUTES = {
+  "Regal Garden": "/pm-regal-garden-form/1",
+  "Garden City": "/pm-garden-city-form/1",
+  "Eden Garden": "/pm-eden-garden-form/1",
+};
 
 function patrolSiteNavItem({ label, slug }) {
   return {
