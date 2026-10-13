@@ -10,31 +10,38 @@ import GCHousekeepingPublicForm from "./pages/housekeeping/GCHousekeepingPublicF
 import GCHousekeepingSubmissionsPage from "./pages/housekeeping/GCHousekeepingSubmissionsPage";
 import GCHousekeepingDailyReportPage from "./pages/housekeeping/GCHousekeepingDailyReportPage";
 import GCHousekeepingAdminReportPage from "./pages/housekeeping/GCHousekeepingAdminReportPage";
+import GCHousekeepingKpiPage from "./pages/housekeeping/GCHousekeepingKpiPage";
 import GCClubPublicForm from "./pages/housekeeping/GCClubPublicForm";
 import GCClubSubmissionsPage from "./pages/housekeeping/GCClubSubmissionsPage";
 import GCClubDailyReportPage from "./pages/housekeeping/GCClubDailyReportPage";
 import GCClubAdminReportPage from "./pages/housekeeping/GCClubAdminReportPage";
+import GCClubKpiPage from "./pages/housekeeping/GCClubKpiPage";
 import ReserveClubPublicForm from "./pages/housekeeping/ReserveClubPublicForm";
 import ReserveClubSubmissionsPage from "./pages/housekeeping/ReserveClubSubmissionsPage";
 import ReserveClubDailyReportPage from "./pages/housekeeping/ReserveClubDailyReportPage";
 import ReserveClubAdminReportPage from "./pages/housekeeping/ReserveClubAdminReportPage";
+import ReserveClubKpiPage from "./pages/housekeeping/ReserveClubKpiPage";
 import RegalGardenClubPublicForm from "./pages/housekeeping/RegalGardenClubPublicForm";
 import RegalGardenClubSubmissionsPage from "./pages/housekeeping/RegalGardenClubSubmissionsPage";
 import RegalGardenClubDailyReportPage from "./pages/housekeeping/RegalGardenClubDailyReportPage";
 import RegalGardenClubAdminReportPage from "./pages/housekeeping/RegalGardenClubAdminReportPage";
+import RegalGardenClubKpiPage from "./pages/housekeeping/RegalGardenClubKpiPage";
 import OneBusinessCenterPublicForm from "./pages/housekeeping/OneBusinessCenterPublicForm";
 import OneBusinessCenterSubmissionsPage from "./pages/housekeeping/OneBusinessCenterSubmissionsPage";
 import OneBusinessCenterDailyReportPage from "./pages/housekeeping/OneBusinessCenterDailyReportPage";
 import OneBusinessCenterAdminReportPage from "./pages/housekeeping/OneBusinessCenterAdminReportPage";
+import OneBusinessCenterKpiPage from "./pages/housekeeping/OneBusinessCenterKpiPage";
 import NatureParkPublicForm from "./pages/housekeeping/NatureParkPublicForm";
 import NatureParkSubmissionsPage from "./pages/housekeeping/NatureParkSubmissionsPage";
 import NatureParkDailyReportPage from "./pages/housekeeping/NatureParkDailyReportPage";
 import NatureParkAdminReportPage from "./pages/housekeeping/NatureParkAdminReportPage";
+import NatureParkKpiPage from "./pages/housekeeping/NatureParkKpiPage";
 import MaintenanceUniformPublicForm from "./pages/admin/MaintenanceUniformPublicForm";
 import MaintenanceUniformSubmissionsPage from "./pages/admin/MaintenanceUniformSubmissionsPage";
 import MaintenanceUniformDailyReportPage from "./pages/admin/MaintenanceUniformDailyReportPage";
 import MaintenanceUniformAdminReportPage from "./pages/admin/MaintenanceUniformAdminReportPage";
 import MaintenanceUniformStaffListPage from "./pages/admin/MaintenanceUniformStaffListPage";
+import MaintenanceUniformKpiPage from "./pages/admin/MaintenanceUniformKpiPage";
 
 import PatrolPublicForm from "./pages/security/patrol/PatrolPublicForm";
 import PatrolSitePage from "./pages/security/patrol/PatrolSitePage";
@@ -119,6 +126,14 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/housekeeping/garden-city/kpi"
+          element={
+            <RequireAuth permission={{ module: "gcHousekeeping", action: "view" }}>
+              <GCHousekeepingKpiPage />
+            </RequireAuth>
+          }
+        />
 
         <Route
           path="/housekeeping/garden-city-club/submissions"
@@ -141,6 +156,14 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "gcClub", action: "view" }}>
               <GCClubAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/garden-city-club/kpi"
+          element={
+            <RequireAuth permission={{ module: "gcClub", action: "view" }}>
+              <GCClubKpiPage />
             </RequireAuth>
           }
         />
@@ -169,6 +192,14 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/housekeeping/reserve-club/kpi"
+          element={
+            <RequireAuth permission={{ module: "reserveClub", action: "view" }}>
+              <ReserveClubKpiPage />
+            </RequireAuth>
+          }
+        />
 
         <Route
           path="/housekeeping/regal-garden-club/submissions"
@@ -191,6 +222,14 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "regalGardenClub", action: "view" }}>
               <RegalGardenClubAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/regal-garden-club/kpi"
+          element={
+            <RequireAuth permission={{ module: "regalGardenClub", action: "view" }}>
+              <RegalGardenClubKpiPage />
             </RequireAuth>
           }
         />
@@ -219,6 +258,14 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/housekeeping/one-business-center/kpi"
+          element={
+            <RequireAuth permission={{ module: "oneBusinessCenter", action: "view" }}>
+              <OneBusinessCenterKpiPage />
+            </RequireAuth>
+          }
+        />
 
         <Route
           path="/housekeeping/nature-park/submissions"
@@ -244,6 +291,14 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/housekeeping/nature-park/kpi"
+          element={
+            <RequireAuth permission={{ module: "naturePark", action: "view" }}>
+              <NatureParkKpiPage />
+            </RequireAuth>
+          }
+        />
 
         <Route
           path="/admin/maintenance-uniform/submissions"
@@ -266,6 +321,14 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "maintenanceUniform", action: "view" }}>
               <MaintenanceUniformAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/maintenance-uniform/kpi"
+          element={
+            <RequireAuth permission={{ module: "maintenanceUniform", action: "view" }}>
+              <MaintenanceUniformKpiPage />
             </RequireAuth>
           }
         />

@@ -532,6 +532,7 @@ export const NAV_SECTIONS = [
                 permission: { module: "gcHousekeeping", action: "edit" },
               },
               { label: "Admin Report View", path: "/housekeeping/garden-city/admin-report" },
+              { label: "KPI", path: "/housekeeping/garden-city/kpi" },
             ],
           },
           {
@@ -545,6 +546,7 @@ export const NAV_SECTIONS = [
                 permission: { module: "oneBusinessCenter", action: "edit" },
               },
               { label: "Admin Report View", path: "/housekeeping/one-business-center/admin-report" },
+              { label: "KPI", path: "/housekeeping/one-business-center/kpi" },
             ],
           },
           {
@@ -558,6 +560,7 @@ export const NAV_SECTIONS = [
                 permission: { module: "naturePark", action: "edit" },
               },
               { label: "Admin Report View", path: "/housekeeping/nature-park/admin-report" },
+              { label: "KPI", path: "/housekeeping/nature-park/kpi" },
             ],
           },
         ],
@@ -576,6 +579,7 @@ export const NAV_SECTIONS = [
                 permission: { module: "gcClub", action: "edit" },
               },
               { label: "Admin Report View", path: "/housekeeping/garden-city-club/admin-report" },
+              { label: "KPI", path: "/housekeeping/garden-city-club/kpi" },
             ],
           },
           {
@@ -589,6 +593,7 @@ export const NAV_SECTIONS = [
                 permission: { module: "reserveClub", action: "edit" },
               },
               { label: "Admin Report View", path: "/housekeeping/reserve-club/admin-report" },
+              { label: "KPI", path: "/housekeeping/reserve-club/kpi" },
             ],
           },
           {
@@ -602,6 +607,7 @@ export const NAV_SECTIONS = [
                 permission: { module: "regalGardenClub", action: "edit" },
               },
               { label: "Admin Report View", path: "/housekeeping/regal-garden-club/admin-report" },
+              { label: "KPI", path: "/housekeeping/regal-garden-club/kpi" },
             ],
           },
         ],
@@ -653,6 +659,7 @@ export const NAV_SECTIONS = [
           },
           { label: "Admin Report View", path: "/admin/maintenance-uniform/admin-report" },
           { label: "Staff List", path: "/admin/maintenance-uniform/staff-list" },
+          { label: "KPI", path: "/admin/maintenance-uniform/kpi" },
         ],
       },
       {

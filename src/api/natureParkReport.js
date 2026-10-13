@@ -18,3 +18,9 @@ export const listSubmittedNatureParkReports = (params = {}) =>
 
 export const natureParkReportExportUrl = (id) => `${apiOrigin}/api/nature-park-report/${id}/export`;
 export const natureParkReportExportPdfUrl = (id) => `${apiOrigin}/api/nature-park-report/${id}/export-pdf`;
+
+export const getNatureParkKpi = (from, to, formNumber) =>
+  api.get("/nature-park-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);
+
+export const natureParkKpiPdfUrl = (from, to, formNumber) =>
+  `${apiOrigin}/api/nature-park-report/kpi/export-pdf?from=${from}&to=${to}${formNumber ? `&formNumber=${formNumber}` : ""}`;

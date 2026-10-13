@@ -17,3 +17,9 @@ export const listSubmittedGCClubReports = (params = {}) => api.get("/gc-club-rep
 
 export const gcClubReportExportUrl = (id) => `${apiOrigin}/api/gc-club-report/${id}/export`;
 export const gcClubReportExportPdfUrl = (id) => `${apiOrigin}/api/gc-club-report/${id}/export-pdf`;
+
+export const getGCClubKpi = (from, to, formNumber) =>
+  api.get("/gc-club-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);
+
+export const gcClubKpiPdfUrl = (from, to, formNumber) =>
+  `${apiOrigin}/api/gc-club-report/kpi/export-pdf?from=${from}&to=${to}${formNumber ? `&formNumber=${formNumber}` : ""}`;
