@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Save, Send, Lock, FileText, Download } from "lucide-react";
+import { Save, Send, Lock, FileText, Download, Search } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import StatusPill from "../../components/StatusPill";
 import ThemedSelect from "../../components/ThemedSelect";
@@ -37,6 +37,7 @@ export default function MaintenanceUniformDailyReportPage() {
   const [report, setReport] = useState(null);
   const [entries, setEntries] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     getMaintenanceUniformReportMeta().then((m) => {
@@ -103,6 +104,10 @@ export default function MaintenanceUniformDailyReportPage() {
     return <p className="text-sm text-subtext dark:text-gray-400">Loading...</p>;
   }
 
+  const filteredEntries = entries
+    .map((entry, idx) => ({ entry, idx }))
+    .filter(({ entry }) => entry.staffName.toLowerCase().includes(search.trim().toLowerCase()));
+
   let lastDesignation = null;
 
   return (
@@ -126,6 +131,17 @@ export default function MaintenanceUniformDailyReportPage() {
           className="max-w-[200px]"
         />
         <ThemedDatePicker value={date} max={today()} onChange={setDate} className="max-w-[180px]" disabled={!reportName} />
+        <div className="relative max-w-[220px]">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search staff name..."
+            disabled={!reportName}
+            className="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+        </div>
         {isLocked && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">
             <Lock size={12} /> Submitted — read only (ask Admin to unlock)
@@ -150,7 +166,14 @@ export default function MaintenanceUniformDailyReportPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {entries.map((entry, idx) => {
+                  {filteredEntries.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-6 text-center text-sm text-subtext dark:text-gray-400">
+                        Is naam se koi staff nahi mila.
+                      </td>
+                    </tr>
+                  )}
+                  {filteredEntries.map(({ entry, idx }) => {
                     const showHeader = entry.designation !== lastDesignation;
                     lastDesignation = entry.designation;
                     return (
