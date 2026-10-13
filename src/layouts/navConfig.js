@@ -489,9 +489,24 @@ export const ONE_BUSINESS_CENTER_FORMS = [
 ];
 
 // Nature Park forms — same shape as ONE_BUSINESS_CENTER_FORMS. Mirrors
-// backend/constants/natureParkForms.js — kept in sync manually. Starts
-// empty; forms are added as the coordinator shares them.
-export const NATURE_PARK_FORMS = [];
+// backend/constants/natureParkForms.js — kept in sync manually. Forms are
+// added as the coordinator shares them.
+export const NATURE_PARK_FORMS = [
+  {
+    formNumber: 1,
+    label: "Nature Park-1",
+    checkpoints: [
+      "Western Plaza Light Pic",
+      "Northern Park Light Pic",
+      "Central Park Light Pic",
+      "Western Plaza Fountain Pic",
+      "Main Gate Fountain Pic",
+      "Maintenance office Pic",
+      "Cricket Ground Pic",
+      "Basketball Court Pic",
+    ].map((label) => ({ label, type: "photo" })),
+  },
+];
 
 function patrolSiteNavItem({ label, slug }) {
   return {
