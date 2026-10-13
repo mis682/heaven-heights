@@ -542,6 +542,14 @@ export const REGAL_GARDEN_FORMS = [
   },
 ];
 
+// Property Management forms — Regal Garden / Eden Garden / Garden City.
+// Unrelated to the Housekeeping "Regal Garden" / "Garden City" modules above
+// (hence the pm* prefix on every identifier) — form content not yet shared
+// by the coordinator, starts empty, to be populated once it's provided.
+export const PM_REGAL_GARDEN_FORMS = [];
+export const PM_EDEN_GARDEN_FORMS = [];
+export const PM_GARDEN_CITY_FORMS = [];
+
 function patrolSiteNavItem({ label, slug }) {
   return {
     label,
@@ -624,6 +632,50 @@ export const NAV_SECTIONS = [
               },
               { label: "Admin Report View", path: "/housekeeping/regal-garden/admin-report" },
               { label: "KPI", path: "/housekeeping/regal-garden/kpi" },
+            ],
+          },
+        ],
+      },
+      {
+        label: "Property Management",
+        children: [
+          {
+            label: "Regal Garden",
+            permission: { module: "pmRegalGarden", action: "view" },
+            children: [
+              { label: "Submissions", path: "/property-management/pm-regal-garden/submissions" },
+              {
+                label: "Daily Report",
+                path: "/property-management/pm-regal-garden/daily-report",
+                permission: { module: "pmRegalGarden", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/property-management/pm-regal-garden/admin-report" },
+            ],
+          },
+          {
+            label: "Eden Garden",
+            permission: { module: "pmEdenGarden", action: "view" },
+            children: [
+              { label: "Submissions", path: "/property-management/pm-eden-garden/submissions" },
+              {
+                label: "Daily Report",
+                path: "/property-management/pm-eden-garden/daily-report",
+                permission: { module: "pmEdenGarden", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/property-management/pm-eden-garden/admin-report" },
+            ],
+          },
+          {
+            label: "Garden City",
+            permission: { module: "pmGardenCity", action: "view" },
+            children: [
+              { label: "Submissions", path: "/property-management/pm-garden-city/submissions" },
+              {
+                label: "Daily Report",
+                path: "/property-management/pm-garden-city/daily-report",
+                permission: { module: "pmGardenCity", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/property-management/pm-garden-city/admin-report" },
             ],
           },
         ],

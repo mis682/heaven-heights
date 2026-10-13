@@ -1,0 +1,20 @@
+import api, { apiOrigin } from "./client";
+
+export const getPmRegalGardenReportMeta = () => api.get("/pm-regal-garden-report/meta").then((r) => r.data);
+
+export const getPmRegalGardenReportByDate = (formNumber, date) =>
+  api.get("/pm-regal-garden-report/by-date", { params: { formNumber, date } }).then((r) => r.data);
+
+export const savePmRegalGardenReportDraft = (data) => api.post("/pm-regal-garden-report/draft", data).then((r) => r.data);
+
+export const submitPmRegalGardenReport = (id) => api.post(`/pm-regal-garden-report/${id}/submit`).then((r) => r.data);
+
+export const unlockPmRegalGardenReport = (id) => api.post(`/pm-regal-garden-report/${id}/unlock`).then((r) => r.data);
+
+export const getPmRegalGardenReport = (id) => api.get(`/pm-regal-garden-report/${id}`).then((r) => r.data);
+
+export const listSubmittedPmRegalGardenReports = (params = {}) =>
+  api.get("/pm-regal-garden-report/submitted", { params }).then((r) => r.data);
+
+export const pmRegalGardenReportExportUrl = (id) => `${apiOrigin}/api/pm-regal-garden-report/${id}/export`;
+export const pmRegalGardenReportExportPdfUrl = (id) => `${apiOrigin}/api/pm-regal-garden-report/${id}/export-pdf`;

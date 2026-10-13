@@ -41,6 +41,18 @@ import RegalGardenSubmissionsPage from "./pages/housekeeping/RegalGardenSubmissi
 import RegalGardenDailyReportPage from "./pages/housekeeping/RegalGardenDailyReportPage";
 import RegalGardenAdminReportPage from "./pages/housekeeping/RegalGardenAdminReportPage";
 import RegalGardenKpiPage from "./pages/housekeeping/RegalGardenKpiPage";
+import PmRegalGardenPublicForm from "./pages/housekeeping/PmRegalGardenPublicForm";
+import PmRegalGardenSubmissionsPage from "./pages/housekeeping/PmRegalGardenSubmissionsPage";
+import PmRegalGardenDailyReportPage from "./pages/housekeeping/PmRegalGardenDailyReportPage";
+import PmRegalGardenAdminReportPage from "./pages/housekeeping/PmRegalGardenAdminReportPage";
+import PmEdenGardenPublicForm from "./pages/housekeeping/PmEdenGardenPublicForm";
+import PmEdenGardenSubmissionsPage from "./pages/housekeeping/PmEdenGardenSubmissionsPage";
+import PmEdenGardenDailyReportPage from "./pages/housekeeping/PmEdenGardenDailyReportPage";
+import PmEdenGardenAdminReportPage from "./pages/housekeeping/PmEdenGardenAdminReportPage";
+import PmGardenCityPublicForm from "./pages/housekeeping/PmGardenCityPublicForm";
+import PmGardenCitySubmissionsPage from "./pages/housekeeping/PmGardenCitySubmissionsPage";
+import PmGardenCityDailyReportPage from "./pages/housekeeping/PmGardenCityDailyReportPage";
+import PmGardenCityAdminReportPage from "./pages/housekeeping/PmGardenCityAdminReportPage";
 import MaintenanceUniformPublicForm from "./pages/admin/MaintenanceUniformPublicForm";
 import MaintenanceUniformSubmissionsPage from "./pages/admin/MaintenanceUniformSubmissionsPage";
 import MaintenanceUniformDailyReportPage from "./pages/admin/MaintenanceUniformDailyReportPage";
@@ -95,6 +107,9 @@ export default function App() {
       <Route path="/one-business-center-form/:formNumber" element={<OneBusinessCenterPublicForm />} />
       <Route path="/nature-park-form/:formNumber" element={<NatureParkPublicForm />} />
       <Route path="/regal-garden-form/:formNumber" element={<RegalGardenPublicForm />} />
+      <Route path="/pm-regal-garden-form/:formNumber" element={<PmRegalGardenPublicForm />} />
+      <Route path="/pm-eden-garden-form/:formNumber" element={<PmEdenGardenPublicForm />} />
+      <Route path="/pm-garden-city-form/:formNumber" element={<PmGardenCityPublicForm />} />
       <Route path="/maintenance-uniform-form" element={<MaintenanceUniformPublicForm />} />
 
       <Route path="/login" element={<Login />} />
@@ -335,6 +350,81 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "regalGarden", action: "view" }}>
               <RegalGardenKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/property-management/pm-regal-garden/submissions"
+          element={
+            <RequireAuth permission={{ module: "pmRegalGarden", action: "view" }}>
+              <PmRegalGardenSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/property-management/pm-regal-garden/daily-report"
+          element={
+            <RequireAuth permission={{ module: "pmRegalGarden", action: "edit" }}>
+              <PmRegalGardenDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/property-management/pm-regal-garden/admin-report"
+          element={
+            <RequireAuth permission={{ module: "pmRegalGarden", action: "view" }}>
+              <PmRegalGardenAdminReportPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/property-management/pm-eden-garden/submissions"
+          element={
+            <RequireAuth permission={{ module: "pmEdenGarden", action: "view" }}>
+              <PmEdenGardenSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/property-management/pm-eden-garden/daily-report"
+          element={
+            <RequireAuth permission={{ module: "pmEdenGarden", action: "edit" }}>
+              <PmEdenGardenDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/property-management/pm-eden-garden/admin-report"
+          element={
+            <RequireAuth permission={{ module: "pmEdenGarden", action: "view" }}>
+              <PmEdenGardenAdminReportPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/property-management/pm-garden-city/submissions"
+          element={
+            <RequireAuth permission={{ module: "pmGardenCity", action: "view" }}>
+              <PmGardenCitySubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/property-management/pm-garden-city/daily-report"
+          element={
+            <RequireAuth permission={{ module: "pmGardenCity", action: "edit" }}>
+              <PmGardenCityDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/property-management/pm-garden-city/admin-report"
+          element={
+            <RequireAuth permission={{ module: "pmGardenCity", action: "view" }}>
+              <PmGardenCityAdminReportPage />
             </RequireAuth>
           }
         />
