@@ -533,9 +533,14 @@ export const NATURE_PARK_FORMS = [
 ];
 
 // Regal Garden forms — same shape as NATURE_PARK_FORMS. Mirrors
-// backend/constants/regalGardenForms.js — kept in sync manually. 1 form
-// expected, added once the coordinator shares it.
-export const REGAL_GARDEN_FORMS = [];
+// backend/constants/regalGardenForms.js — kept in sync manually.
+export const REGAL_GARDEN_FORMS = [
+  {
+    formNumber: 1,
+    label: "Regal Garden Cleaning Checkpoint",
+    checkpoints: Array.from({ length: 12 }, (_, i) => `Checkpoint ${i + 1}`).map((label) => ({ label, type: "photo" })),
+  },
+];
 
 function patrolSiteNavItem({ label, slug }) {
   return {
