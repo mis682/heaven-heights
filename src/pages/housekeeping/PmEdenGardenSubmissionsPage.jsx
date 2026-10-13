@@ -24,6 +24,7 @@ export default function PmEdenGardenSubmissionsPage() {
   const [viewing, setViewing] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [copiedForm, setCopiedForm] = useState(null);
+  const [copiedShared, setCopiedShared] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -44,9 +45,38 @@ export default function PmEdenGardenSubmissionsPage() {
     setTimeout(() => setCopiedForm(null), 2000);
   };
 
+  const copySharedLink = async () => {
+    const url = `${window.location.origin}/property-management-form`;
+    await navigator.clipboard.writeText(url);
+    setCopiedShared(true);
+    setTimeout(() => setCopiedShared(false), 2000);
+  };
+
   return (
     <div>
       <PageHeader title="Property Management — Eden Garden — Submissions" subtitle="Checkpoint photo responses across all Eden Garden forms." />
+
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 mb-5 flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Field staff ke liye shared form link — Project select karne par Regal Garden/Eden Garden/Garden City mein se sahi form khul jata hai.
+        </p>
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={copySharedLink}
+            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+            title="Copy shared Property Management form link"
+          >
+            <LinkIcon size={13} /> {copiedShared ? "Copied!" : "Copy Shared Form Link"}
+          </button>
+          <button
+            onClick={() => window.open("/property-management-form", "_blank")}
+            className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:underline flex items-center gap-1"
+            title="Open shared form"
+          >
+            <ExternalLink size={13} /> Open
+          </button>
+        </div>
+      </div>
 
       {PM_EDEN_GARDEN_FORMS.length === 0 ? (
         <p className="text-sm text-subtext dark:text-gray-400 mb-5">Koi form abhi tak add nahi hua hai.</p>
