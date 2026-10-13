@@ -36,6 +36,11 @@ import NatureParkSubmissionsPage from "./pages/housekeeping/NatureParkSubmission
 import NatureParkDailyReportPage from "./pages/housekeeping/NatureParkDailyReportPage";
 import NatureParkAdminReportPage from "./pages/housekeeping/NatureParkAdminReportPage";
 import NatureParkKpiPage from "./pages/housekeeping/NatureParkKpiPage";
+import RegalGardenPublicForm from "./pages/housekeeping/RegalGardenPublicForm";
+import RegalGardenSubmissionsPage from "./pages/housekeeping/RegalGardenSubmissionsPage";
+import RegalGardenDailyReportPage from "./pages/housekeeping/RegalGardenDailyReportPage";
+import RegalGardenAdminReportPage from "./pages/housekeeping/RegalGardenAdminReportPage";
+import RegalGardenKpiPage from "./pages/housekeeping/RegalGardenKpiPage";
 import MaintenanceUniformPublicForm from "./pages/admin/MaintenanceUniformPublicForm";
 import MaintenanceUniformSubmissionsPage from "./pages/admin/MaintenanceUniformSubmissionsPage";
 import MaintenanceUniformDailyReportPage from "./pages/admin/MaintenanceUniformDailyReportPage";
@@ -89,6 +94,7 @@ export default function App() {
       <Route path="/regal-garden-club-form/:formNumber" element={<RegalGardenClubPublicForm />} />
       <Route path="/one-business-center-form/:formNumber" element={<OneBusinessCenterPublicForm />} />
       <Route path="/nature-park-form/:formNumber" element={<NatureParkPublicForm />} />
+      <Route path="/regal-garden-form/:formNumber" element={<RegalGardenPublicForm />} />
       <Route path="/maintenance-uniform-form" element={<MaintenanceUniformPublicForm />} />
 
       <Route path="/login" element={<Login />} />
@@ -296,6 +302,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "naturePark", action: "view" }}>
               <NatureParkKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/regal-garden/submissions"
+          element={
+            <RequireAuth permission={{ module: "regalGarden", action: "view" }}>
+              <RegalGardenSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/regal-garden/daily-report"
+          element={
+            <RequireAuth permission={{ module: "regalGarden", action: "edit" }}>
+              <RegalGardenDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/regal-garden/admin-report"
+          element={
+            <RequireAuth permission={{ module: "regalGarden", action: "view" }}>
+              <RegalGardenAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/regal-garden/kpi"
+          element={
+            <RequireAuth permission={{ module: "regalGarden", action: "view" }}>
+              <RegalGardenKpiPage />
             </RequireAuth>
           }
         />

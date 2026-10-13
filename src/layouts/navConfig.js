@@ -532,6 +532,11 @@ export const NATURE_PARK_FORMS = [
   },
 ];
 
+// Regal Garden forms — same shape as NATURE_PARK_FORMS. Mirrors
+// backend/constants/regalGardenForms.js — kept in sync manually. 1 form
+// expected, added once the coordinator shares it.
+export const REGAL_GARDEN_FORMS = [];
+
 function patrolSiteNavItem({ label, slug }) {
   return {
     label,
@@ -600,6 +605,20 @@ export const NAV_SECTIONS = [
               },
               { label: "Admin Report View", path: "/housekeeping/nature-park/admin-report" },
               { label: "KPI", path: "/housekeeping/nature-park/kpi" },
+            ],
+          },
+          {
+            label: "Regal Garden",
+            permission: { module: "regalGarden", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/regal-garden/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/regal-garden/daily-report",
+                permission: { module: "regalGarden", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/regal-garden/admin-report" },
+              { label: "KPI", path: "/housekeeping/regal-garden/kpi" },
             ],
           },
         ],
