@@ -50,7 +50,7 @@ export default function PmGardenCityDailyReportPage() {
       if (r) {
         setEntries(r.entries.map((e) => ({ ...e })));
       } else {
-        setEntries(selectedForm.checkpoints.map((checkpointLabel) => ({ checkpointLabel, status: "" })));
+        setEntries(selectedForm.checkpoints.map((c) => ({ checkpointLabel: c.label, status: "", value: "" })));
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,26 +135,42 @@ export default function PmGardenCityDailyReportPage() {
               </tr>
             </thead>
             <tbody>
-              {entries.map((entry, idx) => (
-                <tr key={idx} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-                  <td className="px-4 py-2 whitespace-nowrap font-medium text-heading dark:text-gray-100">{entry.checkpointLabel}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <ThemedSelect
-                      disabled={isLocked}
-                      value={entry.status}
-                      onChange={(v) => updateEntry(idx, { status: v })}
-                      options={meta.statusOptions}
-                      placeholder="—"
-                      className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 min-w-[170px] disabled:opacity-50 disabled:cursor-not-allowed"
-                    />
-                    {entry.status && (
-                      <div className="mt-1">
-                        <StatusPill status={entry.status} />
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {entries.map((entry, idx) => {
+                const isText = selectedForm.checkpoints.find((c) => c.label === entry.checkpointLabel)?.type === "text";
+                return (
+                  <tr key={idx} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                    <td className="px-4 py-2 whitespace-nowrap font-medium text-heading dark:text-gray-100">{entry.checkpointLabel}</td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      {isText ? (
+                        <input
+                          type="text"
+                          disabled={isLocked}
+                          value={entry.value || ""}
+                          onChange={(e) => updateEntry(idx, { value: e.target.value })}
+                          placeholder="Apna jawab likhein"
+                          className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 min-w-[170px] disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                      ) : (
+                        <>
+                          <ThemedSelect
+                            disabled={isLocked}
+                            value={entry.status}
+                            onChange={(v) => updateEntry(idx, { status: v })}
+                            options={meta.statusOptions}
+                            placeholder="—"
+                            className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 min-w-[170px] disabled:opacity-50 disabled:cursor-not-allowed"
+                          />
+                          {entry.status && (
+                            <div className="mt-1">
+                              <StatusPill status={entry.status} />
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
