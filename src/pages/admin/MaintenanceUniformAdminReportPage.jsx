@@ -77,17 +77,20 @@ export default function MaintenanceUniformAdminReportPage() {
     <div>
       <PageHeader title="Maintenance Uniform — Admin Report View" subtitle="Submitted daily reports, read-only." />
 
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="flex flex-wrap items-center gap-2 mb-2">
         <ThemedSelect value={reportName} onChange={setReportName} options={REPORT_NAMES} placeholder="All reports" className="max-w-[200px]" />
         <ThemedDatePicker value={dateFrom} onChange={setDateFrom} className="max-w-[160px]" />
         <span className="text-sm text-subtext dark:text-gray-400">to</span>
         <ThemedDatePicker value={dateTo} onChange={setDateTo} className="max-w-[160px]" />
       </div>
+      <p className="text-xs text-subtext dark:text-gray-400 mb-4">
+        Priyanka/Niketa Reports purane split-era reports hain (ab wapas combined ho chuka hai) — blank chhod ke sab reports (purane + naye combined) dekh sakte hain.
+      </p>
 
       <DataTable
         columns={[
           { key: "reportDate", header: "Date" },
-          { key: "reportName", header: "Report" },
+          { key: "reportName", header: "Report", render: (r) => r.reportName || "Combined" },
           { key: "preparedBy", header: "Prepared By" },
           ...meta.statusOptions.map((s) => ({ key: s, header: s, render: (r) => r.counts?.[s] ?? 0 })),
           { key: "submittedAt", header: "Submitted At", render: (r) => new Date(r.submittedAt).toLocaleString() },
@@ -115,7 +118,7 @@ export default function MaintenanceUniformAdminReportPage() {
       />
 
       {viewing && (
-        <Modal title={`Maintenance Uniform — ${viewing.reportName} — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
+        <Modal title={`Maintenance Uniform — ${viewing.reportName || "Combined"} — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
           <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
             {groupedEntries(viewing.entries).map((group) => {
               const meta = DESIGNATION_META[group.designation] || { icon: Users, color: "text-gray-600 dark:text-gray-400", bg: "bg-gray-50 dark:bg-gray-900/30" };

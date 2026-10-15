@@ -6,7 +6,6 @@ import ThemedSelect from "../../components/ThemedSelect";
 import ThemedDatePicker from "../../components/ThemedDatePicker";
 import { alertMessage } from "../../utils/confirmDialog";
 import { useAuth } from "../../context/AuthContext";
-import { MAINTENANCE_UNIFORM_REPORT_FORMATS } from "../../constants/maintenanceUniform";
 import {
   getMaintenanceUniformReportMeta,
   getMaintenanceUniformStaffList,
@@ -17,23 +16,20 @@ import {
   maintenanceUniformReportExportPdfUrl,
 } from "../../api/maintenanceUniformReport";
 
-const REPORT_NAMES = Object.keys(MAINTENANCE_UNIFORM_REPORT_FORMATS);
-
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-// The checklist is split across two coordinators, each with their own fixed
-// set of sites — a coordinator picks their own report name first, then a
-// date, and only sees their sites' staff (pre-populated from Maintenance
-// Staff), grouped by designation.
+// One combined report per date, covering every site's staff at once — the
+// earlier Priyanka/Niketa per-coordinator split was reverted since a single
+// coordinator now handles all responses.
 export default function MaintenanceUniformDailyReportPage() {
   const { user } = useAuth();
   const [meta, setMeta] = useState({ statusOptions: [] });
   const [metaLoaded, setMetaLoaded] = useState(false);
-  const [reportName, setReportName] = useState("");
   const [date, setDate] = useState(today());
   const [staffList, setStaffList] = useState([]);
+  const [staffLoaded, setStaffLoaded] = useState(false);
   const [report, setReport] = useState(null);
   const [entries, setEntries] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -44,20 +40,16 @@ export default function MaintenanceUniformDailyReportPage() {
       setMeta(m);
       setMetaLoaded(true);
     });
+    getMaintenanceUniformStaffList().then((list) => {
+      setStaffList(list);
+      setStaffLoaded(true);
+    });
   }, []);
 
   useEffect(() => {
-    if (!reportName) {
-      setStaffList([]);
-      return;
-    }
-    getMaintenanceUniformStaffList({ reportName }).then(setStaffList);
-  }, [reportName]);
-
-  useEffect(() => {
-    if (!metaLoaded || !reportName) return;
+    if (!metaLoaded || !staffLoaded) return;
     (async () => {
-      const r = await getMaintenanceUniformReportByDate(date, reportName);
+      const r = await getMaintenanceUniformReportByDate(date);
       setReport(r);
       if (r) {
         setEntries(r.entries.map((e) => ({ ...e })));
@@ -66,7 +58,7 @@ export default function MaintenanceUniformDailyReportPage() {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date, reportName, metaLoaded, staffList]);
+  }, [date, metaLoaded, staffLoaded]);
 
   const isLocked = report?.status === "submitted";
 
@@ -77,7 +69,6 @@ export default function MaintenanceUniformDailyReportPage() {
     try {
       const saved = await saveMaintenanceUniformReportDraft({
         reportDate: date,
-        reportName,
         entries,
         preparedBy: user?.name || "",
       });
@@ -100,7 +91,7 @@ export default function MaintenanceUniformDailyReportPage() {
     }
   };
 
-  if (!metaLoaded) {
+  if (!metaLoaded || !staffLoaded) {
     return <p className="text-sm text-subtext dark:text-gray-400">Loading...</p>;
   }
 
@@ -114,23 +105,16 @@ export default function MaintenanceUniformDailyReportPage() {
     <div>
       <PageHeader
         title="Maintenance Uniform — Daily Report"
-        subtitle="Pehle apna report name chunein, phir date, phir har staff member ke liye status assign karein."
+        subtitle="Date chunein, phir har staff member ke liye status assign karein."
         primaryAction={
-          !reportName || isLocked
+          isLocked
             ? undefined
             : { label: saving ? "Saving..." : "Submit Report", icon: <Send size={16} />, onClick: () => persist("submitted") }
         }
       />
 
       <div className="flex flex-wrap items-center gap-3 mb-4">
-        <ThemedSelect
-          value={reportName}
-          onChange={setReportName}
-          options={REPORT_NAMES}
-          placeholder="Select report"
-          className="max-w-[200px]"
-        />
-        <ThemedDatePicker value={date} max={today()} onChange={setDate} className="max-w-[180px]" disabled={!reportName} />
+        <ThemedDatePicker value={date} max={today()} onChange={setDate} className="max-w-[180px]" />
         <div className="relative max-w-[220px]">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -138,8 +122,7 @@ export default function MaintenanceUniformDailyReportPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search staff name..."
-            disabled={!reportName}
-            className="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
         </div>
         {isLocked && (
@@ -149,10 +132,8 @@ export default function MaintenanceUniformDailyReportPage() {
         )}
       </div>
 
-      {!reportName ? (
-        <p className="text-sm text-subtext dark:text-gray-400">Pehle upar se apna report name select karein.</p>
-      ) : staffList.length === 0 ? (
-        <p className="text-sm text-subtext dark:text-gray-400">Is report ke sites ke liye koi staff nahi mila.</p>
+      {staffList.length === 0 ? (
+        <p className="text-sm text-subtext dark:text-gray-400">Koi staff nahi mila.</p>
       ) : (
         <>
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
