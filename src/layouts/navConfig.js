@@ -540,6 +540,17 @@ export const REGAL_GARDEN_FORMS = [
     label: "Regal Garden Cleaning Checkpoint",
     checkpoints: Array.from({ length: 12 }, (_, i) => `Checkpoint ${i + 1}`).map((label) => ({ label, type: "photo" })),
   },
+  {
+    formNumber: 2,
+    label: "RG-1",
+    checkpoints: Array.from({ length: 13 }, (_, i) => i + 3).flatMap((floor) => {
+      const suffix = floor === 3 ? "rd" : "th";
+      return [
+        { label: `Corridor (${floor}${suffix} Floor)`, type: "photo" },
+        { label: `Dustbin (${floor}${suffix} Floor)`, type: "photo" },
+      ];
+    }),
+  },
 ];
 
 // Property Management forms — Regal Garden / Eden Garden / Garden City.
