@@ -551,6 +551,26 @@ export const REGAL_GARDEN_FORMS = [
       ];
     }),
   },
+  {
+    formNumber: 3,
+    label: "RG-2",
+    checkpoints: [
+      "Reception Area (Ground Floor)",
+      "Male Washroom (Ground Floor)",
+      "Female Washroom (Ground Floor)",
+      "Gallery Photo (Ground Floor)",
+      "Service Lift",
+      "Passenger Lift-1",
+      "Passenger Lift-2",
+      "Parking-1 (Basement 1)",
+      "Parking-2 (Basement 1)",
+      "Parking-3 (Basement 1)",
+      "Parking-1 (Basement 2)",
+      "Parking-2 (Basement 2)",
+      "Fire Room (Basement 2)",
+      "Pump Room (Basement 2)",
+    ].map((label) => ({ label, type: "photo" })),
+  },
 ];
 
 // Property Management forms — Regal Garden / Eden Garden / Garden City.
