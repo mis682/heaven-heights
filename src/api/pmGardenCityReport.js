@@ -18,3 +18,9 @@ export const listSubmittedPmGardenCityReports = (params = {}) =>
 
 export const pmGardenCityReportExportUrl = (id) => `${apiOrigin}/api/pm-garden-city-report/${id}/export`;
 export const pmGardenCityReportExportPdfUrl = (id) => `${apiOrigin}/api/pm-garden-city-report/${id}/export-pdf`;
+
+export const getPmGardenCityKpi = (from, to, formNumber) =>
+  api.get("/pm-garden-city-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);
+
+export const pmGardenCityKpiPdfUrl = (from, to, formNumber) =>
+  `${apiOrigin}/api/pm-garden-city-report/kpi/export-pdf?from=${from}&to=${to}${formNumber ? `&formNumber=${formNumber}` : ""}`;

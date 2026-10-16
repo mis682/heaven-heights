@@ -51,14 +51,17 @@ import PmRegalGardenPublicForm from "./pages/housekeeping/PmRegalGardenPublicFor
 import PmRegalGardenSubmissionsPage from "./pages/housekeeping/PmRegalGardenSubmissionsPage";
 import PmRegalGardenDailyReportPage from "./pages/housekeeping/PmRegalGardenDailyReportPage";
 import PmRegalGardenAdminReportPage from "./pages/housekeeping/PmRegalGardenAdminReportPage";
+import PmRegalGardenKpiPage from "./pages/housekeeping/PmRegalGardenKpiPage";
 import PmEdenGardenPublicForm from "./pages/housekeeping/PmEdenGardenPublicForm";
 import PmEdenGardenSubmissionsPage from "./pages/housekeeping/PmEdenGardenSubmissionsPage";
 import PmEdenGardenDailyReportPage from "./pages/housekeeping/PmEdenGardenDailyReportPage";
 import PmEdenGardenAdminReportPage from "./pages/housekeeping/PmEdenGardenAdminReportPage";
+import PmEdenGardenKpiPage from "./pages/housekeeping/PmEdenGardenKpiPage";
 import PmGardenCityPublicForm from "./pages/housekeeping/PmGardenCityPublicForm";
 import PmGardenCitySubmissionsPage from "./pages/housekeeping/PmGardenCitySubmissionsPage";
 import PmGardenCityDailyReportPage from "./pages/housekeeping/PmGardenCityDailyReportPage";
 import PmGardenCityAdminReportPage from "./pages/housekeeping/PmGardenCityAdminReportPage";
+import PmGardenCityKpiPage from "./pages/housekeeping/PmGardenCityKpiPage";
 import MaintenanceUniformPublicForm from "./pages/admin/MaintenanceUniformPublicForm";
 import MaintenanceUniformSubmissionsPage from "./pages/admin/MaintenanceUniformSubmissionsPage";
 import MaintenanceUniformDailyReportPage from "./pages/admin/MaintenanceUniformDailyReportPage";
@@ -419,6 +422,14 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/property-management/pm-regal-garden/kpi"
+          element={
+            <RequireAuth permission={{ module: "pmRegalGarden", action: "view" }}>
+              <PmRegalGardenKpiPage />
+            </RequireAuth>
+          }
+        />
 
         <Route
           path="/property-management/pm-eden-garden/submissions"
@@ -444,6 +455,14 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/property-management/pm-eden-garden/kpi"
+          element={
+            <RequireAuth permission={{ module: "pmEdenGarden", action: "view" }}>
+              <PmEdenGardenKpiPage />
+            </RequireAuth>
+          }
+        />
 
         <Route
           path="/property-management/pm-garden-city/submissions"
@@ -466,6 +485,14 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "pmGardenCity", action: "view" }}>
               <PmGardenCityAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/property-management/pm-garden-city/kpi"
+          element={
+            <RequireAuth permission={{ module: "pmGardenCity", action: "view" }}>
+              <PmGardenCityKpiPage />
             </RequireAuth>
           }
         />

@@ -775,6 +775,7 @@ export const NAV_SECTIONS = [
                 permission: { module: "pmRegalGarden", action: "edit" },
               },
               { label: "Admin Report View", path: "/property-management/pm-regal-garden/admin-report" },
+              { label: "KPI", path: "/property-management/pm-regal-garden/kpi" },
             ],
           },
           {
@@ -788,6 +789,7 @@ export const NAV_SECTIONS = [
                 permission: { module: "pmEdenGarden", action: "edit" },
               },
               { label: "Admin Report View", path: "/property-management/pm-eden-garden/admin-report" },
+              { label: "KPI", path: "/property-management/pm-eden-garden/kpi" },
             ],
           },
           {
@@ -801,6 +803,7 @@ export const NAV_SECTIONS = [
                 permission: { module: "pmGardenCity", action: "edit" },
               },
               { label: "Admin Report View", path: "/property-management/pm-garden-city/admin-report" },
+              { label: "KPI", path: "/property-management/pm-garden-city/kpi" },
             ],
           },
         ],

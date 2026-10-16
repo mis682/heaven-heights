@@ -18,3 +18,9 @@ export const listSubmittedPmEdenGardenReports = (params = {}) =>
 
 export const pmEdenGardenReportExportUrl = (id) => `${apiOrigin}/api/pm-eden-garden-report/${id}/export`;
 export const pmEdenGardenReportExportPdfUrl = (id) => `${apiOrigin}/api/pm-eden-garden-report/${id}/export-pdf`;
+
+export const getPmEdenGardenKpi = (from, to, formNumber) =>
+  api.get("/pm-eden-garden-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);
+
+export const pmEdenGardenKpiPdfUrl = (from, to, formNumber) =>
+  `${apiOrigin}/api/pm-eden-garden-report/kpi/export-pdf?from=${from}&to=${to}${formNumber ? `&formNumber=${formNumber}` : ""}`;
