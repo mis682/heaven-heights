@@ -19,15 +19,17 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-// Same pattern as RegalGardenDailyReportPage — a form picker (one per
-// Property Management — Eden Garden form) plus a date picker; the selected
-// form+date's checkpoints all appear at once with a status dropdown per row.
+// A form picker, date picker, and Unit No. (free text) together identify
+// one report — the same form+date gets a separate report per unit being
+// photographed (Unit 18 and Unit 19 on the same date are two reports), so
+// Unit No. must be entered before a report can be loaded or created.
 export default function PmEdenGardenDailyReportPage() {
   const { user } = useAuth();
   const [meta, setMeta] = useState({ statusOptions: [], forms: [] });
   const [metaLoaded, setMetaLoaded] = useState(false);
   const [formNumber, setFormNumber] = useState(null);
   const [date, setDate] = useState(today());
+  const [unitNo, setUnitNo] = useState("");
   const [report, setReport] = useState(null);
   const [entries, setEntries] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -41,20 +43,25 @@ export default function PmEdenGardenDailyReportPage() {
   }, []);
 
   const selectedForm = meta.forms.find((f) => f.formNumber === formNumber);
+  const unitReady = unitNo.trim().length > 0;
 
   useEffect(() => {
-    if (!selectedForm) return;
+    if (!selectedForm || !unitReady) {
+      setReport(null);
+      setEntries([]);
+      return;
+    }
     (async () => {
-      const r = await getPmEdenGardenReportByDate(formNumber, date);
+      const r = await getPmEdenGardenReportByDate(formNumber, date, unitNo.trim());
       setReport(r);
       if (r) {
         setEntries(r.entries.map((e) => ({ ...e })));
       } else {
-        setEntries(selectedForm.checkpoints.map((c) => ({ checkpointLabel: c.label, status: "", value: "" })));
+        setEntries(selectedForm.checkpoints.map((c) => ({ checkpointLabel: c.label, status: "" })));
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formNumber, date, selectedForm]);
+  }, [formNumber, date, unitNo, selectedForm, unitReady]);
 
   const isLocked = report?.status === "submitted";
 
@@ -66,6 +73,7 @@ export default function PmEdenGardenDailyReportPage() {
       const saved = await savePmEdenGardenReportDraft({
         formNumber,
         reportDate: date,
+        unitNo: unitNo.trim(),
         entries,
         preparedBy: user?.name || "",
       });
@@ -104,9 +112,11 @@ export default function PmEdenGardenDailyReportPage() {
     <div>
       <PageHeader
         title="Property Management — Eden Garden — Daily Report"
-        subtitle="Report format chunein, phir har checkpoint ke liye status assign karein."
+        subtitle="Form, date aur Unit No. bharein, phir har checkpoint ke liye status assign karein."
         primaryAction={
-          isLocked ? undefined : { label: saving ? "Saving..." : "Submit Report", icon: <Send size={16} />, onClick: () => persist("submitted") }
+          isLocked || !unitReady
+            ? undefined
+            : { label: saving ? "Saving..." : "Submit Report", icon: <Send size={16} />, onClick: () => persist("submitted") }
         }
       />
 
@@ -118,6 +128,13 @@ export default function PmEdenGardenDailyReportPage() {
           className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 max-w-[220px] w-full"
         />
         <ThemedDatePicker value={date} max={today()} onChange={setDate} className="max-w-[180px]" />
+        <input
+          type="text"
+          value={unitNo}
+          onChange={(e) => setUnitNo(e.target.value)}
+          placeholder="Unit No."
+          className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 max-w-[140px]"
+        />
         {isLocked && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold">
             <Lock size={12} /> Submitted — read only (ask Admin to unlock)
@@ -125,84 +142,74 @@ export default function PmEdenGardenDailyReportPage() {
         )}
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto max-h-[70vh]">
-          <table className="text-sm border-collapse w-full">
-            <thead className="sticky top-0 z-10">
-              <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">Checkpoint</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">{date}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((entry, idx) => {
-                const isText = selectedForm.checkpoints.find((c) => c.label === entry.checkpointLabel)?.type === "text";
-                return (
-                  <tr key={idx} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-                    <td className="px-4 py-2 whitespace-nowrap font-medium text-heading dark:text-gray-100">{entry.checkpointLabel}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      {isText ? (
-                        <input
-                          type="text"
-                          disabled={isLocked}
-                          value={entry.value || ""}
-                          onChange={(e) => updateEntry(idx, { value: e.target.value })}
-                          placeholder="Apna jawab likhein"
-                          className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 min-w-[170px] disabled:opacity-50 disabled:cursor-not-allowed"
-                        />
-                      ) : (
-                        <>
-                          <ThemedSelect
-                            disabled={isLocked}
-                            value={entry.status}
-                            onChange={(v) => updateEntry(idx, { status: v })}
-                            options={meta.statusOptions}
-                            placeholder="—"
-                            className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 min-w-[170px] disabled:opacity-50 disabled:cursor-not-allowed"
-                          />
-                          {entry.status && (
-                            <div className="mt-1">
-                              <StatusPill status={entry.status} />
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </td>
+      {!unitReady ? (
+        <p className="text-sm text-subtext dark:text-gray-400">Pehle Unit No. bharein.</p>
+      ) : (
+        <>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto max-h-[70vh]">
+              <table className="text-sm border-collapse w-full">
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">Checkpoint</th>
+                    <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 whitespace-nowrap">{date}</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody>
+                  {entries.map((entry, idx) => (
+                    <tr key={idx} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                      <td className="px-4 py-2 whitespace-nowrap font-medium text-heading dark:text-gray-100">{entry.checkpointLabel}</td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <ThemedSelect
+                          disabled={isLocked}
+                          value={entry.status}
+                          onChange={(v) => updateEntry(idx, { status: v })}
+                          options={meta.statusOptions}
+                          placeholder="—"
+                          className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 min-w-[170px] disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                        {entry.status && (
+                          <div className="mt-1">
+                            <StatusPill status={entry.status} />
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      <div className="flex items-center gap-2 mt-4">
-        {!isLocked && (
-          <button
-            onClick={() => persist("draft")}
-            disabled={saving}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            <Save size={16} /> {saving ? "Saving..." : "Save as Draft"}
-          </button>
-        )}
-        {report && (
-          <>
-            <a
-              href={pmEdenGardenReportExportPdfUrl(report._id)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              <FileText size={16} /> Download PDF
-            </a>
-            <a
-              href={pmEdenGardenReportExportUrl(report._id)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              <Download size={16} /> Download Excel
-            </a>
-          </>
-        )}
-      </div>
+          <div className="flex items-center gap-2 mt-4">
+            {!isLocked && (
+              <button
+                onClick={() => persist("draft")}
+                disabled={saving}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <Save size={16} /> {saving ? "Saving..." : "Save as Draft"}
+              </button>
+            )}
+            {report && (
+              <>
+                <a
+                  href={pmEdenGardenReportExportPdfUrl(report._id)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <FileText size={16} /> Download PDF
+                </a>
+                <a
+                  href={pmEdenGardenReportExportUrl(report._id)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <Download size={16} /> Download Excel
+                </a>
+              </>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

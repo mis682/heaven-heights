@@ -2,8 +2,8 @@ import api, { apiOrigin } from "./client";
 
 export const getPmRegalGardenReportMeta = () => api.get("/pm-regal-garden-report/meta").then((r) => r.data);
 
-export const getPmRegalGardenReportByDate = (formNumber, date) =>
-  api.get("/pm-regal-garden-report/by-date", { params: { formNumber, date } }).then((r) => r.data);
+export const getPmRegalGardenReportByDate = (formNumber, date, unitNo) =>
+  api.get("/pm-regal-garden-report/by-date", { params: { formNumber, date, unitNo } }).then((r) => r.data);
 
 export const savePmRegalGardenReportDraft = (data) => api.post("/pm-regal-garden-report/draft", data).then((r) => r.data);
 

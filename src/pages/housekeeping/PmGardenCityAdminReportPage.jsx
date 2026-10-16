@@ -23,6 +23,7 @@ export default function PmGardenCityAdminReportPage() {
   const [reports, setReports] = useState([]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [unitFilter, setUnitFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState(null);
   // Which layout the currently-open report is displayed in — "classic" (the
@@ -40,6 +41,7 @@ export default function PmGardenCityAdminReportPage() {
       formNumber: formFilter || undefined,
       from: dateFrom || undefined,
       to: dateTo || undefined,
+      unitNo: unitFilter.trim() || undefined,
     });
     setReports(data);
     setLoading(false);
@@ -48,7 +50,7 @@ export default function PmGardenCityAdminReportPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formFilter, dateFrom, dateTo]);
+  }, [formFilter, dateFrom, dateTo, unitFilter]);
 
   const view = async (id) => {
     setLayout("classic");
@@ -76,11 +78,19 @@ export default function PmGardenCityAdminReportPage() {
         <ThemedDatePicker value={dateFrom} onChange={setDateFrom} className="max-w-[160px]" />
         <span className="text-sm text-subtext dark:text-gray-400">to</span>
         <ThemedDatePicker value={dateTo} onChange={setDateTo} className="max-w-[160px]" />
+        <input
+          type="text"
+          value={unitFilter}
+          onChange={(e) => setUnitFilter(e.target.value)}
+          placeholder="Unit No."
+          className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 max-w-[140px]"
+        />
       </div>
 
       <DataTable
         columns={[
           { key: "reportDate", header: "Date" },
+          { key: "unitNo", header: "Unit No." },
           { key: "formLabel", header: "Form" },
           { key: "preparedBy", header: "Prepared By" },
           ...meta.statusOptions.map((s) => ({ key: s, header: s, render: (r) => r.counts?.[s] ?? 0 })),
@@ -109,7 +119,7 @@ export default function PmGardenCityAdminReportPage() {
       />
 
       {viewing && (
-        <Modal title={`Property Management — Garden City — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
+        <Modal title={`Property Management — Garden City — Unit ${viewing.unitNo} — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
           <div className="flex justify-end mb-3">
             <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-gray-100 dark:bg-gray-900/40">
               <button
