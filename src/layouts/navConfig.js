@@ -597,8 +597,21 @@ export const REGAL_GARDEN_FORMS = [
 
 // Eden Garden forms — same shape as REGAL_GARDEN_FORMS. Mirrors
 // backend/constants/edenGardenForms.js — kept in sync manually.
-// 2 forms expected, added once the coordinator shares them.
-export const EDEN_GARDEN_FORMS = [];
+export const EDEN_GARDEN_FORMS = [
+  {
+    formNumber: 1,
+    label: "EG Form-1",
+    checkpoints: Array.from({ length: 10 }, (_, i) => i + 1)
+      .flatMap((floor) => {
+        const suffix = floor === 1 ? "st" : floor === 2 ? "nd" : floor === 3 ? "rd" : "th";
+        return [
+          { label: `Corridor-1 (${floor}${suffix} Floor)`, type: "photo" },
+          { label: `Corridor-2 (${floor}${suffix} Floor)`, type: "photo" },
+        ];
+      })
+      .concat({ label: "Fire System (Terrace Floor)", type: "photo" }),
+  },
+];
 
 // Property Management forms — Regal Garden / Eden Garden / Garden City.
 // Unrelated to the Housekeeping "Regal Garden" / "Garden City" modules above
