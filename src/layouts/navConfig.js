@@ -595,6 +595,11 @@ export const REGAL_GARDEN_FORMS = [
   },
 ];
 
+// Eden Garden forms — same shape as REGAL_GARDEN_FORMS. Mirrors
+// backend/constants/edenGardenForms.js — kept in sync manually.
+// 2 forms expected, added once the coordinator shares them.
+export const EDEN_GARDEN_FORMS = [];
+
 // Property Management forms — Regal Garden / Eden Garden / Garden City.
 // Unrelated to the Housekeeping "Regal Garden" / "Garden City" modules above
 // (hence the pm* prefix on every identifier). All 3 projects share the same
@@ -708,6 +713,20 @@ export const NAV_SECTIONS = [
               },
               { label: "Admin Report View", path: "/housekeeping/regal-garden/admin-report" },
               { label: "KPI", path: "/housekeeping/regal-garden/kpi" },
+            ],
+          },
+          {
+            label: "Eden Garden",
+            permission: { module: "edenGarden", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/eden-garden/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/eden-garden/daily-report",
+                permission: { module: "edenGarden", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/eden-garden/admin-report" },
+              { label: "KPI", path: "/housekeeping/eden-garden/kpi" },
             ],
           },
         ],

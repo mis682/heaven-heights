@@ -41,6 +41,11 @@ import RegalGardenSubmissionsPage from "./pages/housekeeping/RegalGardenSubmissi
 import RegalGardenDailyReportPage from "./pages/housekeeping/RegalGardenDailyReportPage";
 import RegalGardenAdminReportPage from "./pages/housekeeping/RegalGardenAdminReportPage";
 import RegalGardenKpiPage from "./pages/housekeeping/RegalGardenKpiPage";
+import EdenGardenPublicForm from "./pages/housekeeping/EdenGardenPublicForm";
+import EdenGardenSubmissionsPage from "./pages/housekeeping/EdenGardenSubmissionsPage";
+import EdenGardenDailyReportPage from "./pages/housekeeping/EdenGardenDailyReportPage";
+import EdenGardenAdminReportPage from "./pages/housekeeping/EdenGardenAdminReportPage";
+import EdenGardenKpiPage from "./pages/housekeeping/EdenGardenKpiPage";
 import PropertyManagementFormEntry from "./pages/housekeeping/PropertyManagementFormEntry";
 import PmRegalGardenPublicForm from "./pages/housekeeping/PmRegalGardenPublicForm";
 import PmRegalGardenSubmissionsPage from "./pages/housekeeping/PmRegalGardenSubmissionsPage";
@@ -108,6 +113,7 @@ export default function App() {
       <Route path="/one-business-center-form/:formNumber" element={<OneBusinessCenterPublicForm />} />
       <Route path="/nature-park-form/:formNumber" element={<NatureParkPublicForm />} />
       <Route path="/regal-garden-form/:formNumber" element={<RegalGardenPublicForm />} />
+      <Route path="/eden-garden-form/:formNumber" element={<EdenGardenPublicForm />} />
       <Route path="/property-management-form" element={<PropertyManagementFormEntry />} />
       <Route path="/pm-regal-garden-form/:formNumber" element={<PmRegalGardenPublicForm />} />
       <Route path="/pm-eden-garden-form/:formNumber" element={<PmEdenGardenPublicForm />} />
@@ -352,6 +358,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "regalGarden", action: "view" }}>
               <RegalGardenKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/eden-garden/submissions"
+          element={
+            <RequireAuth permission={{ module: "edenGarden", action: "view" }}>
+              <EdenGardenSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/eden-garden/daily-report"
+          element={
+            <RequireAuth permission={{ module: "edenGarden", action: "view" }}>
+              <EdenGardenDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/eden-garden/admin-report"
+          element={
+            <RequireAuth permission={{ module: "edenGarden", action: "view" }}>
+              <EdenGardenAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/eden-garden/kpi"
+          element={
+            <RequireAuth permission={{ module: "edenGarden", action: "view" }}>
+              <EdenGardenKpiPage />
             </RequireAuth>
           }
         />
