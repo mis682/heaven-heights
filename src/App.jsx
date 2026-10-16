@@ -373,7 +373,7 @@ export default function App() {
         <Route
           path="/housekeeping/eden-garden/daily-report"
           element={
-            <RequireAuth permission={{ module: "edenGarden", action: "view" }}>
+            <RequireAuth permission={{ module: "edenGarden", action: "edit" }}>
               <EdenGardenDailyReportPage />
             </RequireAuth>
           }
