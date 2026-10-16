@@ -611,6 +611,23 @@ export const EDEN_GARDEN_FORMS = [
       })
       .concat({ label: "Fire System (Terrace Floor)", type: "photo" }),
   },
+  {
+    formNumber: 2,
+    label: "EG Form-2",
+    checkpoints: [
+      "Lift-1",
+      "Lift-2",
+      "Lift-3",
+      "Lift-4",
+      "Lift Lobby-1 (Ground Floor)",
+      "Lift Lobby-2 (Ground Floor)",
+      "Outer Parking-1",
+      "Outer Parking-2",
+      "Outer Parking-3",
+      "Outer Parking-4",
+      "Driveway (Lobby 1 to Lobby 2)",
+    ].map((label) => ({ label, type: "photo" })),
+  },
 ];
 
 // Property Management forms — Regal Garden / Eden Garden / Garden City.
