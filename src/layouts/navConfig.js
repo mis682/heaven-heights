@@ -595,6 +595,11 @@ export const REGAL_GARDEN_FORMS = [
   },
 ];
 
+// Neo Meridian forms — same shape as REGAL_GARDEN_FORMS. Mirrors
+// backend/constants/neoMeridianForms.js — kept in sync manually.
+// 1 form expected, added once the coordinator shares it.
+export const NEO_MERIDIAN_FORMS = [];
+
 // Eden Garden forms — same shape as REGAL_GARDEN_FORMS. Mirrors
 // backend/constants/edenGardenForms.js — kept in sync manually.
 export const EDEN_GARDEN_FORMS = [
@@ -757,6 +762,20 @@ export const NAV_SECTIONS = [
               },
               { label: "Admin Report View", path: "/housekeeping/eden-garden/admin-report" },
               { label: "KPI", path: "/housekeeping/eden-garden/kpi" },
+            ],
+          },
+          {
+            label: "Neo Meridian",
+            permission: { module: "neoMeridian", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/neo-meridian/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/neo-meridian/daily-report",
+                permission: { module: "neoMeridian", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/neo-meridian/admin-report" },
+              { label: "KPI", path: "/housekeeping/neo-meridian/kpi" },
             ],
           },
         ],

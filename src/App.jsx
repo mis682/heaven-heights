@@ -46,6 +46,11 @@ import EdenGardenSubmissionsPage from "./pages/housekeeping/EdenGardenSubmission
 import EdenGardenDailyReportPage from "./pages/housekeeping/EdenGardenDailyReportPage";
 import EdenGardenAdminReportPage from "./pages/housekeeping/EdenGardenAdminReportPage";
 import EdenGardenKpiPage from "./pages/housekeeping/EdenGardenKpiPage";
+import NeoMeridianPublicForm from "./pages/housekeeping/NeoMeridianPublicForm";
+import NeoMeridianSubmissionsPage from "./pages/housekeeping/NeoMeridianSubmissionsPage";
+import NeoMeridianDailyReportPage from "./pages/housekeeping/NeoMeridianDailyReportPage";
+import NeoMeridianAdminReportPage from "./pages/housekeeping/NeoMeridianAdminReportPage";
+import NeoMeridianKpiPage from "./pages/housekeeping/NeoMeridianKpiPage";
 import PropertyManagementFormEntry from "./pages/housekeeping/PropertyManagementFormEntry";
 import PmRegalGardenPublicForm from "./pages/housekeeping/PmRegalGardenPublicForm";
 import PmRegalGardenSubmissionsPage from "./pages/housekeeping/PmRegalGardenSubmissionsPage";
@@ -117,6 +122,7 @@ export default function App() {
       <Route path="/nature-park-form/:formNumber" element={<NatureParkPublicForm />} />
       <Route path="/regal-garden-form/:formNumber" element={<RegalGardenPublicForm />} />
       <Route path="/eden-garden-form/:formNumber" element={<EdenGardenPublicForm />} />
+      <Route path="/neo-meridian-form/:formNumber" element={<NeoMeridianPublicForm />} />
       <Route path="/property-management-form" element={<PropertyManagementFormEntry />} />
       <Route path="/pm-regal-garden-form/:formNumber" element={<PmRegalGardenPublicForm />} />
       <Route path="/pm-eden-garden-form/:formNumber" element={<PmEdenGardenPublicForm />} />
@@ -394,6 +400,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "edenGarden", action: "view" }}>
               <EdenGardenKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/neo-meridian/submissions"
+          element={
+            <RequireAuth permission={{ module: "neoMeridian", action: "view" }}>
+              <NeoMeridianSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/neo-meridian/daily-report"
+          element={
+            <RequireAuth permission={{ module: "neoMeridian", action: "edit" }}>
+              <NeoMeridianDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/neo-meridian/admin-report"
+          element={
+            <RequireAuth permission={{ module: "neoMeridian", action: "view" }}>
+              <NeoMeridianAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/neo-meridian/kpi"
+          element={
+            <RequireAuth permission={{ module: "neoMeridian", action: "view" }}>
+              <NeoMeridianKpiPage />
             </RequireAuth>
           }
         />
