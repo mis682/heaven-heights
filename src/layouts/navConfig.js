@@ -686,6 +686,17 @@ export const HEAD_OFFICE_FORMS = [
       { label: "Handwash", type: "select", options: ["Yes", "No"] },
     ],
   },
+  {
+    formNumber: 5,
+    label: "Handicap Washroom Form",
+    checkpoints: [
+      { label: "WC", type: "photo" },
+      { label: "Floor", type: "photo" },
+      { label: "Mirror", type: "photo" },
+      { label: "Dustbin", type: "photo" },
+      { label: "Handwash", type: "select", options: ["Yes", "No"] },
+    ],
+  },
 ];
 
 // Eden Garden forms — same shape as REGAL_GARDEN_FORMS. Mirrors
