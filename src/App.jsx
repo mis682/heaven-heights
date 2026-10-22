@@ -51,6 +51,11 @@ import NeoMeridianSubmissionsPage from "./pages/housekeeping/NeoMeridianSubmissi
 import NeoMeridianDailyReportPage from "./pages/housekeeping/NeoMeridianDailyReportPage";
 import NeoMeridianAdminReportPage from "./pages/housekeeping/NeoMeridianAdminReportPage";
 import NeoMeridianKpiPage from "./pages/housekeeping/NeoMeridianKpiPage";
+import HeadOfficePublicForm from "./pages/housekeeping/HeadOfficePublicForm";
+import HeadOfficeSubmissionsPage from "./pages/housekeeping/HeadOfficeSubmissionsPage";
+import HeadOfficeDailyReportPage from "./pages/housekeeping/HeadOfficeDailyReportPage";
+import HeadOfficeAdminReportPage from "./pages/housekeeping/HeadOfficeAdminReportPage";
+import HeadOfficeKpiPage from "./pages/housekeeping/HeadOfficeKpiPage";
 import PropertyManagementFormEntry from "./pages/housekeeping/PropertyManagementFormEntry";
 import PmRegalGardenPublicForm from "./pages/housekeeping/PmRegalGardenPublicForm";
 import PmRegalGardenSubmissionsPage from "./pages/housekeeping/PmRegalGardenSubmissionsPage";
@@ -123,6 +128,7 @@ export default function App() {
       <Route path="/regal-garden-form/:formNumber" element={<RegalGardenPublicForm />} />
       <Route path="/eden-garden-form/:formNumber" element={<EdenGardenPublicForm />} />
       <Route path="/neo-meridian-form/:formNumber" element={<NeoMeridianPublicForm />} />
+      <Route path="/head-office-form/:formNumber" element={<HeadOfficePublicForm />} />
       <Route path="/property-management-form" element={<PropertyManagementFormEntry />} />
       <Route path="/pm-regal-garden-form/:formNumber" element={<PmRegalGardenPublicForm />} />
       <Route path="/pm-eden-garden-form/:formNumber" element={<PmEdenGardenPublicForm />} />
@@ -433,6 +439,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "neoMeridian", action: "view" }}>
               <NeoMeridianKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/head-office/submissions"
+          element={
+            <RequireAuth permission={{ module: "headOffice", action: "view" }}>
+              <HeadOfficeSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/head-office/daily-report"
+          element={
+            <RequireAuth permission={{ module: "headOffice", action: "edit" }}>
+              <HeadOfficeDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/head-office/admin-report"
+          element={
+            <RequireAuth permission={{ module: "headOffice", action: "view" }}>
+              <HeadOfficeAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/head-office/kpi"
+          element={
+            <RequireAuth permission={{ module: "headOffice", action: "view" }}>
+              <HeadOfficeKpiPage />
             </RequireAuth>
           }
         />

@@ -629,6 +629,12 @@ export const NEO_MERIDIAN_FORMS = [
   },
 ];
 
+// Head Office forms — same shape as REGAL_GARDEN_FORMS. Mirrors
+// backend/constants/headOfficeForms.js — kept in sync manually. Form count
+// is not yet known — forms will be added here one at a time once the
+// coordinator shares the checklist content.
+export const HEAD_OFFICE_FORMS = [];
+
 // Eden Garden forms — same shape as REGAL_GARDEN_FORMS. Mirrors
 // backend/constants/edenGardenForms.js — kept in sync manually.
 export const EDEN_GARDEN_FORMS = [
@@ -805,6 +811,20 @@ export const NAV_SECTIONS = [
               },
               { label: "Admin Report View", path: "/housekeeping/neo-meridian/admin-report" },
               { label: "KPI", path: "/housekeeping/neo-meridian/kpi" },
+            ],
+          },
+          {
+            label: "Head Office",
+            permission: { module: "headOffice", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/head-office/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/head-office/daily-report",
+                permission: { module: "headOffice", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/head-office/admin-report" },
+              { label: "KPI", path: "/housekeeping/head-office/kpi" },
             ],
           },
         ],
