@@ -633,7 +633,22 @@ export const NEO_MERIDIAN_FORMS = [
 // backend/constants/headOfficeForms.js — kept in sync manually. Form count
 // is not yet known — forms will be added here one at a time once the
 // coordinator shares the checklist content.
-export const HEAD_OFFICE_FORMS = [];
+export const HEAD_OFFICE_FORMS = [
+  {
+    formNumber: 1,
+    label: "Male Washroom Form",
+    checkpoints: [
+      { label: "Urinal (1+2+3)", type: "photo" },
+      { label: "WC-1", type: "photo" },
+      { label: "WC-2", type: "photo" },
+      { label: "WC-3", type: "photo" },
+      { label: "Dustbin", type: "photo" },
+      { label: "Mirror", type: "photo" },
+      { label: "Floor", type: "photo" },
+      { label: "Handwash", type: "select", options: ["Yes", "No"] },
+    ],
+  },
+];
 
 // Eden Garden forms — same shape as REGAL_GARDEN_FORMS. Mirrors
 // backend/constants/edenGardenForms.js — kept in sync manually.

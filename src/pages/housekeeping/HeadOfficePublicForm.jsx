@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ClipboardList, CheckCircle2, RefreshCw } from "lucide-react";
 import CameraCapture from "../../components/CameraCapture";
+import ThemedSelect from "../../components/ThemedSelect";
 import { createHeadOfficeSubmission } from "../../api/headOffice";
 import { uploadFileDirect } from "../../api/cloudinaryDirectUpload";
 import { HEAD_OFFICE_FORMS } from "../../layouts/navConfig";
@@ -58,8 +59,8 @@ export default function HeadOfficePublicForm() {
     );
   }
 
-  const photoCheckpoints = form.checkpoints.filter((c) => c.type !== "text");
-  const textCheckpoints = form.checkpoints.filter((c) => c.type === "text");
+  const photoCheckpoints = form.checkpoints.filter((c) => c.type !== "text" && c.type !== "select");
+  const textCheckpoints = form.checkpoints.filter((c) => c.type === "text" || c.type === "select");
 
   const missingPhotos = photoCheckpoints.filter((c) => c.required !== false && !captures[c.label]).length;
   const missingText = textCheckpoints.filter((c) => c.required !== false && !(textAnswers[c.label] || "").trim()).length;
@@ -136,13 +137,23 @@ export default function HeadOfficePublicForm() {
               {textCheckpoints.map((c) => (
                 <div key={c.label}>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{c.label}</label>
-                  <input
-                    type="text"
-                    value={textAnswers[c.label] || ""}
-                    onChange={(e) => setTextAnswers((prev) => ({ ...prev, [c.label]: e.target.value }))}
-                    className="input"
-                    placeholder="Apna jawab likhein"
-                  />
+                  {c.type === "select" ? (
+                    <ThemedSelect
+                      value={textAnswers[c.label] || ""}
+                      onChange={(v) => setTextAnswers((prev) => ({ ...prev, [c.label]: v }))}
+                      options={c.options || []}
+                      placeholder="Select..."
+                      className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 w-full"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={textAnswers[c.label] || ""}
+                      onChange={(e) => setTextAnswers((prev) => ({ ...prev, [c.label]: e.target.value }))}
+                      className="input"
+                      placeholder="Apna jawab likhein"
+                    />
+                  )}
                 </div>
               ))}
             </div>
