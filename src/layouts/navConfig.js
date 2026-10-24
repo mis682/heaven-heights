@@ -786,6 +786,23 @@ export const HEAD_OFFICE_FORMS = [
       "Workstation area (Bade Sir) floor",
     ].map((label) => ({ label, type: "photo" })),
   },
+  {
+    formNumber: 10,
+    label: "Lobby Cleaning Form",
+    checkpoints: [
+      "Counter Reception",
+      "Counter Reception Lobby-1",
+      "Counter Reception Lobby-2",
+      "MDO Lobby-1 and 2",
+      "Kitchen Lobby",
+      "Lunch Room Lobby",
+      "Workstation area Lobby-1",
+      "Workstation area Lobby-2",
+      "Director area Lobby-1",
+      "Director area Lobby-2",
+      "Director area Lobby-3",
+    ].map((label) => ({ label, type: "photo" })),
+  },
 ];
 
 // Eden Garden forms — same shape as REGAL_GARDEN_FORMS. Mirrors
