@@ -676,7 +676,7 @@ export const HEAD_OFFICE_FORMS = [
   },
   {
     formNumber: 4,
-    label: "Chairman Washroom Form",
+    label: "Chairman Washroom Form-1",
     checkpoints: [
       { label: "Urinal", type: "photo" },
       { label: "WC", type: "photo" },
@@ -846,6 +846,18 @@ export const HEAD_OFFICE_FORMS = [
       "Negotiation room-1",
       "Negotiation room-2",
     ].map((label) => ({ label, type: "photo" })),
+  },
+  {
+    formNumber: 13,
+    label: "Chairman Washroom Form-2",
+    checkpoints: [
+      { label: "Urinal", type: "photo" },
+      { label: "WC", type: "photo" },
+      { label: "Mirror", type: "photo" },
+      { label: "Dustbin", type: "photo" },
+      { label: "Floor", type: "photo" },
+      { label: "Handwash", type: "select", options: ["Yes", "No"] },
+    ],
   },
 ];
 
