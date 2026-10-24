@@ -752,6 +752,19 @@ export const HEAD_OFFICE_FORMS = [
       "Huddle Room-4 Mirror",
     ].map((label) => ({ label, type: "photo" })),
   },
+  {
+    formNumber: 8,
+    label: "MCB Form",
+    checkpoints: [
+      "MCB Box-1 (Near MDO Cabin)",
+      "MCB Box-2 (Near MDO Cabin)",
+      "MCB Box-3 (Near MDO Cabin)",
+      "MCB Box-1 (Near Counter Reception)",
+      "MCB Box-2 (Near Counter Reception)",
+      "MCB Box-3 (Near Counter Reception)",
+      "Main MCB (Sales Area Side)",
+    ].map((label) => ({ label, type: "photo" })),
+  },
 ];
 
 // Eden Garden forms — same shape as REGAL_GARDEN_FORMS. Mirrors
