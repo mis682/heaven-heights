@@ -854,6 +854,14 @@ export const HEAD_OFFICE_FORMS = [
       { label: "Handwash", type: "select", options: ["Yes", "No"] },
     ],
   },
+  {
+    formNumber: 14,
+    label: "Banquet Hall Terrace Floor",
+    checkpoints: ["Banquet Hall-1", "Banquet Hall-2", "Banquet Hall-3", "Banquet Hall-4"].map((label) => ({
+      label,
+      type: "photo",
+    })),
+  },
 ];
 
 // Eden Garden forms — same shape as REGAL_GARDEN_FORMS. Mirrors
