@@ -640,8 +640,6 @@ export const HEAD_OFFICE_FORMS = [
     checkpoints: [
       { label: "Urinal (1+2+3)", type: "photo" },
       { label: "WC-1", type: "photo" },
-      { label: "WC-2", type: "photo" },
-      { label: "WC-3", type: "photo" },
       { label: "Dustbin", type: "photo" },
       { label: "Mirror", type: "photo" },
       { label: "Floor", type: "photo" },
