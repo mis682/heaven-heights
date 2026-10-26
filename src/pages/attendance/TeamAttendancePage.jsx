@@ -300,11 +300,11 @@ export default function TeamAttendancePage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1.5">Check In</p>
-                      <PunchCell record={session.in} />
+                      <PunchCell record={session.in} onPhotoClick={(r) => window.open(r.photo, "_blank")} />
                     </div>
                     <div>
                       <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1.5">Check Out</p>
-                      <PunchCell record={session.out} />
+                      <PunchCell record={session.out} onPhotoClick={(r) => window.open(r.photo, "_blank")} />
                     </div>
                   </div>
                   <p className="text-xs text-subtext dark:text-gray-400">
