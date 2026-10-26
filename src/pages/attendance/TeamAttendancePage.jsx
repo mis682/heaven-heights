@@ -2,15 +2,19 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { User, FileText, FileSpreadsheet } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import ThemedSelect from "../../components/ThemedSelect";
+import Modal from "../../components/Modal";
+import PunchCell from "../../components/PunchCell";
 import {
   getTeamAttendanceSummary,
   teamAttendanceExportExcelUrl,
   teamAttendanceExportPdfUrl,
   setAttendanceOverride,
   clearAttendanceOverride,
+  listAttendanceScanRecords,
 } from "../../api/attendanceScan";
 import { useAuth } from "../../context/AuthContext";
 import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
+import { pairSessions, formatTotalHours } from "../../utils/attendanceSessions";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -43,6 +47,7 @@ export default function TeamAttendancePage() {
   const [data, setData] = useState({ daysInMonth: 30, rows: [] });
   const [loading, setLoading] = useState(true);
   const [menu, setMenu] = useState(null);
+  const [sessionDetails, setSessionDetails] = useState(null);
 
   // Fast typing in the search box fires a request per keystroke; nothing
   // guarantees they resolve in the order they were sent, so an earlier
@@ -89,6 +94,18 @@ export default function TeamAttendancePage() {
     setMenu(null);
     await clearAttendanceOverride(employeeId, dateKeyFor(day));
     load();
+  };
+
+  // Left-click on a day's status shows that day's actual check-in/check-out
+  // sessions — the same scan records Attendance Records shows, scoped to
+  // just this one staff member and date — so the admin doesn't have to leave
+  // this page and re-filter the full Attendance Records table every time.
+  const openSessionDetails = async (row, d) => {
+    const dateKey = dateKeyFor(d.day);
+    setSessionDetails({ employeeId: row.employeeId, name: row.name, dateKey, loading: true, sessions: [] });
+    const records = await listAttendanceScanRecords({ employeeId: row.employeeId, date: dateKey });
+    const sorted = [...records].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    setSessionDetails({ employeeId: row.employeeId, name: row.name, dateKey, loading: false, sessions: pairSessions(sorted) });
   };
 
   const dayHeaders = useMemo(
@@ -209,6 +226,7 @@ export default function TeamAttendancePage() {
                     <td key={d.day} className="px-1 py-2 text-center">
                       {d.status ? (
                         <span
+                          onClick={() => openSessionDetails(row, d)}
                           onContextMenu={(e) => openMenu(e, row, d)}
                           title={
                             d.overridden
@@ -217,7 +235,7 @@ export default function TeamAttendancePage() {
                               ? `${STATUS_META[d.status].label} — ${d.totalHours}h`
                               : STATUS_META[d.status].label
                           }
-                          className={`inline-flex w-6 h-6 rounded-full ${STATUS_META[d.status].className} text-white items-center justify-center text-[10px] font-bold ${
+                          className={`inline-flex w-6 h-6 rounded-full ${STATUS_META[d.status].className} text-white items-center justify-center text-[10px] font-bold cursor-pointer ${
                             isAdmin ? "cursor-context-menu" : ""
                           } ${d.overridden ? "ring-2 ring-offset-1 dark:ring-offset-gray-800 ring-gray-400" : ""}`}
                         >
@@ -267,6 +285,36 @@ export default function TeamAttendancePage() {
             )}
           </div>
         </>
+      )}
+
+      {sessionDetails && (
+        <Modal title={`${sessionDetails.name} — ${new Date(sessionDetails.dateKey).toLocaleDateString()}`} onClose={() => setSessionDetails(null)}>
+          {sessionDetails.loading ? (
+            <p className="text-sm text-subtext dark:text-gray-400 text-center py-6">Loading...</p>
+          ) : sessionDetails.sessions.length === 0 ? (
+            <p className="text-sm text-subtext dark:text-gray-400 text-center py-6">Is din koi scan record nahi mila.</p>
+          ) : (
+            <div className="space-y-4">
+              {sessionDetails.sessions.map((session, idx) => (
+                <div key={idx} className="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1.5">Check In</p>
+                      <PunchCell record={session.in} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1.5">Check Out</p>
+                      <PunchCell record={session.out} />
+                    </div>
+                  </div>
+                  <p className="text-xs text-subtext dark:text-gray-400">
+                    Total: <span className="font-medium text-heading dark:text-gray-100">{formatTotalHours(session.in, session.out)}</span>
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </Modal>
       )}
     </div>
   );
