@@ -7,10 +7,33 @@ function draftKey(formNumber) {
   return `${PREFIX}${formNumber}-${today}`;
 }
 
+// Downscales to a JPEG before persisting — the full-resolution file is what
+// actually gets uploaded (this is only for local draft recovery). Head
+// Office's forms run up to 25 photo checkpoints, and localStorage's
+// per-origin quota (~5-10MB) is shared across every form's draft, not
+// per-form — storing full-resolution captures here was blowing through that
+// shared budget and (on some browsers) wiping out other forms' already-saved
+// drafts, not just failing to save the new one.
+const DRAFT_MAX_DIMENSION = 1000;
+const DRAFT_JPEG_QUALITY = 0.6;
+
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, DRAFT_MAX_DIMENSION / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", DRAFT_JPEG_QUALITY));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
