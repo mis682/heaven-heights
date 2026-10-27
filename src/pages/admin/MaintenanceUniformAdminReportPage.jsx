@@ -28,6 +28,11 @@ export default function MaintenanceUniformAdminReportPage() {
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState(null);
+  // Which layout the currently-open report is displayed in — "classic" (the
+  // existing grouped-by-designation list) or "card" (a flat grid of
+  // per-staff cards, matching the pattern used in other checklist modules).
+  // Defaults to classic on every open.
+  const [layout, setLayout] = useState("classic");
 
   useEffect(() => {
     getMaintenanceUniformReportMeta().then(setMeta);
@@ -49,7 +54,10 @@ export default function MaintenanceUniformAdminReportPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateFrom, dateTo, reportName]);
 
-  const view = async (id) => setViewing(await getMaintenanceUniformReport(id));
+  const view = async (id) => {
+    setLayout("classic");
+    setViewing(await getMaintenanceUniformReport(id));
+  };
 
   const handleUnlock = async (id) => {
     await unlockMaintenanceUniformReport(id);
@@ -119,40 +127,85 @@ export default function MaintenanceUniformAdminReportPage() {
 
       {viewing && (
         <Modal title={`Maintenance Uniform — ${viewing.reportName || "Combined"} — ${viewing.reportDate}`} onClose={() => setViewing(null)} wide>
-          <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
-            {groupedEntries(viewing.entries).map((group) => {
-              const meta = DESIGNATION_META[group.designation] || { icon: Users, color: "text-gray-600 dark:text-gray-400", bg: "bg-gray-50 dark:bg-gray-900/30" };
-              const Icon = meta.icon;
-              const okCount = group.rows.filter((r) => r.status === "OK").length;
-              return (
-                <div key={group.designation} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                  <div className={`flex items-center justify-between px-4 py-2.5 ${meta.bg}`}>
-                    <div className="flex items-center gap-2">
-                      <Icon size={16} className={meta.color} />
-                      <span className="text-sm font-semibold text-heading dark:text-gray-100">{group.designation}</span>
-                    </div>
-                    <span className="text-xs text-subtext dark:text-gray-400">
-                      {okCount}/{group.rows.length} OK
-                    </span>
-                  </div>
-                  <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {group.rows.map((e, idx) => (
-                      <div key={idx} className="flex items-center justify-between px-4 py-2.5 bg-white dark:bg-gray-800">
-                        <div>
-                          <p className="text-sm font-medium text-heading dark:text-gray-100">{e.staffName}</p>
-                          <p className="text-xs text-subtext dark:text-gray-400">{e.siteName}</p>
-                        </div>
-                        {e.status ? <StatusPill status={e.status} /> : <span className="text-sm text-gray-300 dark:text-gray-600">—</span>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex justify-end mb-3">
+            <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-gray-100 dark:bg-gray-900/40">
+              <button
+                onClick={() => setLayout("classic")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
+                  layout === "classic" ? "bg-white dark:bg-gray-800 text-heading dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                Classic
+              </button>
+              <button
+                onClick={() => setLayout("card")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold ${
+                  layout === "card" ? "bg-white dark:bg-gray-800 text-heading dark:text-gray-100 shadow-sm" : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                Card view
+              </button>
+            </div>
           </div>
+
+          {layout === "classic" ? (
+            <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
+              {groupedEntries(viewing.entries).map((group) => {
+                const meta = DESIGNATION_META[group.designation] || { icon: Users, color: "text-gray-600 dark:text-gray-400", bg: "bg-gray-50 dark:bg-gray-900/30" };
+                const Icon = meta.icon;
+                const okCount = group.rows.filter((r) => r.status === "OK").length;
+                return (
+                  <div key={group.designation} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className={`flex items-center justify-between px-4 py-2.5 ${meta.bg}`}>
+                      <div className="flex items-center gap-2">
+                        <Icon size={16} className={meta.color} />
+                        <span className="text-sm font-semibold text-heading dark:text-gray-100">{group.designation}</span>
+                      </div>
+                      <span className="text-xs text-subtext dark:text-gray-400">
+                        {okCount}/{group.rows.length} OK
+                      </span>
+                    </div>
+                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                      {group.rows.map((e, idx) => (
+                        <div key={idx} className="flex items-center justify-between px-4 py-2.5 bg-white dark:bg-gray-800">
+                          <div>
+                            <p className="text-sm font-medium text-heading dark:text-gray-100">{e.staffName}</p>
+                            <p className="text-xs text-subtext dark:text-gray-400">{e.siteName}</p>
+                          </div>
+                          {e.status ? <StatusPill status={e.status} /> : <span className="text-sm text-gray-300 dark:text-gray-600">—</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="max-h-[60vh] overflow-y-auto mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pr-1">
+              {viewing.entries.map((e, idx) => {
+                const isGood = e.status === meta.statusOptions[0];
+                const flagged = e.status && !isGood;
+                return (
+                  <div
+                    key={idx}
+                    className={`rounded-lg border p-3 flex flex-col gap-1.5 ${
+                      flagged
+                        ? "border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/10"
+                        : "border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <span className="text-xs font-semibold text-heading dark:text-gray-100 truncate">{e.staffName}</span>
+                    <span className="text-[11px] text-subtext dark:text-gray-400 truncate">{e.siteName}</span>
+                    {e.status ? <StatusPill status={e.status} /> : <span className="text-xs text-gray-300 dark:text-gray-600">—</span>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <div className="flex items-center gap-2">
             <a
-              href={maintenanceUniformReportExportPdfUrl(viewing._id)}
+              href={maintenanceUniformReportExportPdfUrl(viewing._id, layout)}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <FileText size={16} /> Download PDF

@@ -21,7 +21,8 @@ export const listSubmittedMaintenanceUniformReports = (params = {}) =>
   api.get("/maintenance-uniform-report/submitted", { params }).then((r) => r.data);
 
 export const maintenanceUniformReportExportUrl = (id) => `${apiOrigin}/api/maintenance-uniform-report/${id}/export`;
-export const maintenanceUniformReportExportPdfUrl = (id) => `${apiOrigin}/api/maintenance-uniform-report/${id}/export-pdf`;
+export const maintenanceUniformReportExportPdfUrl = (id, layout = "classic") =>
+  `${apiOrigin}/api/maintenance-uniform-report/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
 
 export const getMaintenanceUniformKpi = (from, to, reportName) =>
   api.get("/maintenance-uniform-report/kpi", { params: { from, to, reportName: reportName || undefined } }).then((r) => r.data.rows);
