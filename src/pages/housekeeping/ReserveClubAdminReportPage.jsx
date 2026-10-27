@@ -176,10 +176,17 @@ export default function ReserveClubAdminReportPage() {
 
           <div className="flex items-center gap-2">
             <a
-              href={reserveClubReportExportPdfUrl(viewing._id, layout)}
+              href={reserveClubReportExportPdfUrl(viewing._id, "classic")}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <FileText size={16} /> Download PDF
+              <FileText size={16} /> PDF (Classic)
+            </a>
+
+            <a
+              href={reserveClubReportExportPdfUrl(viewing._id, "card")}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <FileText size={16} /> PDF (Card)
             </a>
             <a
               href={reserveClubReportExportUrl(viewing._id)}
