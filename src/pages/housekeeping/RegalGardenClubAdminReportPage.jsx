@@ -96,8 +96,12 @@ export default function RegalGardenClubAdminReportPage() {
                 <a href={regalGardenClubReportExportUrl(r._id)} className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1">
                   <Download size={12} /> Excel
                 </a>
-                <a href={regalGardenClubReportExportPdfUrl(r._id)} className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1">
-                  <FileText size={12} /> PDF
+                <a href={regalGardenClubReportExportPdfUrl(r._id, "classic")} className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1">
+                  <FileText size={12} /> PDF (Classic)
+                </a>
+
+                <a href={regalGardenClubReportExportPdfUrl(r._id, "card")} className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1">
+                  <FileText size={12} /> PDF (Card)
                 </a>
               </div>
             ),

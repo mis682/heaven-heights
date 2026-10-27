@@ -106,8 +106,12 @@ export default function PmGardenCityAdminReportPage() {
                 <a href={pmGardenCityReportExportUrl(r._id)} className="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:underline inline-flex items-center gap-1">
                   <Download size={12} /> Excel
                 </a>
-                <a href={pmGardenCityReportExportPdfUrl(r._id)} className="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:underline inline-flex items-center gap-1">
-                  <FileText size={12} /> PDF
+                <a href={pmGardenCityReportExportPdfUrl(r._id, "classic")} className="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:underline inline-flex items-center gap-1">
+                  <FileText size={12} /> PDF (Classic)
+                </a>
+
+                <a href={pmGardenCityReportExportPdfUrl(r._id, "card")} className="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:underline inline-flex items-center gap-1">
+                  <FileText size={12} /> PDF (Card)
                 </a>
               </div>
             ),
