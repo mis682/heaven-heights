@@ -51,6 +51,11 @@ import NeoMeridianSubmissionsPage from "./pages/housekeeping/NeoMeridianSubmissi
 import NeoMeridianDailyReportPage from "./pages/housekeeping/NeoMeridianDailyReportPage";
 import NeoMeridianAdminReportPage from "./pages/housekeeping/NeoMeridianAdminReportPage";
 import NeoMeridianKpiPage from "./pages/housekeeping/NeoMeridianKpiPage";
+import MilestonePublicForm from "./pages/housekeeping/MilestonePublicForm";
+import MilestoneSubmissionsPage from "./pages/housekeeping/MilestoneSubmissionsPage";
+import MilestoneDailyReportPage from "./pages/housekeeping/MilestoneDailyReportPage";
+import MilestoneAdminReportPage from "./pages/housekeeping/MilestoneAdminReportPage";
+import MilestoneKpiPage from "./pages/housekeeping/MilestoneKpiPage";
 import HeadOfficePublicForm from "./pages/housekeeping/HeadOfficePublicForm";
 import HeadOfficeSubmissionsPage from "./pages/housekeeping/HeadOfficeSubmissionsPage";
 import HeadOfficeDailyReportPage from "./pages/housekeeping/HeadOfficeDailyReportPage";
@@ -129,6 +134,7 @@ export default function App() {
       <Route path="/eden-garden-form/:formNumber" element={<EdenGardenPublicForm />} />
       <Route path="/neo-meridian-form/:formNumber" element={<NeoMeridianPublicForm />} />
       <Route path="/head-office-form/:formNumber" element={<HeadOfficePublicForm />} />
+      <Route path="/milestone-form/:formNumber" element={<MilestonePublicForm />} />
       <Route path="/property-management-form" element={<PropertyManagementFormEntry />} />
       <Route path="/pm-regal-garden-form/:formNumber" element={<PmRegalGardenPublicForm />} />
       <Route path="/pm-eden-garden-form/:formNumber" element={<PmEdenGardenPublicForm />} />
@@ -472,6 +478,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "headOffice", action: "view" }}>
               <HeadOfficeKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/milestone/submissions"
+          element={
+            <RequireAuth permission={{ module: "milestone", action: "view" }}>
+              <MilestoneSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/milestone/daily-report"
+          element={
+            <RequireAuth permission={{ module: "milestone", action: "edit" }}>
+              <MilestoneDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/milestone/admin-report"
+          element={
+            <RequireAuth permission={{ module: "milestone", action: "view" }}>
+              <MilestoneAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/milestone/kpi"
+          element={
+            <RequireAuth permission={{ module: "milestone", action: "view" }}>
+              <MilestoneKpiPage />
             </RequireAuth>
           }
         />
