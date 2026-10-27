@@ -112,8 +112,11 @@ export default function NightGuardAdminReportPage() {
                 <a href={exportReportUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1">
                   <Download size={12} /> Excel
                 </a>
-                <a href={exportReportPdfUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1">
-                  <FileText size={12} /> PDF
+                <a href={exportReportPdfUrl(r._id, API_BASE, "classic")} className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1">
+                  <FileText size={12} /> PDF (Classic)
+                </a>
+                <a href={exportReportPdfUrl(r._id, API_BASE, "card")} className="text-xs font-semibold text-gray-600 dark:text-gray-400 hover:underline inline-flex items-center gap-1">
+                  <FileText size={12} /> PDF (Card)
                 </a>
               </div>
             ),
@@ -216,10 +219,16 @@ export default function NightGuardAdminReportPage() {
 
           <div className="flex items-center gap-2">
             <a
-              href={exportReportPdfUrl(viewing._id, API_BASE)}
+              href={exportReportPdfUrl(viewing._id, API_BASE, "classic")}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <FileText size={16} /> Download PDF
+              <FileText size={16} /> PDF (Classic)
+            </a>
+            <a
+              href={exportReportPdfUrl(viewing._id, API_BASE, "card")}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <FileText size={16} /> PDF (Card)
             </a>
             <a
               href={exportReportUrl(viewing._id, API_BASE)}

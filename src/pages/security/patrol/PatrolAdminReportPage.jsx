@@ -135,8 +135,11 @@ export default function PatrolAdminReportPage() {
                 <a href={exportPatrolReportUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:underline inline-flex items-center gap-1">
                   <Download size={12} /> Excel
                 </a>
-                <a href={exportPatrolReportPdfUrl(r._id, API_BASE)} className="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:underline inline-flex items-center gap-1">
-                  <FileText size={12} /> PDF
+                <a href={exportPatrolReportPdfUrl(r._id, API_BASE, "classic")} className="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:underline inline-flex items-center gap-1">
+                  <FileText size={12} /> PDF (Classic)
+                </a>
+                <a href={exportPatrolReportPdfUrl(r._id, API_BASE, "card")} className="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:underline inline-flex items-center gap-1">
+                  <FileText size={12} /> PDF (Card)
                 </a>
               </div>
             ),
@@ -261,10 +264,16 @@ export default function PatrolAdminReportPage() {
 
           <div className="flex items-center gap-2">
             <a
-              href={exportPatrolReportPdfUrl(viewing._id, API_BASE)}
+              href={exportPatrolReportPdfUrl(viewing._id, API_BASE, "classic")}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <FileText size={16} /> Download PDF
+              <FileText size={16} /> PDF (Classic)
+            </a>
+            <a
+              href={exportPatrolReportPdfUrl(viewing._id, API_BASE, "card")}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <FileText size={16} /> PDF (Card)
             </a>
             <a
               href={exportPatrolReportUrl(viewing._id, API_BASE)}

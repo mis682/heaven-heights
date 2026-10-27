@@ -14,4 +14,5 @@ export const getPatrolReport = (id) => api.get(`/patrol-reports/${id}`).then((r)
 export const listSubmittedPatrolReports = (params = {}) =>
   api.get("/patrol-reports/submitted", { params }).then((r) => r.data);
 export const exportPatrolReportUrl = (id, baseURL) => `${baseURL}/api/patrol-reports/${id}/export`;
-export const exportPatrolReportPdfUrl = (id, baseURL) => `${baseURL}/api/patrol-reports/${id}/export-pdf`;
+export const exportPatrolReportPdfUrl = (id, baseURL, layout = "classic") =>
+  `${baseURL}/api/patrol-reports/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
