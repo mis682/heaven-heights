@@ -185,22 +185,42 @@ export default function MaintenanceUniformAdminReportPage() {
               })}
             </div>
           ) : (
-            <div className="max-h-[60vh] overflow-y-auto mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pr-1">
-              {viewing.entries.map((e, idx) => {
-                const isGood = e.status === meta.statusOptions[0];
-                const flagged = e.status && !isGood;
+            <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
+              {groupedEntries(viewing.entries).map((group) => {
+                const meta2 = DESIGNATION_META[group.designation] || { icon: Users, color: "text-gray-600 dark:text-gray-400", bg: "bg-gray-50 dark:bg-gray-900/30" };
+                const Icon = meta2.icon;
+                const okCount = group.rows.filter((r) => r.status === "OK").length;
                 return (
-                  <div
-                    key={idx}
-                    className={`rounded-lg border p-3 flex flex-col gap-1.5 ${
-                      flagged
-                        ? "border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/10"
-                        : "border-gray-200 dark:border-gray-700"
-                    }`}
-                  >
-                    <span className="text-xs font-semibold text-heading dark:text-gray-100 truncate">{e.staffName}</span>
-                    <span className="text-[11px] text-subtext dark:text-gray-400 truncate">{e.siteName}</span>
-                    {e.status ? <StatusPill status={e.status} /> : <span className="text-xs text-gray-300 dark:text-gray-600">—</span>}
+                  <div key={group.designation} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className={`flex items-center justify-between px-4 py-2.5 ${meta2.bg}`}>
+                      <div className="flex items-center gap-2">
+                        <Icon size={16} className={meta2.color} />
+                        <span className="text-sm font-semibold text-heading dark:text-gray-100">{group.designation}</span>
+                      </div>
+                      <span className="text-xs text-subtext dark:text-gray-400">
+                        {okCount}/{group.rows.length} OK
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-3 bg-white dark:bg-gray-800">
+                      {group.rows.map((e, idx) => {
+                        const isGood = e.status === meta.statusOptions[0];
+                        const flagged = e.status && !isGood;
+                        return (
+                          <div
+                            key={idx}
+                            className={`rounded-lg border p-3 flex flex-col gap-1.5 ${
+                              flagged
+                                ? "border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/10"
+                                : "border-gray-200 dark:border-gray-700"
+                            }`}
+                          >
+                            <span className="text-xs font-semibold text-heading dark:text-gray-100 truncate">{e.staffName}</span>
+                            <span className="text-[11px] text-subtext dark:text-gray-400 truncate">{e.siteName}</span>
+                            {e.status ? <StatusPill status={e.status} /> : <span className="text-xs text-gray-300 dark:text-gray-600">—</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}
