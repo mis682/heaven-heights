@@ -17,7 +17,8 @@ export const listSubmittedRegalGardenClubReports = (params = {}) =>
   api.get("/regal-garden-club-report/submitted", { params }).then((r) => r.data);
 
 export const regalGardenClubReportExportUrl = (id) => `${apiOrigin}/api/regal-garden-club-report/${id}/export`;
-export const regalGardenClubReportExportPdfUrl = (id) => `${apiOrigin}/api/regal-garden-club-report/${id}/export-pdf`;
+export const regalGardenClubReportExportPdfUrl = (id, layout = "classic") =>
+  `${apiOrigin}/api/regal-garden-club-report/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
 
 export const getRegalGardenClubKpi = (from, to, formNumber) =>
   api.get("/regal-garden-club-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);

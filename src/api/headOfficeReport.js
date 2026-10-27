@@ -17,7 +17,8 @@ export const listSubmittedHeadOfficeReports = (params = {}) =>
   api.get("/head-office-report/submitted", { params }).then((r) => r.data);
 
 export const headOfficeReportExportUrl = (id) => `${apiOrigin}/api/head-office-report/${id}/export`;
-export const headOfficeReportExportPdfUrl = (id) => `${apiOrigin}/api/head-office-report/${id}/export-pdf`;
+export const headOfficeReportExportPdfUrl = (id, layout = "classic") =>
+  `${apiOrigin}/api/head-office-report/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
 
 export const getHeadOfficeKpi = (from, to, formNumber) =>
   api.get("/head-office-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);

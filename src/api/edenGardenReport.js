@@ -17,7 +17,8 @@ export const listSubmittedEdenGardenReports = (params = {}) =>
   api.get("/eden-garden-report/submitted", { params }).then((r) => r.data);
 
 export const edenGardenReportExportUrl = (id) => `${apiOrigin}/api/eden-garden-report/${id}/export`;
-export const edenGardenReportExportPdfUrl = (id) => `${apiOrigin}/api/eden-garden-report/${id}/export-pdf`;
+export const edenGardenReportExportPdfUrl = (id, layout = "classic") =>
+  `${apiOrigin}/api/eden-garden-report/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
 
 export const getEdenGardenKpi = (from, to, formNumber) =>
   api.get("/eden-garden-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);

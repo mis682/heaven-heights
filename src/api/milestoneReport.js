@@ -17,7 +17,8 @@ export const listSubmittedMilestoneReports = (params = {}) =>
   api.get("/milestone-report/submitted", { params }).then((r) => r.data);
 
 export const milestoneReportExportUrl = (id) => `${apiOrigin}/api/milestone-report/${id}/export`;
-export const milestoneReportExportPdfUrl = (id) => `${apiOrigin}/api/milestone-report/${id}/export-pdf`;
+export const milestoneReportExportPdfUrl = (id, layout = "classic") =>
+  `${apiOrigin}/api/milestone-report/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
 
 export const getMilestoneKpi = (from, to, formNumber) =>
   api.get("/milestone-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);

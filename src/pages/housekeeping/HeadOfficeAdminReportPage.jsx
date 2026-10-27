@@ -176,7 +176,7 @@ export default function HeadOfficeAdminReportPage() {
 
           <div className="flex items-center gap-2">
             <a
-              href={headOfficeReportExportPdfUrl(viewing._id)}
+              href={headOfficeReportExportPdfUrl(viewing._id, layout)}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <FileText size={16} /> Download PDF

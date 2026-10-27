@@ -17,7 +17,8 @@ export const listSubmittedNeoMeridianReports = (params = {}) =>
   api.get("/neo-meridian-report/submitted", { params }).then((r) => r.data);
 
 export const neoMeridianReportExportUrl = (id) => `${apiOrigin}/api/neo-meridian-report/${id}/export`;
-export const neoMeridianReportExportPdfUrl = (id) => `${apiOrigin}/api/neo-meridian-report/${id}/export-pdf`;
+export const neoMeridianReportExportPdfUrl = (id, layout = "classic") =>
+  `${apiOrigin}/api/neo-meridian-report/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
 
 export const getNeoMeridianKpi = (from, to, formNumber) =>
   api.get("/neo-meridian-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);

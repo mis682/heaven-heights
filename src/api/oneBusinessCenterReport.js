@@ -17,7 +17,8 @@ export const listSubmittedOneBusinessCenterReports = (params = {}) =>
   api.get("/one-business-center-report/submitted", { params }).then((r) => r.data);
 
 export const oneBusinessCenterReportExportUrl = (id) => `${apiOrigin}/api/one-business-center-report/${id}/export`;
-export const oneBusinessCenterReportExportPdfUrl = (id) => `${apiOrigin}/api/one-business-center-report/${id}/export-pdf`;
+export const oneBusinessCenterReportExportPdfUrl = (id, layout = "classic") =>
+  `${apiOrigin}/api/one-business-center-report/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
 
 export const getOneBusinessCenterKpi = (from, to, formNumber) =>
   api.get("/one-business-center-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);

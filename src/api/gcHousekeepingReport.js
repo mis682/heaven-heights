@@ -18,7 +18,8 @@ export const listSubmittedGCHousekeepingReports = (params = {}) =>
   api.get("/gc-housekeeping-report/submitted", { params }).then((r) => r.data);
 
 export const gcHousekeepingReportExportUrl = (id) => `${apiOrigin}/api/gc-housekeeping-report/${id}/export`;
-export const gcHousekeepingReportExportPdfUrl = (id) => `${apiOrigin}/api/gc-housekeeping-report/${id}/export-pdf`;
+export const gcHousekeepingReportExportPdfUrl = (id, layout = "classic") =>
+  `${apiOrigin}/api/gc-housekeeping-report/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
 
 export const getGCHousekeepingKpi = (from, to) =>
   api.get("/gc-housekeeping-report/kpi", { params: { from, to } }).then((r) => r.data.rows);

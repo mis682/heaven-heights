@@ -17,7 +17,8 @@ export const listSubmittedPmRegalGardenReports = (params = {}) =>
   api.get("/pm-regal-garden-report/submitted", { params }).then((r) => r.data);
 
 export const pmRegalGardenReportExportUrl = (id) => `${apiOrigin}/api/pm-regal-garden-report/${id}/export`;
-export const pmRegalGardenReportExportPdfUrl = (id) => `${apiOrigin}/api/pm-regal-garden-report/${id}/export-pdf`;
+export const pmRegalGardenReportExportPdfUrl = (id, layout = "classic") =>
+  `${apiOrigin}/api/pm-regal-garden-report/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
 
 export const getPmRegalGardenKpi = (from, to, formNumber) =>
   api.get("/pm-regal-garden-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);

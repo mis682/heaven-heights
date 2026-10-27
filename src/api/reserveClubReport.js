@@ -17,7 +17,8 @@ export const listSubmittedReserveClubReports = (params = {}) =>
   api.get("/reserve-club-report/submitted", { params }).then((r) => r.data);
 
 export const reserveClubReportExportUrl = (id) => `${apiOrigin}/api/reserve-club-report/${id}/export`;
-export const reserveClubReportExportPdfUrl = (id) => `${apiOrigin}/api/reserve-club-report/${id}/export-pdf`;
+export const reserveClubReportExportPdfUrl = (id, layout = "classic") =>
+  `${apiOrigin}/api/reserve-club-report/${id}/export-pdf${layout === "card" ? "?layout=card" : ""}`;
 
 export const getReserveClubKpi = (from, to, formNumber) =>
   api.get("/reserve-club-report/kpi", { params: { from, to, formNumber: formNumber || undefined } }).then((r) => r.data.rows);
