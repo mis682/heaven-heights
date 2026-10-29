@@ -617,6 +617,26 @@ export const MILESTONE_FORMS = [
   },
 ];
 
+// Hyde Park forms — same shape as MILESTONE_FORMS, plus one "select"-type
+// checkpoint (Water Coming in Motor: Yes/No), same pattern as Head Office's
+// Handwash checkpoint. Mirrors backend/constants/hydeParkForms.js — kept in
+// sync manually.
+export const HYDE_PARK_FORMS = [
+  {
+    formNumber: 1,
+    label: "Hyde Park Cleaning Form",
+    checkpoints: [
+      { label: "Image of Boundary-1", type: "photo" },
+      { label: "Image of Boundary-2", type: "photo" },
+      { label: "Image of Boundary-3", type: "photo" },
+      { label: "Image of Boundary-4", type: "photo" },
+      { label: "Image of Water Motor", type: "photo" },
+      { label: "Maintenance Incharge Uniform Image", type: "photo" },
+      { label: "Water Coming in Motor", type: "select", options: ["Yes", "No"] },
+    ],
+  },
+];
+
 // Neo Meridian forms — same shape as REGAL_GARDEN_FORMS. Mirrors
 // backend/constants/neoMeridianForms.js — kept in sync manually.
 export const NEO_MERIDIAN_FORMS = [
@@ -1088,6 +1108,20 @@ export const NAV_SECTIONS = [
               },
               { label: "Admin Report View", path: "/housekeeping/milestone/admin-report" },
               { label: "KPI", path: "/housekeeping/milestone/kpi" },
+            ],
+          },
+          {
+            label: "Hyde Park",
+            permission: { module: "hydePark", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/hyde-park/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/hyde-park/daily-report",
+                permission: { module: "hydePark", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/hyde-park/admin-report" },
+              { label: "KPI", path: "/housekeeping/hyde-park/kpi" },
             ],
           },
         ],

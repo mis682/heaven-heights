@@ -56,6 +56,11 @@ import MilestoneSubmissionsPage from "./pages/housekeeping/MilestoneSubmissionsP
 import MilestoneDailyReportPage from "./pages/housekeeping/MilestoneDailyReportPage";
 import MilestoneAdminReportPage from "./pages/housekeeping/MilestoneAdminReportPage";
 import MilestoneKpiPage from "./pages/housekeeping/MilestoneKpiPage";
+import HydeParkPublicForm from "./pages/housekeeping/HydeParkPublicForm";
+import HydeParkSubmissionsPage from "./pages/housekeeping/HydeParkSubmissionsPage";
+import HydeParkDailyReportPage from "./pages/housekeeping/HydeParkDailyReportPage";
+import HydeParkAdminReportPage from "./pages/housekeeping/HydeParkAdminReportPage";
+import HydeParkKpiPage from "./pages/housekeeping/HydeParkKpiPage";
 import HeadOfficePublicForm from "./pages/housekeeping/HeadOfficePublicForm";
 import HeadOfficeSubmissionsPage from "./pages/housekeeping/HeadOfficeSubmissionsPage";
 import HeadOfficeDailyReportPage from "./pages/housekeeping/HeadOfficeDailyReportPage";
@@ -135,6 +140,7 @@ export default function App() {
       <Route path="/neo-meridian-form/:formNumber" element={<NeoMeridianPublicForm />} />
       <Route path="/head-office-form/:formNumber" element={<HeadOfficePublicForm />} />
       <Route path="/milestone-form/:formNumber" element={<MilestonePublicForm />} />
+      <Route path="/hyde-park-form/:formNumber" element={<HydeParkPublicForm />} />
       <Route path="/property-management-form" element={<PropertyManagementFormEntry />} />
       <Route path="/pm-regal-garden-form/:formNumber" element={<PmRegalGardenPublicForm />} />
       <Route path="/pm-eden-garden-form/:formNumber" element={<PmEdenGardenPublicForm />} />
@@ -511,6 +517,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "milestone", action: "view" }}>
               <MilestoneKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/hyde-park/submissions"
+          element={
+            <RequireAuth permission={{ module: "hydePark", action: "view" }}>
+              <HydeParkSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/hyde-park/daily-report"
+          element={
+            <RequireAuth permission={{ module: "hydePark", action: "edit" }}>
+              <HydeParkDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/hyde-park/admin-report"
+          element={
+            <RequireAuth permission={{ module: "hydePark", action: "view" }}>
+              <HydeParkAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/hyde-park/kpi"
+          element={
+            <RequireAuth permission={{ module: "hydePark", action: "view" }}>
+              <HydeParkKpiPage />
             </RequireAuth>
           }
         />
