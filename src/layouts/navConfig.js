@@ -918,6 +918,11 @@ export const HEAD_OFFICE_FORMS = [
       type: "photo",
     })),
   },
+  {
+    formNumber: 15,
+    label: "Sales MCB Form",
+    checkpoints: ["MCB-1", "MCB-2", "MCB-3"].map((label) => ({ label, type: "photo" })),
+  },
 ];
 
 // Eden Garden forms — same shape as REGAL_GARDEN_FORMS. Mirrors
