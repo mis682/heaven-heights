@@ -617,6 +617,22 @@ export const MILESTONE_FORMS = [
   },
 ];
 
+// Weekly Update Other Projects forms — same shape as MILESTONE_FORMS, all
+// plain photo checkpoints. Mirrors backend/constants/weeklyUpdateForms.js —
+// kept in sync manually.
+export const WEEKLY_UPDATE_FORMS = [
+  {
+    formNumber: 1,
+    label: "Weekly Update Form",
+    checkpoints: [
+      "Image of Gulmohar City",
+      "Image of Orchid Green",
+      "Image of Green Park",
+      "Image of Garden Place",
+    ].map((label) => ({ label, type: "photo" })),
+  },
+];
+
 // Hyde Park forms — same shape as MILESTONE_FORMS, plus one "select"-type
 // checkpoint (Water Coming in Motor: Yes/No), same pattern as Head Office's
 // Handwash checkpoint. Mirrors backend/constants/hydeParkForms.js — kept in
@@ -1108,6 +1124,20 @@ export const NAV_SECTIONS = [
               },
               { label: "Admin Report View", path: "/housekeeping/milestone/admin-report" },
               { label: "KPI", path: "/housekeeping/milestone/kpi" },
+            ],
+          },
+          {
+            label: "Weekly Update Other Projects",
+            permission: { module: "weeklyUpdate", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/weekly-update/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/weekly-update/daily-report",
+                permission: { module: "weeklyUpdate", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/weekly-update/admin-report" },
+              { label: "KPI", path: "/housekeeping/weekly-update/kpi" },
             ],
           },
           {

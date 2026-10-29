@@ -56,6 +56,11 @@ import MilestoneSubmissionsPage from "./pages/housekeeping/MilestoneSubmissionsP
 import MilestoneDailyReportPage from "./pages/housekeeping/MilestoneDailyReportPage";
 import MilestoneAdminReportPage from "./pages/housekeeping/MilestoneAdminReportPage";
 import MilestoneKpiPage from "./pages/housekeeping/MilestoneKpiPage";
+import WeeklyUpdatePublicForm from "./pages/housekeeping/WeeklyUpdatePublicForm";
+import WeeklyUpdateSubmissionsPage from "./pages/housekeeping/WeeklyUpdateSubmissionsPage";
+import WeeklyUpdateDailyReportPage from "./pages/housekeeping/WeeklyUpdateDailyReportPage";
+import WeeklyUpdateAdminReportPage from "./pages/housekeeping/WeeklyUpdateAdminReportPage";
+import WeeklyUpdateKpiPage from "./pages/housekeeping/WeeklyUpdateKpiPage";
 import HydeParkPublicForm from "./pages/housekeeping/HydeParkPublicForm";
 import HydeParkSubmissionsPage from "./pages/housekeeping/HydeParkSubmissionsPage";
 import HydeParkDailyReportPage from "./pages/housekeeping/HydeParkDailyReportPage";
@@ -140,6 +145,7 @@ export default function App() {
       <Route path="/neo-meridian-form/:formNumber" element={<NeoMeridianPublicForm />} />
       <Route path="/head-office-form/:formNumber" element={<HeadOfficePublicForm />} />
       <Route path="/milestone-form/:formNumber" element={<MilestonePublicForm />} />
+      <Route path="/weekly-update-form/:formNumber" element={<WeeklyUpdatePublicForm />} />
       <Route path="/hyde-park-form/:formNumber" element={<HydeParkPublicForm />} />
       <Route path="/property-management-form" element={<PropertyManagementFormEntry />} />
       <Route path="/pm-regal-garden-form/:formNumber" element={<PmRegalGardenPublicForm />} />
@@ -517,6 +523,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "milestone", action: "view" }}>
               <MilestoneKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/weekly-update/submissions"
+          element={
+            <RequireAuth permission={{ module: "weeklyUpdate", action: "view" }}>
+              <WeeklyUpdateSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/weekly-update/daily-report"
+          element={
+            <RequireAuth permission={{ module: "weeklyUpdate", action: "edit" }}>
+              <WeeklyUpdateDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/weekly-update/admin-report"
+          element={
+            <RequireAuth permission={{ module: "weeklyUpdate", action: "view" }}>
+              <WeeklyUpdateAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/weekly-update/kpi"
+          element={
+            <RequireAuth permission={{ module: "weeklyUpdate", action: "view" }}>
+              <WeeklyUpdateKpiPage />
             </RequireAuth>
           }
         />
