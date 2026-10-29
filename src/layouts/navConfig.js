@@ -814,7 +814,6 @@ export const HEAD_OFFICE_FORMS = [
       "MCB Box-1 (Near Counter Reception)",
       "MCB Box-2 (Near Counter Reception)",
       "MCB Box-3 (Near Counter Reception)",
-      "Main MCB (Sales Area Side)",
     ].map((label) => ({ label, type: "photo" })),
   },
   {
