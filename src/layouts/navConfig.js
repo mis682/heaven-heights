@@ -619,9 +619,27 @@ export const MILESTONE_FORMS = [
 
 // School forms — same shape as MILESTONE_FORMS. Mirrors
 // backend/constants/schoolForms.js — kept in sync manually. 2 forms
-// expected, added once the coordinator shares their checkpoints —
-// scaffolded empty for now.
-export const SCHOOL_FORMS = [];
+// expected, added once the coordinator shares their checkpoints.
+export const SCHOOL_FORMS = [
+  {
+    formNumber: 1,
+    label: "External Area School Cleaning Form",
+    checkpoints: [
+      { label: "Basket Ball Court", type: "photo" },
+      { label: "Cricket Ground", type: "photo" },
+      { label: "Football Ground", type: "photo" },
+      { label: "Lawn Tenis Area", type: "photo" },
+      { label: "Skateing Area", type: "photo" },
+      { label: "Gate 1 to Gate 2 Main Road (External Side)", type: "photo" },
+      { label: "Gate 1 to Gate 2 Main Road (Internal Side)", type: "photo" },
+      { label: "Bus Stand Garden", type: "photo" },
+      { label: "Gate 2 to Back Side Area End", type: "photo" },
+      { label: "Gate 1 to Back Side Area End", type: "photo" },
+      { label: "Outdoor Activity area at Ground Floor", type: "photo" },
+      { label: "Terrace Cleaning (Only Sunday)", type: "photo", required: false },
+    ],
+  },
+];
 
 // Weekly Update Other Projects forms — same shape as MILESTONE_FORMS, all
 // plain photo checkpoints. Mirrors backend/constants/weeklyUpdateForms.js —
