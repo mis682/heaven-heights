@@ -15,6 +15,7 @@ export const PERMISSION_MODULES = [
   { key: "edenGarden", label: "Eden Garden" },
   { key: "neoMeridian", label: "Neo Meridian" },
   { key: "milestone", label: "Milestone" },
+  { key: "school", label: "School" },
   { key: "weeklyUpdate", label: "Weekly Update Other Projects" },
   { key: "hydePark", label: "Hyde Park" },
   { key: "headOffice", label: "Head Office" },

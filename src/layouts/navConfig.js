@@ -617,6 +617,12 @@ export const MILESTONE_FORMS = [
   },
 ];
 
+// School forms — same shape as MILESTONE_FORMS. Mirrors
+// backend/constants/schoolForms.js — kept in sync manually. 2 forms
+// expected, added once the coordinator shares their checkpoints —
+// scaffolded empty for now.
+export const SCHOOL_FORMS = [];
+
 // Weekly Update Other Projects forms — same shape as MILESTONE_FORMS, all
 // plain photo checkpoints. Mirrors backend/constants/weeklyUpdateForms.js —
 // kept in sync manually.
@@ -1128,6 +1134,20 @@ export const NAV_SECTIONS = [
               },
               { label: "Admin Report View", path: "/housekeeping/milestone/admin-report" },
               { label: "KPI", path: "/housekeeping/milestone/kpi" },
+            ],
+          },
+          {
+            label: "School",
+            permission: { module: "school", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/school/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/school/daily-report",
+                permission: { module: "school", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/school/admin-report" },
+              { label: "KPI", path: "/housekeeping/school/kpi" },
             ],
           },
           {

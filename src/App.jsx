@@ -56,6 +56,11 @@ import MilestoneSubmissionsPage from "./pages/housekeeping/MilestoneSubmissionsP
 import MilestoneDailyReportPage from "./pages/housekeeping/MilestoneDailyReportPage";
 import MilestoneAdminReportPage from "./pages/housekeeping/MilestoneAdminReportPage";
 import MilestoneKpiPage from "./pages/housekeeping/MilestoneKpiPage";
+import SchoolPublicForm from "./pages/housekeeping/SchoolPublicForm";
+import SchoolSubmissionsPage from "./pages/housekeeping/SchoolSubmissionsPage";
+import SchoolDailyReportPage from "./pages/housekeeping/SchoolDailyReportPage";
+import SchoolAdminReportPage from "./pages/housekeeping/SchoolAdminReportPage";
+import SchoolKpiPage from "./pages/housekeeping/SchoolKpiPage";
 import WeeklyUpdatePublicForm from "./pages/housekeeping/WeeklyUpdatePublicForm";
 import WeeklyUpdateSubmissionsPage from "./pages/housekeeping/WeeklyUpdateSubmissionsPage";
 import WeeklyUpdateDailyReportPage from "./pages/housekeeping/WeeklyUpdateDailyReportPage";
@@ -145,6 +150,7 @@ export default function App() {
       <Route path="/neo-meridian-form/:formNumber" element={<NeoMeridianPublicForm />} />
       <Route path="/head-office-form/:formNumber" element={<HeadOfficePublicForm />} />
       <Route path="/milestone-form/:formNumber" element={<MilestonePublicForm />} />
+      <Route path="/school-form/:formNumber" element={<SchoolPublicForm />} />
       <Route path="/weekly-update-form/:formNumber" element={<WeeklyUpdatePublicForm />} />
       <Route path="/hyde-park-form/:formNumber" element={<HydeParkPublicForm />} />
       <Route path="/property-management-form" element={<PropertyManagementFormEntry />} />
@@ -523,6 +529,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "milestone", action: "view" }}>
               <MilestoneKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/school/submissions"
+          element={
+            <RequireAuth permission={{ module: "school", action: "view" }}>
+              <SchoolSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/school/daily-report"
+          element={
+            <RequireAuth permission={{ module: "school", action: "edit" }}>
+              <SchoolDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/school/admin-report"
+          element={
+            <RequireAuth permission={{ module: "school", action: "view" }}>
+              <SchoolAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/school/kpi"
+          element={
+            <RequireAuth permission={{ module: "school", action: "view" }}>
+              <SchoolKpiPage />
             </RequireAuth>
           }
         />
