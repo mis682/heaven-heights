@@ -145,7 +145,7 @@ export default function HeadOfficeDailyReportPage() {
                         disabled={isLocked}
                         value={entry.status}
                         onChange={(v) => updateEntry(idx, { status: v })}
-                        options={checkpoint?.options || meta.statusOptions}
+                        options={checkpoint?.options || selectedForm.statusOptions || meta.statusOptions}
                         placeholder="—"
                         className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 min-w-[170px] disabled:opacity-50 disabled:cursor-not-allowed"
                       />
