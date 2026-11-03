@@ -527,6 +527,7 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
               <label key={idx} className="cursor-pointer text-xs font-medium text-primary hover:underline border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-1.5 text-center">
                 {file ? file.name : `+ Page ${idx + 1}`}
                 <input
+                  required={!drill}
                   type="file"
                   accept="image/*,.pdf,application/pdf"
                   onChange={(e) =>
@@ -544,59 +545,70 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
         </Field>
 
         <Field label="During the drill, was any issue or unsafe condition identified?">
-          <ThemedSelect required value={issueIdentified} onChange={setIssueIdentified} options={["Yes", "No"]} placeholder="Select Yes or No" />
-        </Field>
-
-        <Field label="Please describe the issue or unsafe condition and where it was found.">
-          <textarea
-            value={issueDescription}
-            onChange={(e) => setIssueDescription(e.target.value)}
-            placeholder="If No, enter N/A."
-            rows={3}
-            className="input"
+          <ThemedSelect
+            required
+            value={issueIdentified}
+            onChange={(v) => {
+              setIssueIdentified(v);
+              if (v === "No") {
+                setIssueDescription("");
+                setActionTaken("");
+                setIssueEvidence({ uploading: false, url: null, failed: false });
+              }
+            }}
+            options={["Yes", "No"]}
+            placeholder="Select Yes or No"
           />
         </Field>
 
-        <Field label="What action did the team take, or what action plan was agreed upon?">
-          <textarea
-            value={actionTaken}
-            onChange={(e) => setActionTaken(e.target.value)}
-            placeholder="If Yes, include the action, the person responsible, and the expected completion date. If No, enter N/A."
-            rows={3}
-            className="input"
-          />
-        </Field>
+        {issueIdentified === "Yes" && (
+          <>
+            <Field label="Please describe the issue or unsafe condition and where it was found.">
+              <textarea value={issueDescription} onChange={(e) => setIssueDescription(e.target.value)} rows={3} className="input" />
+            </Field>
 
-        <Field label="Evidence of the issue or unsafe condition (photo/video)">
-          <div className="flex items-center gap-3">
-            {issueEvidence.url && !issueEvidence.uploading && (
-              <a href={issueEvidence.url} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
-                <FileText size={14} /> Current file
-              </a>
-            )}
-            <label className="cursor-pointer text-sm font-medium text-primary hover:underline">
-              {issueEvidence.url ? "Replace file" : "Upload file"}
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={(e) => {
-                  handleIssueEvidence(e.target.files?.[0] || null);
-                  e.target.value = "";
-                }}
-                className="hidden"
+            <Field label="What action did the team take, or what action plan was agreed upon?">
+              <textarea
+                value={actionTaken}
+                onChange={(e) => setActionTaken(e.target.value)}
+                placeholder="Include the action, the person responsible, and the expected completion date."
+                rows={3}
+                className="input"
               />
-            </label>
-          </div>
-          {issueEvidence.uploading && (
-            <div className="mt-1">
-              <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div className="h-full bg-primary transition-all" style={{ width: `${Math.round((issueEvidence.progress || 0) * 100)}%` }} />
+            </Field>
+
+            <Field label="Evidence of the issue or unsafe condition (photo/video)">
+              <div className="flex items-center gap-3">
+                {issueEvidence.url && !issueEvidence.uploading && (
+                  <a href={issueEvidence.url} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                    <FileText size={14} /> Current file
+                  </a>
+                )}
+                <label className="cursor-pointer text-sm font-medium text-primary hover:underline">
+                  {issueEvidence.url ? "Replace file" : "Upload file"}
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={(e) => {
+                      handleIssueEvidence(e.target.files?.[0] || null);
+                      e.target.value = "";
+                    }}
+                    className="hidden"
+                  />
+                </label>
               </div>
-              <p className="text-[10px] text-subtext dark:text-gray-400 mt-0.5">Uploading {Math.round((issueEvidence.progress || 0) * 100)}%</p>
-            </div>
-          )}
-          {issueEvidence.failed && <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5">{issueEvidence.errorMessage || "Upload failed"}</p>}
-        </Field>
+              {issueEvidence.uploading && (
+                <div className="mt-1">
+                  <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${Math.round((issueEvidence.progress || 0) * 100)}%` }} />
+                  </div>
+                  <p className="text-[10px] text-subtext dark:text-gray-400 mt-0.5">Uploading {Math.round((issueEvidence.progress || 0) * 100)}%</p>
+                </div>
+              )}
+              {issueEvidence.failed && <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5">{issueEvidence.errorMessage || "Upload failed"}</p>}
+            </Field>
+          </>
+        )}
 
         <button
           disabled={saving || videosStillUploading || issueEvidence.uploading}
