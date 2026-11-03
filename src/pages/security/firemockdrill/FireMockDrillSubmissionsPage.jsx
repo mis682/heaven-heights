@@ -20,6 +20,7 @@ import { uploadFireMockDrillFile, getVideoDuration, MAX_VIDEO_SECONDS } from "..
 import { useAuth } from "../../../context/AuthContext";
 
 const PUBLIC_FORM_PATH = "/fire-mock-drill-form";
+const MAINTENANCE_SUPERVISORS = ["Mukesh", "Shailendra", "Vinod", "Pramod", "Ranijay", "Avinash"];
 
 export default function FireMockDrillSubmissionsPage() {
   const { user } = useAuth();
@@ -90,6 +91,7 @@ export default function FireMockDrillSubmissionsPage() {
       <DataTable
         columns={[
           { key: "projectName", header: "Project" },
+          { key: "maintenanceSupervisor", header: "Maintenance Supervisor" },
           { key: "date", header: "Date" },
           {
             key: "panelPhoto",
@@ -214,6 +216,12 @@ function ViewModal({ drill, onClose }) {
   return (
     <Modal title={`${drill.projectName} — ${drill.date}`} onClose={onClose} wide>
       <div className="space-y-4">
+        {drill.maintenanceSupervisor && (
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="font-medium text-gray-700 dark:text-gray-300">Maintenance Supervisor:</span> {drill.maintenanceSupervisor}
+          </p>
+        )}
+
         {drill.panelPhoto && (
           <div>
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Panel Photo</p>
@@ -284,6 +292,7 @@ function ViewModal({ drill, onClose }) {
 
 function DrillFormModal({ drill, projects, onClose, onSaved }) {
   const [projectName, setProjectName] = useState(drill?.projectName || "");
+  const [maintenanceSupervisor, setMaintenanceSupervisor] = useState(drill?.maintenanceSupervisor || "");
   const [date, setDate] = useState(drill?.date || "");
   const [panelPhoto, setPanelPhoto] = useState(null);
   const [panelPreview, setPanelPreview] = useState(drill?.panelPhoto || null);
@@ -399,7 +408,7 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const data = { projectName, date };
+    const data = { projectName, maintenanceSupervisor, date };
     const videoUrls = [...existingVideos, ...newVideos.filter((v) => v.url).map((v) => v.url)];
     const newChecklist = newChecklistPages.filter(Boolean);
 
@@ -434,6 +443,15 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
         <div className="grid grid-cols-2 gap-3">
           <Field label="Project">
             <ThemedSelect required value={projectName} onChange={setProjectName} options={projects} placeholder="Select project" />
+          </Field>
+          <Field label="Maintenance Supervisor Name">
+            <ThemedSelect
+              required
+              value={maintenanceSupervisor}
+              onChange={setMaintenanceSupervisor}
+              options={MAINTENANCE_SUPERVISORS}
+              placeholder="Select supervisor"
+            />
           </Field>
           <Field label="Date">
             <ThemedDatePicker required value={date} onChange={setDate} />

@@ -5,9 +5,12 @@ import { uploadFireMockDrillFile, getVideoDuration, MAX_VIDEO_SECONDS } from "..
 import ThemedSelect from "../../../components/ThemedSelect";
 import ThemedDatePicker from "../../../components/ThemedDatePicker";
 
+const MAINTENANCE_SUPERVISORS = ["Mukesh", "Shailendra", "Vinod", "Pramod", "Ranijay", "Avinash"];
+
 export default function FireMockDrillPublicForm() {
   const [projects, setProjects] = useState([]);
   const [projectName, setProjectName] = useState("");
+  const [maintenanceSupervisor, setMaintenanceSupervisor] = useState("");
   const [date, setDate] = useState("");
   const [panelPhoto, setPanelPhoto] = useState(null);
   const [videos, setVideos] = useState(Array(8).fill(null));
@@ -142,7 +145,7 @@ export default function FireMockDrillPublicForm() {
         Promise.all(checklistPages.filter(Boolean).map((f) => uploadFireMockDrillFile(f))),
       ]);
       await createFireMockDrill(
-        { projectName, date },
+        { projectName, date, maintenanceSupervisor },
         {
           panelPhoto: panelPhotoUrl,
           checklistAttachments: checklistAttachmentUrls,
@@ -186,9 +189,21 @@ export default function FireMockDrillPublicForm() {
         </div>
 
         <form onSubmit={submit} className="space-y-4">
-          <Field label="Project">
-            <ThemedSelect required value={projectName} onChange={setProjectName} options={projects} placeholder="Select project" />
-          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Project">
+              <ThemedSelect required value={projectName} onChange={setProjectName} options={projects} placeholder="Select project" />
+            </Field>
+
+            <Field label="Maintenance Supervisor Name">
+              <ThemedSelect
+                required
+                value={maintenanceSupervisor}
+                onChange={setMaintenanceSupervisor}
+                options={MAINTENANCE_SUPERVISORS}
+                placeholder="Select supervisor"
+              />
+            </Field>
+          </div>
 
           <Field label="Date">
             <ThemedDatePicker required value={date} onChange={setDate} />
@@ -333,6 +348,7 @@ export default function FireMockDrillPublicForm() {
               videosStillUploading ||
               issueEvidence.uploading ||
               !projectName ||
+              !maintenanceSupervisor ||
               !date ||
               !panelPhoto ||
               !issueIdentified ||
