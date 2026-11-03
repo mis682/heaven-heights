@@ -11,8 +11,11 @@ export default function FireMockDrillPublicForm() {
   const [date, setDate] = useState("");
   const [panelPhoto, setPanelPhoto] = useState(null);
   const [videos, setVideos] = useState(Array(8).fill(null));
-  const [reportAttachment, setReportAttachment] = useState(null);
-  const [checklistPages, setChecklistPages] = useState(Array(5).fill(null));
+  const [checklistPages, setChecklistPages] = useState(Array(3).fill(null));
+  const [issueIdentified, setIssueIdentified] = useState("");
+  const [issueDescription, setIssueDescription] = useState("");
+  const [actionTaken, setActionTaken] = useState("");
+  const [issueEvidence, setIssueEvidence] = useState({ uploading: false, url: null, failed: false });
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -97,24 +100,58 @@ export default function FireMockDrillPublicForm() {
       return next;
     });
 
+  // Evidence can be either a photo or a short video — a video picked here
+  // goes through the same duration check + upload as the Videos field above.
+  const handleIssueEvidence = async (file) => {
+    if (!file) {
+      setIssueEvidence({ uploading: false, url: null, failed: false });
+      return;
+    }
+
+    const isVideo = file.type.startsWith("video/");
+    const mediaType = isVideo ? "video" : "photo";
+
+    if (isVideo) {
+      let duration;
+      try {
+        duration = await getVideoDuration(file);
+      } catch {
+        setIssueEvidence({ uploading: false, url: null, failed: true, errorMessage: "Could not read this video — try another file." });
+        return;
+      }
+      if (duration > MAX_VIDEO_SECONDS) {
+        setIssueEvidence({ uploading: false, url: null, failed: true, errorMessage: `Video is ${Math.round(duration)}s — max ${MAX_VIDEO_SECONDS}s allowed.` });
+        return;
+      }
+    }
+
+    setIssueEvidence({ uploading: true, progress: 0, url: null, failed: false, mediaType });
+    uploadFireMockDrillFile(file, (progress) => setIssueEvidence((prev) => ({ ...prev, progress })))
+      .then((url) => setIssueEvidence({ uploading: false, url, failed: false, mediaType }))
+      .catch(() => setIssueEvidence({ uploading: false, url: null, failed: true, errorMessage: "Upload failed — try again." }));
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
     try {
       const videoUrls = videos.filter((v) => v?.url).map((v) => v.url);
-      const [panelPhotoUrl, reportAttachmentUrl, checklistAttachmentUrls] = await Promise.all([
+      const [panelPhotoUrl, checklistAttachmentUrls] = await Promise.all([
         uploadFireMockDrillFile(panelPhoto),
-        reportAttachment ? uploadFireMockDrillFile(reportAttachment) : Promise.resolve(""),
         Promise.all(checklistPages.filter(Boolean).map((f) => uploadFireMockDrillFile(f))),
       ]);
       await createFireMockDrill(
         { projectName, date },
         {
           panelPhoto: panelPhotoUrl,
-          reportAttachment: reportAttachmentUrl,
           checklistAttachments: checklistAttachmentUrls,
           videoUrls,
+          issueIdentified,
+          issueDescription,
+          actionTaken,
+          issueEvidence: issueEvidence.url || "",
+          issueEvidenceType: issueEvidence.url ? issueEvidence.mediaType : "",
         }
       );
       setDone(true);
@@ -201,12 +238,8 @@ export default function FireMockDrillPublicForm() {
             ))}
           </div>
 
-          <Field label="Report Attachment">
-            <input type="file" onChange={(e) => setReportAttachment(e.target.files?.[0] || null)} className="input" />
-          </Field>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Checklist Attachment (5 pages)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Checklist Attachment (3 pages)</label>
             <div className="grid grid-cols-2 gap-3">
               {checklistPages.map((file, idx) => (
                 <Field key={idx} label={`Page ${idx + 1}`}>
@@ -226,14 +259,68 @@ export default function FireMockDrillPublicForm() {
             </div>
           </div>
 
+          <Field label="During the drill, was any issue or unsafe condition identified?">
+            <ThemedSelect required value={issueIdentified} onChange={setIssueIdentified} options={["Yes", "No"]} placeholder="Select Yes or No" />
+          </Field>
+
+          <Field label="Please describe the issue or unsafe condition and where it was found.">
+            <textarea
+              value={issueDescription}
+              onChange={(e) => setIssueDescription(e.target.value)}
+              placeholder="If No, enter N/A."
+              rows={3}
+              className="input"
+            />
+          </Field>
+
+          <Field label="What action did the team take, or what action plan was agreed upon?">
+            <textarea
+              value={actionTaken}
+              onChange={(e) => setActionTaken(e.target.value)}
+              placeholder="If Yes, include the action, the person responsible, and the expected completion date. If No, enter N/A."
+              rows={3}
+              className="input"
+            />
+          </Field>
+
+          <Field label="Evidence of the issue or unsafe condition (photo/video)">
+            <input
+              type="file"
+              accept="image/*,video/*"
+              onChange={(e) => {
+                handleIssueEvidence(e.target.files?.[0] || null);
+                e.target.value = "";
+              }}
+              className="input text-xs"
+            />
+            {issueEvidence.uploading && (
+              <div className="mt-1">
+                <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary transition-all" style={{ width: `${Math.round((issueEvidence.progress || 0) * 100)}%` }} />
+                </div>
+                <p className="text-[10px] text-subtext dark:text-gray-400 mt-0.5">Uploading {Math.round((issueEvidence.progress || 0) * 100)}%</p>
+              </div>
+            )}
+            {issueEvidence.url && !issueEvidence.uploading && (
+              <p className="text-[10px] text-green-600 dark:text-green-400 mt-0.5 flex items-center gap-1">
+                <CheckCircle2 size={10} /> Uploaded
+              </p>
+            )}
+            {issueEvidence.failed && (
+              <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5 flex items-center gap-1">
+                <AlertCircle size={10} /> {issueEvidence.errorMessage || "Upload failed — try again"}
+              </p>
+            )}
+          </Field>
+
           {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
           <button
-            disabled={submitting || videosStillUploading || !projectName || !date || !panelPhoto}
+            disabled={submitting || videosStillUploading || issueEvidence.uploading || !projectName || !date || !panelPhoto || !issueIdentified}
             className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {videosStillUploading && <Loader2 size={15} className="animate-spin" />}
-            {submitting ? "Submitting..." : videosStillUploading ? "Videos uploading..." : "Submit"}
+            {(videosStillUploading || issueEvidence.uploading) && <Loader2 size={15} className="animate-spin" />}
+            {submitting ? "Submitting..." : videosStillUploading || issueEvidence.uploading ? "Uploading..." : "Submit"}
           </button>
         </form>
       </div>

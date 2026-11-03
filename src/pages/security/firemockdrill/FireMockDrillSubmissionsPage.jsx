@@ -120,19 +120,7 @@ export default function FireMockDrillSubmissionsPage() {
                 <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
               ),
           })),
-          {
-            key: "reportAttachment",
-            header: "Report Attachment",
-            render: (r) =>
-              r.reportAttachment ? (
-                <a href={r.reportAttachment} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary">
-                  <FileText size={16} />
-                </a>
-              ) : (
-                <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
-              ),
-          },
-          ...Array.from({ length: 5 }, (_, i) => ({
+          ...Array.from({ length: 3 }, (_, i) => ({
             key: `checklistPage${i + 1}`,
             header: `Checklist Page ${i + 1}`,
             render: (r) =>
@@ -144,6 +132,24 @@ export default function FireMockDrillSubmissionsPage() {
                 <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
               ),
           })),
+          {
+            key: "issueIdentified",
+            header: "Issue?",
+            render: (r) =>
+              r.issueIdentified ? (
+                <span
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                    r.issueIdentified === "Yes"
+                      ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
+                      : "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                  }`}
+                >
+                  {r.issueIdentified}
+                </span>
+              ) : (
+                <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
+              ),
+          },
           {
             key: "actions",
             header: "Actions",
@@ -226,20 +232,6 @@ function ViewModal({ drill, onClose }) {
           </div>
         )}
 
-        {drill.reportAttachment && (
-          <div>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Report Attachment</p>
-            <a
-              href={drill.reportAttachment}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-            >
-              <FileText size={16} /> Open report
-            </a>
-          </div>
-        )}
-
         {drill.checklistAttachments?.length > 0 && (
           <div>
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Checklist Attachments ({drill.checklistAttachments.length})</p>
@@ -258,6 +250,33 @@ function ViewModal({ drill, onClose }) {
             </div>
           </div>
         )}
+
+        {drill.issueIdentified && (
+          <div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Issue identified: <span className={drill.issueIdentified === "Yes" ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}>{drill.issueIdentified}</span>
+            </p>
+            {drill.issueDescription && <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{drill.issueDescription}</p>}
+          </div>
+        )}
+
+        {drill.actionTaken && (
+          <div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Action taken / plan</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{drill.actionTaken}</p>
+          </div>
+        )}
+
+        {drill.issueEvidence && (
+          <div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Issue Evidence</p>
+            {drill.issueEvidenceType === "video" ? (
+              <video src={drill.issueEvidence} controls className="rounded-xl border border-gray-200 dark:border-gray-700 max-h-72" />
+            ) : (
+              <img src={drill.issueEvidence} alt="" className="rounded-xl border border-gray-200 dark:border-gray-700 max-h-72 object-contain" />
+            )}
+          </div>
+        )}
       </div>
     </Modal>
   );
@@ -270,10 +289,17 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
   const [panelPreview, setPanelPreview] = useState(drill?.panelPhoto || null);
   const [existingVideos, setExistingVideos] = useState(drill?.videos || []);
   const [newVideos, setNewVideos] = useState([]);
-  const [reportAttachment, setReportAttachment] = useState(null);
-  const [existingReport, setExistingReport] = useState(drill?.reportAttachment || "");
   const [existingChecklist, setExistingChecklist] = useState(drill?.checklistAttachments || []);
-  const [newChecklistPages, setNewChecklistPages] = useState(Array(5).fill(null));
+  const [newChecklistPages, setNewChecklistPages] = useState(Array(3).fill(null));
+  const [issueIdentified, setIssueIdentified] = useState(drill?.issueIdentified || "");
+  const [issueDescription, setIssueDescription] = useState(drill?.issueDescription || "");
+  const [actionTaken, setActionTaken] = useState(drill?.actionTaken || "");
+  const [issueEvidence, setIssueEvidence] = useState({
+    uploading: false,
+    url: drill?.issueEvidence || null,
+    failed: false,
+    mediaType: drill?.issueEvidenceType || "",
+  });
   const [saving, setSaving] = useState(false);
 
   const totalVideoSlots = existingVideos.length + newVideos.length;
@@ -331,6 +357,35 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
       });
   };
 
+  const handleIssueEvidence = async (file) => {
+    if (!file) {
+      setIssueEvidence({ uploading: false, url: null, failed: false });
+      return;
+    }
+
+    const isVideo = file.type.startsWith("video/");
+    const mediaType = isVideo ? "video" : "photo";
+
+    if (isVideo) {
+      let duration;
+      try {
+        duration = await getVideoDuration(file);
+      } catch {
+        setIssueEvidence({ uploading: false, url: null, failed: true, errorMessage: "Could not read this video." });
+        return;
+      }
+      if (duration > MAX_VIDEO_SECONDS) {
+        setIssueEvidence({ uploading: false, url: null, failed: true, errorMessage: `${Math.round(duration)}s — max ${MAX_VIDEO_SECONDS}s` });
+        return;
+      }
+    }
+
+    setIssueEvidence({ uploading: true, progress: 0, url: null, failed: false, mediaType });
+    uploadFireMockDrillFile(file, (progress) => setIssueEvidence((prev) => ({ ...prev, progress })))
+      .then((url) => setIssueEvidence({ uploading: false, url, failed: false, mediaType }))
+      .catch(() => setIssueEvidence({ uploading: false, url: null, failed: true, errorMessage: "Upload failed" }));
+  };
+
   const removeExistingVideo = (idx) => {
     setExistingVideos((prev) => prev.filter((_, i) => i !== idx));
   };
@@ -348,13 +403,20 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
     const videoUrls = [...existingVideos, ...newVideos.filter((v) => v.url).map((v) => v.url)];
     const newChecklist = newChecklistPages.filter(Boolean);
 
-    const [panelPhotoUrl, reportAttachmentUrl, checklistUrls] = await Promise.all([
+    const [panelPhotoUrl, checklistUrls] = await Promise.all([
       panelPhoto ? uploadFireMockDrillFile(panelPhoto) : Promise.resolve(drill?.panelPhoto || ""),
-      reportAttachment ? uploadFireMockDrillFile(reportAttachment) : Promise.resolve(existingReport),
       newChecklist.length ? Promise.all(newChecklist.map((f) => uploadFireMockDrillFile(f))) : Promise.resolve(null),
     ]);
 
-    const urls = { panelPhoto: panelPhotoUrl, reportAttachment: reportAttachmentUrl, videoUrls };
+    const urls = {
+      panelPhoto: panelPhotoUrl,
+      videoUrls,
+      issueIdentified,
+      issueDescription,
+      actionTaken,
+      issueEvidence: issueEvidence.url || "",
+      issueEvidenceType: issueEvidence.url ? issueEvidence.mediaType : "",
+    };
     if (checklistUrls) urls.checklistAttachments = checklistUrls;
 
     if (drill) {
@@ -449,22 +511,7 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
           )}
         </Field>
 
-        <Field label="Report Attachment">
-          <div className="flex items-center gap-3">
-            {existingReport && !reportAttachment && (
-              <a href={existingReport} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
-                <FileText size={14} /> Current file
-              </a>
-            )}
-            {reportAttachment && <span className="text-sm text-gray-600 dark:text-gray-400">{reportAttachment.name}</span>}
-            <label className="cursor-pointer text-sm font-medium text-primary hover:underline">
-              {existingReport || reportAttachment ? "Replace file" : "Upload file"}
-              <input type="file" onChange={(e) => setReportAttachment(e.target.files?.[0] || null)} className="hidden" />
-            </label>
-          </div>
-        </Field>
-
-        <Field label="Checklist Attachment (5 pages)">
+        <Field label="Checklist Attachment (3 pages)">
           {newChecklistPages.every((f) => !f) && existingChecklist.length > 0 && (
             <div className="flex flex-wrap items-center gap-3 mb-2">
               {existingChecklist.map((url, idx) => (
@@ -496,12 +543,67 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
           </div>
         </Field>
 
+        <Field label="During the drill, was any issue or unsafe condition identified?">
+          <ThemedSelect required value={issueIdentified} onChange={setIssueIdentified} options={["Yes", "No"]} placeholder="Select Yes or No" />
+        </Field>
+
+        <Field label="Please describe the issue or unsafe condition and where it was found.">
+          <textarea
+            value={issueDescription}
+            onChange={(e) => setIssueDescription(e.target.value)}
+            placeholder="If No, enter N/A."
+            rows={3}
+            className="input"
+          />
+        </Field>
+
+        <Field label="What action did the team take, or what action plan was agreed upon?">
+          <textarea
+            value={actionTaken}
+            onChange={(e) => setActionTaken(e.target.value)}
+            placeholder="If Yes, include the action, the person responsible, and the expected completion date. If No, enter N/A."
+            rows={3}
+            className="input"
+          />
+        </Field>
+
+        <Field label="Evidence of the issue or unsafe condition (photo/video)">
+          <div className="flex items-center gap-3">
+            {issueEvidence.url && !issueEvidence.uploading && (
+              <a href={issueEvidence.url} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+                <FileText size={14} /> Current file
+              </a>
+            )}
+            <label className="cursor-pointer text-sm font-medium text-primary hover:underline">
+              {issueEvidence.url ? "Replace file" : "Upload file"}
+              <input
+                type="file"
+                accept="image/*,video/*"
+                onChange={(e) => {
+                  handleIssueEvidence(e.target.files?.[0] || null);
+                  e.target.value = "";
+                }}
+                className="hidden"
+              />
+            </label>
+          </div>
+          {issueEvidence.uploading && (
+            <div className="mt-1">
+              <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-full bg-primary transition-all" style={{ width: `${Math.round((issueEvidence.progress || 0) * 100)}%` }} />
+              </div>
+              <p className="text-[10px] text-subtext dark:text-gray-400 mt-0.5">Uploading {Math.round((issueEvidence.progress || 0) * 100)}%</p>
+            </div>
+          )}
+          {issueEvidence.failed && <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5">{issueEvidence.errorMessage || "Upload failed"}</p>}
+        </Field>
+
         <button
-          disabled={saving || videosStillUploading}
+          disabled={saving || videosStillUploading || issueEvidence.uploading}
           className="w-full py-2.5 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50 mt-2 flex items-center justify-center gap-2"
         >
-          {videosStillUploading && <Loader2 size={15} className="animate-spin" />}
-          {saving ? "Saving..." : videosStillUploading ? "Videos uploading..." : "Save"}
+          {(videosStillUploading || issueEvidence.uploading) && <Loader2 size={15} className="animate-spin" />}
+          {saving ? "Saving..." : videosStillUploading || issueEvidence.uploading ? "Uploading..." : "Save"}
         </button>
       </form>
     </Modal>
