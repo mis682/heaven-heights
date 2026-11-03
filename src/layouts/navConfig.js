@@ -851,7 +851,6 @@ export const HEAD_OFFICE_FORMS = [
       "Lunch Room Mirror",
       "Jinesh Sir Cabin's Mirror",
       "Bade Sir Cabin's Mirror",
-      "Bade Sir Workstation's Mirror",
       "Huddle Room-1 Mirror",
       "Huddle Room-2 Mirror",
       "Huddle Room-3 Mirror",
