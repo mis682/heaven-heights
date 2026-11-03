@@ -16,7 +16,7 @@ import {
   updateFireMockDrill,
   deleteFireMockDrill,
 } from "../../../api/fireMockDrill";
-import { uploadVideoDirect, uploadFileDirect } from "../../../api/cloudinaryDirectUpload";
+import { uploadFireMockDrillFile, getVideoDuration, MAX_VIDEO_SECONDS } from "../../../api/fireMockDrillUpload";
 import { useAuth } from "../../../context/AuthContext";
 
 const PUBLIC_FORM_PATH = "/fire-mock-drill-form";
@@ -286,13 +286,29 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
     setPanelPreview(URL.createObjectURL(file));
   };
 
-  const addNewVideo = (file) => {
+  const addNewVideo = async (file) => {
     if (!file) return;
-    const slot = { preview: URL.createObjectURL(file), progress: 0, uploading: true, url: null, failed: false };
-    setNewVideos((prev) => [...prev, slot]);
     const idx = newVideos.length;
 
-    uploadVideoDirect(file, (progress) => {
+    let duration;
+    try {
+      duration = await getVideoDuration(file);
+    } catch {
+      setNewVideos((prev) => [...prev, { preview: URL.createObjectURL(file), uploading: false, failed: true, errorMessage: "Could not read this video." }]);
+      return;
+    }
+    if (duration > MAX_VIDEO_SECONDS) {
+      setNewVideos((prev) => [
+        ...prev,
+        { preview: URL.createObjectURL(file), uploading: false, failed: true, errorMessage: `${Math.round(duration)}s — max ${MAX_VIDEO_SECONDS}s` },
+      ]);
+      return;
+    }
+
+    const slot = { preview: URL.createObjectURL(file), progress: 0, uploading: true, url: null, failed: false };
+    setNewVideos((prev) => [...prev, slot]);
+
+    uploadFireMockDrillFile(file, (progress) => {
       setNewVideos((prev) => {
         const next = [...prev];
         if (next[idx]) next[idx] = { ...next[idx], progress };
@@ -309,7 +325,7 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
       .catch(() => {
         setNewVideos((prev) => {
           const next = [...prev];
-          if (next[idx]) next[idx] = { ...next[idx], uploading: false, failed: true };
+          if (next[idx]) next[idx] = { ...next[idx], uploading: false, failed: true, errorMessage: "Upload failed" };
           return next;
         });
       });
@@ -333,11 +349,9 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
     const newChecklist = newChecklistPages.filter(Boolean);
 
     const [panelPhotoUrl, reportAttachmentUrl, checklistUrls] = await Promise.all([
-      panelPhoto ? uploadFileDirect(panelPhoto, { account: "main", resourceType: "image" }) : Promise.resolve(drill?.panelPhoto || ""),
-      reportAttachment ? uploadFileDirect(reportAttachment, { account: "main", resourceType: "raw" }) : Promise.resolve(existingReport),
-      newChecklist.length
-        ? Promise.all(newChecklist.map((f) => uploadFileDirect(f, { account: "main", resourceType: "raw" })))
-        : Promise.resolve(null),
+      panelPhoto ? uploadFireMockDrillFile(panelPhoto) : Promise.resolve(drill?.panelPhoto || ""),
+      reportAttachment ? uploadFireMockDrillFile(reportAttachment) : Promise.resolve(existingReport),
+      newChecklist.length ? Promise.all(newChecklist.map((f) => uploadFireMockDrillFile(f))) : Promise.resolve(null),
     ]);
 
     const urls = { panelPhoto: panelPhotoUrl, reportAttachment: reportAttachmentUrl, videoUrls };
@@ -412,8 +426,8 @@ function DrillFormModal({ drill, projects, onClose, onSaved }) {
                   </div>
                 )}
                 {v.failed && (
-                  <span className="absolute inset-0 flex items-center justify-center bg-red-50/90 dark:bg-red-900/70 text-red-600 dark:text-red-400 text-[10px] font-medium rounded-lg">
-                    Upload failed
+                  <span className="absolute inset-0 flex items-center justify-center text-center px-1 bg-red-50/90 dark:bg-red-900/70 text-red-600 dark:text-red-400 text-[10px] font-medium rounded-lg">
+                    {v.errorMessage || "Upload failed"}
                   </span>
                 )}
               </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CheckCircle2, Building2, Loader2, AlertCircle } from "lucide-react";
 import { getFireMockDrillMeta, createFireMockDrill } from "../../../api/fireMockDrill";
-import { uploadVideoDirect, uploadFileDirect } from "../../../api/cloudinaryDirectUpload";
+import { uploadFireMockDrillFile, getVideoDuration, MAX_VIDEO_SECONDS } from "../../../api/fireMockDrillUpload";
 import ThemedSelect from "../../../components/ThemedSelect";
 import ThemedDatePicker from "../../../components/ThemedDatePicker";
 
@@ -21,14 +21,39 @@ export default function FireMockDrillPublicForm() {
     getFireMockDrillMeta().then((m) => setProjects(m.projects));
   }, []);
 
-  // Videos start uploading straight to Cloudinary the moment they're picked
-  // (not on final submit) so the transfer overlaps with the rest of the form
-  // being filled in, instead of adding to submit-time wait.
-  const setVideoAt = (idx, file) => {
+  // Videos start uploading the moment they're picked (not on final submit)
+  // so the transfer + server-side compression overlaps with the rest of the
+  // form being filled in, instead of adding to submit-time wait. A video
+  // longer than MAX_VIDEO_SECONDS is rejected immediately, before any
+  // upload starts, as the server-side compressor also hard-trims to this
+  // length as a backstop — so a too-long video would otherwise silently get
+  // cut short instead of being rejected.
+  const setVideoAt = async (idx, file) => {
     if (!file) {
       setVideos((prev) => {
         const next = [...prev];
         next[idx] = null;
+        return next;
+      });
+      return;
+    }
+
+    let duration;
+    try {
+      duration = await getVideoDuration(file);
+    } catch {
+      setVideos((prev) => {
+        const next = [...prev];
+        next[idx] = { name: file.name, uploading: false, failed: true, errorMessage: "Could not read this video — try another file." };
+        return next;
+      });
+      return;
+    }
+
+    if (duration > MAX_VIDEO_SECONDS) {
+      setVideos((prev) => {
+        const next = [...prev];
+        next[idx] = { name: file.name, uploading: false, failed: true, errorMessage: `Video is ${Math.round(duration)}s — max ${MAX_VIDEO_SECONDS}s allowed.` };
         return next;
       });
       return;
@@ -40,7 +65,7 @@ export default function FireMockDrillPublicForm() {
       return next;
     });
 
-    uploadVideoDirect(file, (progress) => {
+    uploadFireMockDrillFile(file, (progress) => {
       setVideos((prev) => {
         const next = [...prev];
         if (next[idx]) next[idx] = { ...next[idx], progress };
@@ -57,7 +82,7 @@ export default function FireMockDrillPublicForm() {
       .catch(() => {
         setVideos((prev) => {
           const next = [...prev];
-          if (next[idx]) next[idx] = { ...next[idx], uploading: false, failed: true };
+          if (next[idx]) next[idx] = { ...next[idx], uploading: false, failed: true, errorMessage: "Upload failed — try again." };
           return next;
         });
       });
@@ -79,9 +104,9 @@ export default function FireMockDrillPublicForm() {
     try {
       const videoUrls = videos.filter((v) => v?.url).map((v) => v.url);
       const [panelPhotoUrl, reportAttachmentUrl, checklistAttachmentUrls] = await Promise.all([
-        uploadFileDirect(panelPhoto, { account: "main", resourceType: "image" }),
-        reportAttachment ? uploadFileDirect(reportAttachment, { account: "main", resourceType: "raw" }) : Promise.resolve(""),
-        Promise.all(checklistPages.filter(Boolean).map((f) => uploadFileDirect(f, { account: "main", resourceType: "raw" }))),
+        uploadFireMockDrillFile(panelPhoto),
+        reportAttachment ? uploadFireMockDrillFile(reportAttachment) : Promise.resolve(""),
+        Promise.all(checklistPages.filter(Boolean).map((f) => uploadFireMockDrillFile(f))),
       ]);
       await createFireMockDrill(
         { projectName, date },
@@ -169,7 +194,7 @@ export default function FireMockDrillPublicForm() {
                 )}
                 {v?.failed && (
                   <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5 flex items-center gap-1">
-                    <AlertCircle size={10} /> Upload failed — try again
+                    <AlertCircle size={10} /> {v.errorMessage || "Upload failed — try again"}
                   </p>
                 )}
               </Field>
