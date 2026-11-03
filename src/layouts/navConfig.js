@@ -974,7 +974,7 @@ export const HEAD_OFFICE_FORMS = [
   {
     formNumber: 15,
     label: "Sales MCB Form",
-    checkpoints: ["MCB-1", "MCB-2", "MCB-3"].map((label) => ({ label, type: "photo" })),
+    checkpoints: ["MCB-1", "MCB-2"].map((label) => ({ label, type: "photo" })),
   },
 ];
 
