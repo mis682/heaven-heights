@@ -40,6 +40,7 @@ const STATUS_STYLES = {
   No: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
   ON: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
   OFF: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
+  "Blur video": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
 };
 
 export default function StatusPill({ status }) {

@@ -189,9 +189,13 @@ export default function FireMockDrillDailyReportPage() {
                     <tr key={idx} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0">
                       <td className="px-4 py-2 whitespace-nowrap font-medium text-heading dark:text-gray-100">{entry.attachmentLabel}</td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        <a href={entry.attachmentUrl} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary">
-                          {entry.attachmentLabel.startsWith("Video") ? <VideoIcon size={16} /> : <ImageIcon size={16} />}
-                        </a>
+                        {entry.attachmentUrl ? (
+                          <a href={entry.attachmentUrl} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary">
+                            {entry.attachmentLabel.startsWith("Video") ? <VideoIcon size={16} /> : <ImageIcon size={16} />}
+                          </a>
+                        ) : (
+                          <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         <ThemedSelect
