@@ -1341,8 +1341,17 @@ export const NAV_SECTIONS = [
           },
           {
             label: "Fire Mock Drill",
-            path: "/security/fire-mock-drill/submissions",
             permission: { module: "fireMockDrill", action: "view" },
+            children: [
+              { label: "Submissions", path: "/security/fire-mock-drill/submissions" },
+              {
+                label: "Daily Report",
+                path: "/security/fire-mock-drill/daily-report",
+                permission: { module: "fireMockDrill", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/security/fire-mock-drill/admin-report" },
+              { label: "KPI", path: "/security/fire-mock-drill/kpi" },
+            ],
           },
         ],
       },

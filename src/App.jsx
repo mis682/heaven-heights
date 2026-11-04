@@ -116,6 +116,9 @@ import NightGuardGuardKpiPage from "./pages/security/nightguard/NightGuardGuardK
 
 import FireMockDrillPublicForm from "./pages/security/firemockdrill/FireMockDrillPublicForm";
 import FireMockDrillSubmissionsPage from "./pages/security/firemockdrill/FireMockDrillSubmissionsPage";
+import FireMockDrillDailyReportPage from "./pages/security/firemockdrill/FireMockDrillDailyReportPage";
+import FireMockDrillAdminReportPage from "./pages/security/firemockdrill/FireMockDrillAdminReportPage";
+import FireMockDrillKpiPage from "./pages/security/firemockdrill/FireMockDrillKpiPage";
 
 import AttendancePage from "./pages/attendance/AttendancePage";
 import ScanAttendancePage from "./pages/attendance/ScanAttendancePage";
@@ -809,6 +812,30 @@ export default function App() {
         <Route path="/security/night-guard/guard-kpi" element={<NightGuardGuardKpiPage />} />
 
         <Route path="/security/fire-mock-drill/submissions" element={<FireMockDrillSubmissionsPage />} />
+        <Route
+          path="/security/fire-mock-drill/daily-report"
+          element={
+            <RequireAuth permission={{ module: "fireMockDrill", action: "edit" }}>
+              <FireMockDrillDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/security/fire-mock-drill/admin-report"
+          element={
+            <RequireAuth permission={{ module: "fireMockDrill", action: "view" }}>
+              <FireMockDrillAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/security/fire-mock-drill/kpi"
+          element={
+            <RequireAuth permission={{ module: "fireMockDrill", action: "view" }}>
+              <FireMockDrillKpiPage />
+            </RequireAuth>
+          }
+        />
 
         <Route
           path="/attendance"
