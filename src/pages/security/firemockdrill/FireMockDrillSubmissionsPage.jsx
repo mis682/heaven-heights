@@ -21,6 +21,7 @@ import { useAuth } from "../../../context/AuthContext";
 
 const PUBLIC_FORM_PATH = "/fire-mock-drill-form";
 const MAINTENANCE_SUPERVISORS = ["Mukesh", "Shailendra", "Vinod", "Pramod", "Ranijay", "Avinash"];
+const ISSUE_STATUS_OPTIONS = ["Open", "Closed", "WIP", "Pending", "Complete"];
 
 export default function FireMockDrillSubmissionsPage() {
   const { user } = useAuth();
@@ -28,6 +29,8 @@ export default function FireMockDrillSubmissionsPage() {
   const [drills, setDrills] = useState([]);
   const [projects, setProjects] = useState([]);
   const [projectFilter, setProjectFilter] = useState("");
+  const [supervisorFilter, setSupervisorFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [viewing, setViewing] = useState(null);
@@ -49,7 +52,12 @@ export default function FireMockDrillSubmissionsPage() {
   const load = async () => {
     const requestId = ++requestIdRef.current;
     setLoading(true);
-    const data = await listFireMockDrills({ projectName: projectFilter || undefined, search: search || undefined });
+    const data = await listFireMockDrills({
+      projectName: projectFilter || undefined,
+      maintenanceSupervisor: supervisorFilter || undefined,
+      date: dateFilter || undefined,
+      search: search || undefined,
+    });
     if (requestId !== requestIdRef.current) return;
     setDrills(data);
     setLoading(false);
@@ -58,7 +66,12 @@ export default function FireMockDrillSubmissionsPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectFilter, search]);
+  }, [projectFilter, supervisorFilter, dateFilter, search]);
+
+  const setIssueStatus = async (id, issueStatus) => {
+    setDrills((prev) => prev.map((d) => (d._id === id ? { ...d, issueStatus } : d)));
+    await updateFireMockDrill(id, { issueStatus }, {});
+  };
 
   const remove = async (id) => {
     const proceed = await confirmAction({ title: "Delete record?", text: "Delete this fire mock drill record?", confirmText: "Delete", danger: true });
@@ -85,7 +98,13 @@ export default function FireMockDrillSubmissionsPage() {
         search={search}
         onSearchChange={setSearch}
         placeholder="Search by project or date..."
-        filters={<Select value={projectFilter} onChange={setProjectFilter} options={projects} placeholder="All projects" />}
+        filters={
+          <>
+            <Select value={projectFilter} onChange={setProjectFilter} options={projects} placeholder="All projects" />
+            <Select value={supervisorFilter} onChange={setSupervisorFilter} options={MAINTENANCE_SUPERVISORS} placeholder="All supervisors" />
+            <ThemedDatePicker value={dateFilter} onChange={setDateFilter} className="max-w-[160px]" />
+          </>
+        }
       />
 
       <DataTable
@@ -160,6 +179,22 @@ export default function FireMockDrillSubmissionsPage() {
                 <a href={r.issueReportPdf} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary">
                   <FileText size={16} />
                 </a>
+              ) : (
+                <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
+              ),
+          },
+          {
+            key: "issueStatus",
+            header: "Issue Status",
+            render: (r) =>
+              r.issueIdentified === "Yes" ? (
+                <ThemedSelect
+                  value={r.issueStatus || ""}
+                  onChange={(v) => setIssueStatus(r._id, v)}
+                  options={ISSUE_STATUS_OPTIONS}
+                  placeholder="—"
+                  className="px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-1 min-w-[120px]"
+                />
               ) : (
                 <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
               ),
