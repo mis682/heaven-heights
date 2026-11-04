@@ -153,6 +153,18 @@ export default function FireMockDrillSubmissionsPage() {
               ),
           },
           {
+            key: "issueReportPdf",
+            header: "Issue Report",
+            render: (r) =>
+              r.issueReportPdf ? (
+                <a href={r.issueReportPdf} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary">
+                  <FileText size={16} />
+                </a>
+              ) : (
+                <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
+              ),
+          },
+          {
             key: "actions",
             header: "Actions",
             render: (r) => (
@@ -283,6 +295,19 @@ function ViewModal({ drill, onClose }) {
             ) : (
               <img src={drill.issueEvidence} alt="" className="rounded-xl border border-gray-200 dark:border-gray-700 max-h-72 object-contain" />
             )}
+          </div>
+        )}
+
+        {drill.issueReportPdf && (
+          <div>
+            <a
+              href={drill.issueReportPdf}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+            >
+              <FileText size={16} /> Download Issue Report (PDF)
+            </a>
           </div>
         )}
       </div>
