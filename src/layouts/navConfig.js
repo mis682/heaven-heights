@@ -693,8 +693,15 @@ export const SAMPLE_APARTMENT_FORMS = [
   },
   {
     formNumber: 2,
-    label: "Sample Apartment Form 2",
-    checkpoints: [{ label: "Placeholder Checkpoint", type: "photo" }],
+    label: "Garden City Sample Unit Cleaning Form",
+    checkpoints: [
+      { label: "Flat-1 - Image 1", type: "photo" },
+      { label: "Flat-1 - Image 2", type: "photo" },
+      { label: "Flat-2 - Image 1", type: "photo" },
+      { label: "Flat-2 - Image 2", type: "photo" },
+      { label: "Flat-3 - Image 1", type: "photo" },
+      { label: "Flat-3 - Image 2", type: "photo" },
+    ],
   },
   {
     formNumber: 3,
