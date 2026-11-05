@@ -677,8 +677,19 @@ export const SCHOOL_FORMS = [
 export const SAMPLE_APARTMENT_FORMS = [
   {
     formNumber: 1,
-    label: "Sample Apartment Form 1",
-    checkpoints: [{ label: "Placeholder Checkpoint", type: "photo" }],
+    label: "EG Sample Apartments Cleaning Form",
+    checkpoints: [
+      { label: "EG-101 2 BHK - Cleaning Image 1", type: "photo" },
+      { label: "EG-101 2 BHK - Cleaning Image 2", type: "photo" },
+      { label: "EG-102 2 BHK - Cleaning Image 1", type: "photo" },
+      { label: "EG-102 2 BHK - Cleaning Image 2", type: "photo" },
+      { label: "EG-117 3 BHK - Cleaning Image 1", type: "photo" },
+      { label: "EG-117 3 BHK - Cleaning Image 2", type: "photo" },
+      { label: "EG-118 1 RK - Cleaning Image 1", type: "photo" },
+      { label: "EG-118 1 RK - Cleaning Image 2", type: "photo" },
+      { label: "Villa-43 - Cleaning Image 1", type: "photo" },
+      { label: "Villa-43 - Cleaning Image 2", type: "photo" },
+    ],
   },
   {
     formNumber: 2,
