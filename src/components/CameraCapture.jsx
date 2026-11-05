@@ -58,11 +58,11 @@ function stampImage(file, geo, timestamp) {
         const barHeight = fontSize * 2;
 
         ctx.fillStyle = "rgba(0,0,0,0.55)";
-        ctx.fillRect(0, canvas.height - barHeight, Math.min(canvas.width, textWidth + paddingX * 2), barHeight);
+        ctx.fillRect(0, 0, Math.min(canvas.width, textWidth + paddingX * 2), barHeight);
 
         ctx.fillStyle = "#ffffff";
         ctx.textBaseline = "middle";
-        ctx.fillText(label, paddingX / 2, canvas.height - barHeight / 2);
+        ctx.fillText(label, paddingX / 2, barHeight / 2);
 
         canvas.toBlob(
           (blob) => resolve(new File([blob], file.name, { type: "image/jpeg" })),
