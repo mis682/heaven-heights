@@ -705,8 +705,15 @@ export const SAMPLE_APARTMENT_FORMS = [
   },
   {
     formNumber: 3,
-    label: "Sample Apartment Form 3",
-    checkpoints: [{ label: "Placeholder Checkpoint", type: "photo" }],
+    label: "Regal Garden Sample Unit Form",
+    checkpoints: [
+      { label: "Unit No-405 - Cleaning Image 1", type: "photo" },
+      { label: "Unit No-405 - Cleaning Image 2", type: "photo" },
+      { label: "Unit No-405 - Cleaning Image 3", type: "photo" },
+      { label: "Unit No-406 - Cleaning Image 1", type: "photo" },
+      { label: "Unit No-406 - Cleaning Image 2", type: "photo" },
+      { label: "Unit No-406 - Cleaning Image 3", type: "photo" },
+    ],
   },
 ];
 
