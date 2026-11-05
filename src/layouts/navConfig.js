@@ -671,6 +671,27 @@ export const SCHOOL_FORMS = [
   },
 ];
 
+// Sample Apartment forms — same shape as MILESTONE_FORMS. Mirrors
+// backend/constants/sampleApartmentForms.js — kept in sync manually. 3 forms
+// expected, added once the coordinator shares their checkpoints.
+export const SAMPLE_APARTMENT_FORMS = [
+  {
+    formNumber: 1,
+    label: "Sample Apartment Form 1",
+    checkpoints: [{ label: "Placeholder Checkpoint", type: "photo" }],
+  },
+  {
+    formNumber: 2,
+    label: "Sample Apartment Form 2",
+    checkpoints: [{ label: "Placeholder Checkpoint", type: "photo" }],
+  },
+  {
+    formNumber: 3,
+    label: "Sample Apartment Form 3",
+    checkpoints: [{ label: "Placeholder Checkpoint", type: "photo" }],
+  },
+];
+
 // Weekly Update Other Projects forms — same shape as MILESTONE_FORMS, all
 // plain photo checkpoints. Mirrors backend/constants/weeklyUpdateForms.js —
 // kept in sync manually.
@@ -1317,6 +1338,20 @@ export const NAV_SECTIONS = [
               },
               { label: "Admin Report View", path: "/housekeeping/regal-garden-club/admin-report" },
               { label: "KPI", path: "/housekeeping/regal-garden-club/kpi" },
+            ],
+          },
+          {
+            label: "Sample Apartment",
+            permission: { module: "sampleApartment", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/sample-apartment/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/sample-apartment/daily-report",
+                permission: { module: "sampleApartment", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/sample-apartment/admin-report" },
+              { label: "KPI", path: "/housekeeping/sample-apartment/kpi" },
             ],
           },
         ],

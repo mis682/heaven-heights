@@ -16,6 +16,7 @@ export const PERMISSION_MODULES = [
   { key: "neoMeridian", label: "Neo Meridian" },
   { key: "milestone", label: "Milestone" },
   { key: "school", label: "School" },
+  { key: "sampleApartment", label: "Sample Apartment" },
   { key: "weeklyUpdate", label: "Weekly Update Other Projects" },
   { key: "hydePark", label: "Hyde Park" },
   { key: "headOffice", label: "Head Office" },

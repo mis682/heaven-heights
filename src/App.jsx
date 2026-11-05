@@ -61,6 +61,11 @@ import SchoolSubmissionsPage from "./pages/housekeeping/SchoolSubmissionsPage";
 import SchoolDailyReportPage from "./pages/housekeeping/SchoolDailyReportPage";
 import SchoolAdminReportPage from "./pages/housekeeping/SchoolAdminReportPage";
 import SchoolKpiPage from "./pages/housekeeping/SchoolKpiPage";
+import SampleApartmentPublicForm from "./pages/housekeeping/SampleApartmentPublicForm";
+import SampleApartmentSubmissionsPage from "./pages/housekeeping/SampleApartmentSubmissionsPage";
+import SampleApartmentDailyReportPage from "./pages/housekeeping/SampleApartmentDailyReportPage";
+import SampleApartmentAdminReportPage from "./pages/housekeeping/SampleApartmentAdminReportPage";
+import SampleApartmentKpiPage from "./pages/housekeeping/SampleApartmentKpiPage";
 import WeeklyUpdatePublicForm from "./pages/housekeeping/WeeklyUpdatePublicForm";
 import WeeklyUpdateSubmissionsPage from "./pages/housekeeping/WeeklyUpdateSubmissionsPage";
 import WeeklyUpdateDailyReportPage from "./pages/housekeeping/WeeklyUpdateDailyReportPage";
@@ -154,6 +159,7 @@ export default function App() {
       <Route path="/head-office-form/:formNumber" element={<HeadOfficePublicForm />} />
       <Route path="/milestone-form/:formNumber" element={<MilestonePublicForm />} />
       <Route path="/school-form/:formNumber" element={<SchoolPublicForm />} />
+      <Route path="/sample-apartment-form/:formNumber" element={<SampleApartmentPublicForm />} />
       <Route path="/weekly-update-form/:formNumber" element={<WeeklyUpdatePublicForm />} />
       <Route path="/hyde-park-form/:formNumber" element={<HydeParkPublicForm />} />
       <Route path="/property-management-form" element={<PropertyManagementFormEntry />} />
@@ -565,6 +571,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "school", action: "view" }}>
               <SchoolKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/sample-apartment/submissions"
+          element={
+            <RequireAuth permission={{ module: "sampleApartment", action: "view" }}>
+              <SampleApartmentSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/sample-apartment/daily-report"
+          element={
+            <RequireAuth permission={{ module: "sampleApartment", action: "edit" }}>
+              <SampleApartmentDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/sample-apartment/admin-report"
+          element={
+            <RequireAuth permission={{ module: "sampleApartment", action: "view" }}>
+              <SampleApartmentAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/sample-apartment/kpi"
+          element={
+            <RequireAuth permission={{ module: "sampleApartment", action: "view" }}>
+              <SampleApartmentKpiPage />
             </RequireAuth>
           }
         />
