@@ -151,7 +151,7 @@ export default function GardenCityGuardKpiPage() {
                   {expanded === r.guardName && r.lateDetails.length > 0 && (
                     <tr>
                       <td colSpan={7} className="bg-gray-50 dark:bg-gray-900/40 px-4 py-3">
-                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Late checkpoints</p>
+                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Late / missed checkpoints</p>
                         <div className="space-y-1">
                           {r.lateDetails
                             .slice()
@@ -161,7 +161,11 @@ export default function GardenCityGuardKpiPage() {
                                 <span className="w-24 shrink-0">{d.date}</span>
                                 <span className="w-16 shrink-0 font-medium text-heading dark:text-gray-100">{d.checkpointLabel}</span>
                                 <span className="w-24 shrink-0">{d.scheduledTime}</span>
-                                <span className="text-amber-700 dark:text-amber-400 font-medium">Late by {d.lateByMinutes} min</span>
+                                {d.lateByMinutes == null ? (
+                                  <span className="text-gray-500 dark:text-gray-400 font-medium">Missed — no photo</span>
+                                ) : (
+                                  <span className="text-amber-700 dark:text-amber-400 font-medium">Late by {d.lateByMinutes} min</span>
+                                )}
                               </div>
                             ))}
                         </div>
