@@ -52,7 +52,7 @@ export default function ChecklistKpiPage({ title, subtitle, groupColumnLabel = "
     () => rows.reduce((acc, r) => ({ ok: acc.ok + r.ok, notOk: acc.notOk + r.notOk, total: acc.total + r.total }), { ok: 0, notOk: 0, total: 0 }),
     [rows]
   );
-  const overallPercent = totals.total > 0 ? Math.round((totals.ok / totals.total) * 100) : 0;
+  const notOkPercent = totals.total > 0 ? Math.round((totals.notOk / totals.total) * 100) : 0;
 
   return (
     <div>
@@ -64,6 +64,27 @@ export default function ChecklistKpiPage({ title, subtitle, groupColumnLabel = "
         }
       />
 
+      {!loading && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Total</p>
+            <p className="text-2xl font-bold text-heading dark:text-gray-100">{totals.total}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Total OK</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{totals.ok}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Total Not OK</p>
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{totals.notOk}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">% Not OK</p>
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{notOkPercent > 0 ? `-${notOkPercent}` : notOkPercent}%</p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <label className="text-sm text-subtext dark:text-gray-400 flex items-center gap-2">
           From
@@ -74,11 +95,6 @@ export default function ChecklistKpiPage({ title, subtitle, groupColumnLabel = "
           <ThemedDatePicker value={to} max={today()} onChange={setTo} />
         </label>
         {extraFilter}
-        {!loading && (
-          <span className="text-sm text-subtext dark:text-gray-400">
-            Overall: <span className="font-semibold text-heading dark:text-gray-100">{overallPercent}% OK</span> ({totals.ok}/{totals.total})
-          </span>
-        )}
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
