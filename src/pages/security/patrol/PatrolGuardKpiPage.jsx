@@ -68,7 +68,8 @@ export default function PatrolGuardKpiPage() {
       ),
     [rows]
   );
-  const overallPercent = totals.total > 0 ? Math.round((totals.onTime / totals.total) * 100) : 0;
+  const latePercent = totals.total > 0 ? Math.round((totals.late / totals.total) * 100) : 0;
+  const missedPercent = totals.total > 0 ? Math.round((totals.noPhoto / totals.total) * 100) : 0;
 
   return (
     <div>
@@ -82,6 +83,31 @@ export default function PatrolGuardKpiPage() {
         }
       />
 
+      {!loading && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Total Checkpoints</p>
+            <p className="text-2xl font-bold text-heading dark:text-gray-100">{totals.total}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">On Time</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{totals.onTime}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Late</p>
+            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+              {totals.late} <span className="text-base font-semibold">({latePercent > 0 ? `-${latePercent}` : latePercent}%)</span>
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Missed</p>
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+              {totals.noPhoto} <span className="text-base font-semibold">({missedPercent > 0 ? `-${missedPercent}` : missedPercent}%)</span>
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <label className="text-sm text-subtext dark:text-gray-400 flex items-center gap-2">
           From
@@ -91,11 +117,6 @@ export default function PatrolGuardKpiPage() {
           To
           <ThemedDatePicker value={to} max={today()} onChange={setTo} className="w-40" />
         </label>
-        {!loading && (
-          <span className="text-sm text-subtext dark:text-gray-400">
-            Overall: <span className="font-semibold text-heading dark:text-gray-100">{overallPercent}% on time</span> ({totals.onTime}/{totals.total})
-          </span>
-        )}
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
