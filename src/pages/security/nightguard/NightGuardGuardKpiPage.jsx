@@ -71,8 +71,8 @@ export default function NightGuardGuardKpiPage() {
       ),
     [rows]
   );
-  const latePercent = totals.total > 0 ? Math.round((totals.late / totals.total) * 100) : 0;
-  const missedPercent = totals.total > 0 ? Math.round((totals.noPhoto / totals.total) * 100) : 0;
+  const latePercent = totals.total > 0 ? (totals.late / totals.total) * 100 : 0;
+  const missedPercent = totals.total > 0 ? (totals.noPhoto / totals.total) * 100 : 0;
 
   return (
     <div>
@@ -97,13 +97,13 @@ export default function NightGuardGuardKpiPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Late</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-              {totals.late} <span className="text-base font-semibold">({latePercent > 0 ? `-${latePercent}` : latePercent}%)</span>
+              {totals.late} <span className="text-base font-semibold">({latePercent > 0 ? `-${latePercent.toFixed(1)}` : latePercent.toFixed(1)}%)</span>
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">Missed</p>
             <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {totals.noPhoto} <span className="text-base font-semibold">({missedPercent > 0 ? `-${missedPercent}` : missedPercent}%)</span>
+              {totals.noPhoto} <span className="text-base font-semibold">({missedPercent > 0 ? `-${missedPercent.toFixed(1)}` : missedPercent.toFixed(1)}%)</span>
             </p>
           </div>
         </div>
