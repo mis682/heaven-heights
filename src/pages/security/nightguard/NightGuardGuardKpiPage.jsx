@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Download } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import PageHeader from "../../../components/PageHeader";
 import ThemedDatePicker from "../../../components/ThemedDatePicker";
-import { getNightGuardGuardKpi } from "../../../api/nightguard";
+import { getNightGuardGuardKpi, nightGuardGuardKpiExportPdfUrl } from "../../../api/nightguard";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -28,19 +28,6 @@ function formatTime(iso) {
     minute: "2-digit",
     hour12: true,
   });
-}
-
-function downloadCsv(rows, from, to) {
-  const header = ["Guard Name", "Total Check-ins", "On Time", "Late", "Missed", "On-Time %"];
-  const lines = rows.map((r) => [r.guardName, r.total, r.onTime, r.late, r.noPhoto, r.onTimePercent].join(","));
-  const csv = [header.join(","), ...lines].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `night-guard-kpi-${from}-to-${to}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 export default function NightGuardGuardKpiPage() {
@@ -80,7 +67,7 @@ export default function NightGuardGuardKpiPage() {
         title="Night Guard — Guard KPI"
         subtitle="Har guard se roughly har ghante ek check-in expect hota hai — 60 min ke andar continue karna on time hai, usse zyada gap hone par Late/Missed count hota hai."
         primaryAction={
-          rows.length > 0 ? { label: "Export CSV", icon: <Download size={16} />, onClick: () => downloadCsv(rows, from, to) } : undefined
+          rows.length > 0 ? { label: "Download PDF", icon: <FileText size={16} />, onClick: () => window.open(nightGuardGuardKpiExportPdfUrl(from, to), "_blank") } : undefined
         }
       />
 

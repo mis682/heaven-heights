@@ -1,10 +1,12 @@
-import api from "./client";
+import api, { apiOrigin } from "./client";
 
 export const getPatrolReportMeta = (projectSlug) =>
   api.get("/patrol-reports/meta", { params: { projectSlug } }).then((r) => r.data);
 export const getPatrolCheckpointProof = (params) => api.get("/patrol-reports/proof", { params }).then((r) => r.data);
 export const getPatrolGuardKpi = (projectSlug, from, to) =>
   api.get("/patrol-reports/guard-kpi", { params: { projectSlug, from, to } }).then((r) => r.data);
+export const patrolGuardKpiExportPdfUrl = (projectSlug, from, to) =>
+  `${apiOrigin}/api/patrol-reports/guard-kpi/export-pdf?projectSlug=${encodeURIComponent(projectSlug)}&from=${from}&to=${to}`;
 export const getOpenPatrolReportDraft = (projectId) =>
   api.get("/patrol-reports/open-draft", { params: { projectId } }).then((r) => r.data);
 export const savePatrolReportDraft = (data) => api.post("/patrol-reports/draft", data).then((r) => r.data);

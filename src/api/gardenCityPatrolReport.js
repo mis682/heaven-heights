@@ -11,6 +11,9 @@ export const getGardenCitySla = (date) =>
 export const getGardenCityGuardKpi = (from, to) =>
   api.get("/garden-city-patrol-report/guard-kpi", { params: { from, to } }).then((r) => r.data);
 
+export const gardenCityGuardKpiExportPdfUrl = (from, to) =>
+  `${apiOrigin}/api/garden-city-patrol-report/guard-kpi/export-pdf?from=${from}&to=${to}`;
+
 export const saveGardenCityReportDraft = (data) =>
   api.post("/garden-city-patrol-report/draft", data).then((r) => r.data);
 

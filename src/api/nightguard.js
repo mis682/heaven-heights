@@ -1,7 +1,9 @@
-import api from "./client";
+import api, { apiOrigin } from "./client";
 
 export const getNightGuardMeta = () => api.get("/nightguard/meta").then((r) => r.data);
 export const getNightGuardGuardKpi = (from, to) => api.get("/nightguard/guard-kpi", { params: { from, to } }).then((r) => r.data);
+export const nightGuardGuardKpiExportPdfUrl = (from, to) =>
+  `${apiOrigin}/api/nightguard/guard-kpi/export-pdf?from=${from}&to=${to}`;
 
 export const createNightGuardSubmission = (formData) =>
   api.post("/nightguard/submissions", formData, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data);

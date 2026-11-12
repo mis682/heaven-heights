@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, Download } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import PageHeader from "../../../components/PageHeader";
 import ThemedDatePicker from "../../../components/ThemedDatePicker";
-import { getGardenCityGuardKpi } from "../../../api/gardenCityPatrolReport";
+import { getGardenCityGuardKpi, gardenCityGuardKpiExportPdfUrl } from "../../../api/gardenCityPatrolReport";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -19,19 +19,6 @@ function percentClasses(pct) {
   if (pct >= 90) return "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-400";
   if (pct >= 70) return "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-400";
   return "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-400";
-}
-
-function downloadCsv(rows, from, to) {
-  const header = ["Guard Name", "Total Checkpoints", "On Time", "Late", "No Photo", "On-Time %"];
-  const lines = rows.map((r) => [r.guardName, r.total, r.onTime, r.late, r.noPhoto, r.onTimePercent].join(","));
-  const csv = [header.join(","), ...lines].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `garden-city-guard-kpi-${from}-to-${to}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 export default function GardenCityGuardKpiPage() {
@@ -73,7 +60,7 @@ export default function GardenCityGuardKpiPage() {
         title="Garden City — Guard KPI"
         subtitle={`Checkpoint punctuality per guard — actual photo time vs. scheduled time (>${lateThreshold} min counts as Late).`}
         primaryAction={
-          rows.length > 0 ? { label: "Export CSV", icon: <Download size={16} />, onClick: () => downloadCsv(rows, from, to) } : undefined
+          rows.length > 0 ? { label: "Download PDF", icon: <FileText size={16} />, onClick: () => window.open(gardenCityGuardKpiExportPdfUrl(from, to), "_blank") } : undefined
         }
       />
 
