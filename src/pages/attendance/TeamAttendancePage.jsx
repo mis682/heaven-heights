@@ -26,6 +26,8 @@ const STATUS_META = {
   A: { label: "Absent", className: "bg-red-500" },
   HD: { label: "Half Day", className: "bg-blue-500" },
   SP: { label: "Single Punch", className: "bg-amber-500" },
+  ML: { label: "Monthly Leave", className: "bg-teal-500" },
+  H: { label: "Holiday", className: "bg-purple-500" },
 };
 
 function presentPercent(days) {
@@ -35,7 +37,7 @@ function presentPercent(days) {
   return Math.round((presentCount / relevant.length) * 100);
 }
 
-const OVERRIDE_STATUS_OPTIONS = ["P", "A", "HD", "SP"];
+const OVERRIDE_STATUS_OPTIONS = ["P", "A", "HD", "SP", "ML", "H"];
 
 export default function TeamAttendancePage() {
   const { user } = useAuth();
@@ -71,7 +73,7 @@ export default function TeamAttendancePage() {
   }, [month, year, search]);
 
   const MENU_WIDTH = 180;
-  const MENU_HEIGHT = 260;
+  const MENU_HEIGHT = 320;
   const openMenu = (e, row, d) => {
     if (!isAdmin) return;
     e.preventDefault();
