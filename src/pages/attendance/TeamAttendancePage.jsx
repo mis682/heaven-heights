@@ -119,7 +119,7 @@ export default function TeamAttendancePage() {
     [data.daysInMonth, year, month]
   );
 
-  const colSpan = 7 + data.daysInMonth;
+  const colSpan = 10 + data.daysInMonth;
 
   return (
     <div>
@@ -195,6 +195,9 @@ export default function TeamAttendancePage() {
               <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[70px]">Absent</th>
               <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[90px]">Single Punch</th>
               <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[80px]">Half Day</th>
+              <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[80px]">Holiday</th>
+              <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[100px]">Monthly Leave</th>
+              <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[100px]">Payable Days</th>
             </tr>
           </thead>
           <tbody>
@@ -258,6 +261,9 @@ export default function TeamAttendancePage() {
                   <td className="px-3 py-2 text-center font-medium text-red-600 dark:text-red-400">{row.totalAbsent}</td>
                   <td className="px-3 py-2 text-center font-medium text-amber-600 dark:text-amber-400">{row.totalSinglePunch}</td>
                   <td className="px-3 py-2 text-center font-medium text-blue-600 dark:text-blue-400">{row.totalHalfDay}</td>
+                  <td className="px-3 py-2 text-center font-medium text-purple-600 dark:text-purple-400">{row.totalHoliday}</td>
+                  <td className="px-3 py-2 text-center font-medium text-teal-600 dark:text-teal-400">{row.totalMonthlyLeave}</td>
+                  <td className="px-3 py-2 text-center font-medium text-heading dark:text-gray-100">{row.payableDays}</td>
                 </tr>
               ))
             )}
