@@ -132,6 +132,7 @@ import AttendanceRecordsPage from "./pages/attendance/AttendanceRecordsPage";
 import SiteLocationsPage from "./pages/attendance/SiteLocationsPage";
 import PublicSiteLocationsPage from "./pages/attendance/PublicSiteLocationsPage";
 import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
+import OvertimePage from "./pages/attendance/OvertimePage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
@@ -913,6 +914,14 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "attendance", action: "view" }}>
               <TeamAttendancePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/attendance/overtime"
+          element={
+            <RequireAuth permission={{ module: "attendance", action: "edit" }}>
+              <OvertimePage />
             </RequireAuth>
           }
         />
