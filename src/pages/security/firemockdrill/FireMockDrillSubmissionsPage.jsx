@@ -146,7 +146,7 @@ export default function FireMockDrillSubmissionsPage() {
             header: `Checklist Page ${i + 1}`,
             render: (r) =>
               r.checklistAttachments?.[i] ? (
-                <a href={r.checklistAttachments[i]} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary">
+                <a href={`${r.checklistAttachments[i]}?download=1`} target="_blank" rel="noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-primary">
                   <FileText size={16} />
                 </a>
               ) : (
@@ -294,7 +294,7 @@ function ViewModal({ drill, onClose }) {
               {drill.checklistAttachments.map((url, idx) => (
                 <a
                   key={idx}
-                  href={url}
+                  href={`${url}?download=1`}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
