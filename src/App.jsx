@@ -134,6 +134,8 @@ import PublicSiteLocationsPage from "./pages/attendance/PublicSiteLocationsPage"
 import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 import OvertimePage from "./pages/attendance/OvertimePage";
 import StaffProfilePage from "./pages/attendance/StaffProfilePage";
+import PayrollPage from "./pages/attendance/PayrollPage";
+import PayrollDesignationViewPage from "./pages/attendance/PayrollDesignationViewPage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
@@ -931,6 +933,22 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "maintenanceStaff", action: "view" }}>
               <StaffProfilePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/attendance/payroll"
+          element={
+            <RequireAuth permission={{ module: "payroll", action: "view" }}>
+              <PayrollPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/attendance/payroll/:designation"
+          element={
+            <RequireAuth permission={{ module: "payroll", action: "view" }}>
+              <PayrollDesignationViewPage />
             </RequireAuth>
           }
         />

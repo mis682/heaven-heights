@@ -1436,6 +1436,7 @@ export const NAV_SECTIONS = [
           { label: "Attendance Records", path: "/attendance/records", permission: { module: "attendance", action: "view" } },
           { label: "Team Attendance", path: "/attendance/team", permission: { module: "attendance", action: "view" } },
           { label: "Overtime", path: "/attendance/overtime", permission: { module: "attendance", action: "edit" } },
+          { label: "Payroll", path: "/attendance/payroll", permission: { module: "payroll", action: "view" } },
           { label: "Site Locations", path: "/attendance/sites", permission: { module: "siteLocations", action: "edit" } },
         ],
       },

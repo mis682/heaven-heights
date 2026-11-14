@@ -30,6 +30,7 @@ const EMPTY_DETAILS = {
   employerPf: 0,
   employeeEsic: 0,
   employerEsic: 0,
+  salaryDeduction: 0,
 };
 
 function Field({ label, children }) {
@@ -81,6 +82,7 @@ export default function StaffProfilePage() {
         employerPf: p.employerPf || 0,
         employeeEsic: p.employeeEsic || 0,
         employerEsic: p.employerEsic || 0,
+        salaryDeduction: p.salaryDeduction || 0,
       });
       setLoading(false);
     });
@@ -233,6 +235,9 @@ export default function StaffProfilePage() {
           </Field>
           <Field label="Employer ESIC">
             <input type="number" min={0} value={form.employerEsic} onChange={(e) => updateField("employerEsic", e.target.value)} className="input" />
+          </Field>
+          <Field label="Salary Deduction">
+            <input type="number" min={0} value={form.salaryDeduction} onChange={(e) => updateField("salaryDeduction", e.target.value)} className="input" placeholder="0" />
           </Field>
         </Section>
       </div>
