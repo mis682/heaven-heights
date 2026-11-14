@@ -159,13 +159,15 @@ export default function StaffProfilePage() {
         </div>
 
         {monthStats && (
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-5 pt-5 border-t border-gray-100 dark:border-gray-700">
+          <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-3 mt-5 pt-5 border-t border-gray-100 dark:border-gray-700">
             {[
               { label: "Present %", value: `${monthStats.presentPercent}%`, color: "text-heading dark:text-gray-100" },
               { label: "Present", value: monthStats.totalPresent, color: "text-green-600 dark:text-green-400" },
               { label: "Absent", value: monthStats.totalAbsent, color: "text-red-600 dark:text-red-400" },
               { label: "Half Day", value: monthStats.totalHalfDay, color: "text-blue-600 dark:text-blue-400" },
               { label: "Single Punch", value: monthStats.totalSinglePunch, color: "text-amber-600 dark:text-amber-400" },
+              { label: "Holiday", value: monthStats.totalHoliday, color: "text-purple-600 dark:text-purple-400" },
+              { label: "Monthly Leave", value: monthStats.totalMonthlyLeave, color: "text-teal-600 dark:text-teal-400" },
               { label: "Payable Days", value: monthStats.payableDays, color: "text-heading dark:text-gray-100" },
             ].map((s) => (
               <div key={s.label} className="text-center">
