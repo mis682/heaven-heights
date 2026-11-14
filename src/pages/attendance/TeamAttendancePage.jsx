@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { User, FileText, FileSpreadsheet } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import ThemedSelect from "../../components/ThemedSelect";
@@ -217,7 +218,7 @@ export default function TeamAttendancePage() {
               data.rows.map((row) => (
                 <tr key={row.employeeId} className="border-b border-gray-100 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/40">
                   <td className="sticky left-0 bg-white dark:bg-gray-800 px-3 py-2 z-10">
-                    <div className="flex items-center gap-2">
+                    <Link to={`/attendance/staff/${encodeURIComponent(row.employeeId)}`} className="flex items-center gap-2 group">
                       {row.photo ? (
                         <img src={cloudinaryThumbnailUrl(row.photo, 100)} alt="" className="w-7 h-7 rounded-full object-cover border border-gray-200 dark:border-gray-700 shrink-0" />
                       ) : (
@@ -226,10 +227,10 @@ export default function TeamAttendancePage() {
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="font-medium text-heading dark:text-gray-100 truncate max-w-[130px]">{row.name}</p>
+                        <p className="font-medium text-heading dark:text-gray-100 truncate max-w-[130px] group-hover:text-primary group-hover:underline">{row.name}</p>
                         <p className="text-xs text-subtext dark:text-gray-400 truncate max-w-[130px]">{row.employeeId}</p>
                       </div>
-                    </div>
+                    </Link>
                   </td>
                   <td className="px-3 py-2 font-medium text-heading dark:text-gray-100">{presentPercent(row.days)}%</td>
                   {row.days.map((d) => (

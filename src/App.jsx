@@ -133,6 +133,7 @@ import SiteLocationsPage from "./pages/attendance/SiteLocationsPage";
 import PublicSiteLocationsPage from "./pages/attendance/PublicSiteLocationsPage";
 import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 import OvertimePage from "./pages/attendance/OvertimePage";
+import StaffProfilePage from "./pages/attendance/StaffProfilePage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
@@ -922,6 +923,14 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "attendance", action: "edit" }}>
               <OvertimePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/attendance/staff/:employeeId"
+          element={
+            <RequireAuth permission={{ module: "maintenanceStaff", action: "view" }}>
+              <StaffProfilePage />
             </RequireAuth>
           }
         />
