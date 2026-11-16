@@ -136,6 +136,8 @@ import OvertimePage from "./pages/attendance/OvertimePage";
 import StaffProfilePage from "./pages/attendance/StaffProfilePage";
 import PayrollPage from "./pages/attendance/PayrollPage";
 import PayrollDesignationViewPage from "./pages/attendance/PayrollDesignationViewPage";
+import MaintenanceStaffInOutPublicForm from "./pages/security/MaintenanceStaffInOutPublicForm";
+import MaintenanceStaffInOutSubmissionsPage from "./pages/security/MaintenanceStaffInOutSubmissionsPage";
 
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
@@ -149,6 +151,7 @@ export default function App() {
       <Route path="/patrol-form/:project" element={<PatrolPublicForm />} />
       <Route path="/night-guard-form" element={<NightGuardPublicForm />} />
       <Route path="/fire-mock-drill-form" element={<FireMockDrillPublicForm />} />
+      <Route path="/maintenance-staff-in-out-form" element={<MaintenanceStaffInOutPublicForm />} />
       <Route path="/scan-attendance-form" element={<PublicScanAttendancePage />} />
       <Route path="/site-location-form" element={<PublicSiteLocationsPage />} />
       <Route path="/gc-housekeeping-form/:formNumber" element={<GCHousekeepingPublicForm />} />
@@ -949,6 +952,14 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "payroll", action: "view" }}>
               <PayrollDesignationViewPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/security/maintenance-staff-in-out/submissions"
+          element={
+            <RequireAuth permission={{ module: "maintenanceStaffInOut", action: "view" }}>
+              <MaintenanceStaffInOutSubmissionsPage />
             </RequireAuth>
           }
         />

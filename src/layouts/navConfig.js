@@ -1426,6 +1426,11 @@ export const NAV_SECTIONS = [
               { label: "KPI", path: "/security/fire-mock-drill/kpi" },
             ],
           },
+          {
+            label: "Maintenance Staff In/Out",
+            path: "/security/maintenance-staff-in-out/submissions",
+            permission: { module: "maintenanceStaffInOut", action: "view" },
+          },
         ],
       },
       {
