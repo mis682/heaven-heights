@@ -38,6 +38,7 @@ export default function MaintenanceStaffInOutSubmissionsPage() {
         columns={[
           { key: "employeeName", header: "Staff Name" },
           { key: "status", header: "Status", render: (r) => <StatusPill status={r.status} /> },
+          { key: "reason", header: "Reason", render: (r) => r.reason || "—" },
           { key: "createdAt", header: "Time", render: (r) => new Date(r.createdAt).toLocaleString() },
         ]}
         rows={loading ? [] : entries}

@@ -9,6 +9,7 @@ export default function MaintenanceStaffInOutPublicForm() {
   const [staff, setStaff] = useState([]);
   const [employeeId, setEmployeeId] = useState("");
   const [status, setStatus] = useState("");
+  const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +33,7 @@ export default function MaintenanceStaffInOutPublicForm() {
     setSubmitting(true);
     setError("");
     try {
-      await createMaintenanceStaffInOut({ employeeId, status });
+      await createMaintenanceStaffInOut({ employeeId, status, reason });
       setDone(true);
     } catch {
       setError("Submission failed. Please try again.");
@@ -69,6 +70,16 @@ export default function MaintenanceStaffInOutPublicForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
             <ThemedSelect required value={status} onChange={setStatus} options={STATUS_OPTIONS} placeholder="Select In or Out" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
+            <input
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="input"
+              placeholder="Reason likhein (optional)"
+            />
           </div>
 
           {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
