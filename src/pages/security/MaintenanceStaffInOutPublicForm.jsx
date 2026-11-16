@@ -75,10 +75,11 @@ export default function MaintenanceStaffInOutPublicForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
             <input
+              required
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="input"
-              placeholder="Reason likhein (optional)"
+              placeholder="Reason likhein"
             />
           </div>
 
@@ -86,7 +87,7 @@ export default function MaintenanceStaffInOutPublicForm() {
 
           <button
             type="submit"
-            disabled={!employeeId || !status || submitting}
+            disabled={!employeeId || !status || !reason.trim() || submitting}
             className="w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit"}
