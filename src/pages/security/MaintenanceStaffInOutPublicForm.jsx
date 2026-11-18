@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Building2, CheckCircle2 } from "lucide-react";
 import ThemedSelect from "../../components/ThemedSelect";
 import ThemedDatePicker from "../../components/ThemedDatePicker";
+import Time12hInput from "../../components/Time12hInput";
 import { getMaintenanceStaffInOutMeta, createMaintenanceStaffInOut } from "../../api/maintenanceStaffInOut";
 
 function today() {
@@ -10,7 +11,10 @@ function today() {
 
 function nowTime() {
   const d = new Date();
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  const hour24 = d.getHours();
+  const period = hour24 >= 12 ? "PM" : "AM";
+  const hour12 = String(hour24 % 12 || 12).padStart(2, "0");
+  return `${hour12}:${String(d.getMinutes()).padStart(2, "0")} ${period}`;
 }
 
 export default function MaintenanceStaffInOutPublicForm() {
@@ -121,7 +125,7 @@ export default function MaintenanceStaffInOutPublicForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">In-Time</label>
-            <input required type="time" value={inTime} onChange={(e) => setInTime(e.target.value)} className="input" />
+            <Time12hInput value={inTime} onChange={setInTime} />
           </div>
 
           {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}

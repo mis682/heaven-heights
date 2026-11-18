@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link as LinkIcon, ExternalLink, Check } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
+import Time12hInput from "../../components/Time12hInput";
 import { listMaintenanceStaffInOut, setMaintenanceStaffInOutOutTime } from "../../api/maintenanceStaffInOut";
 
 export default function MaintenanceStaffInOutSubmissionsPage() {
@@ -25,10 +26,8 @@ export default function MaintenanceStaffInOutSubmissionsPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const updateLocalOutTime = (id, outTime) =>
-    setEntries((prev) => prev.map((e) => (e._id === id ? { ...e, outTime } : e)));
-
   const saveOutTime = async (id, outTime) => {
+    setEntries((prev) => prev.map((e) => (e._id === id ? { ...e, outTime } : e)));
     await setMaintenanceStaffInOutOutTime(id, outTime);
     setSavedId(id);
     setTimeout(() => setSavedId((curr) => (curr === id ? null : curr)), 1500);
@@ -56,13 +55,7 @@ export default function MaintenanceStaffInOutSubmissionsPage() {
             header: "Out-Time",
             render: (r) => (
               <div className="flex items-center gap-2">
-                <input
-                  type="time"
-                  value={r.outTime || ""}
-                  onChange={(e) => updateLocalOutTime(r._id, e.target.value)}
-                  onBlur={(e) => saveOutTime(r._id, e.target.value)}
-                  className="input py-1.5 w-28"
-                />
+                <Time12hInput value={r.outTime} onChange={(outTime) => saveOutTime(r._id, outTime)} />
                 {savedId === r._id && <Check size={15} className="text-green-500" />}
               </div>
             ),
