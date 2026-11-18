@@ -46,7 +46,7 @@ export default function MaintenanceStaffInOutSubmissionsPage() {
         columns={[
           { key: "date", header: "Date" },
           { key: "contractorName", header: "Contractor/Supervisor" },
-          { key: "employeeName", header: "Labour/Staff Name" },
+          { key: "staffName", header: "Labour/Staff Name" },
           { key: "mobileNumber", header: "Mobile Number" },
           { key: "work", header: "Work" },
           { key: "inTime", header: "In-Time" },

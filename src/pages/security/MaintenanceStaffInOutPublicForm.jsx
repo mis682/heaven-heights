@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Building2, CheckCircle2 } from "lucide-react";
-import ThemedSelect from "../../components/ThemedSelect";
 import ThemedDatePicker from "../../components/ThemedDatePicker";
 import Time12hInput from "../../components/Time12hInput";
-import { getMaintenanceStaffInOutMeta, createMaintenanceStaffInOut } from "../../api/maintenanceStaffInOut";
+import { createMaintenanceStaffInOut } from "../../api/maintenanceStaffInOut";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -18,20 +17,15 @@ function nowTime() {
 }
 
 export default function MaintenanceStaffInOutPublicForm() {
-  const [staff, setStaff] = useState([]);
   const [date, setDate] = useState(today());
   const [contractorName, setContractorName] = useState("");
-  const [employeeId, setEmployeeId] = useState("");
+  const [staffName, setStaffName] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
   const [work, setWork] = useState("");
   const [inTime, setInTime] = useState(nowTime());
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    getMaintenanceStaffInOutMeta().then((m) => setStaff(m.staff));
-  }, []);
 
   if (done) {
     return (
@@ -48,7 +42,7 @@ export default function MaintenanceStaffInOutPublicForm() {
     setSubmitting(true);
     setError("");
     try {
-      await createMaintenanceStaffInOut({ date, contractorName, employeeId, mobileNumber, work, inTime });
+      await createMaintenanceStaffInOut({ date, contractorName, staffName, mobileNumber, work, inTime });
       setDone(true);
     } catch {
       setError("Submission failed. Please try again.");
@@ -57,7 +51,7 @@ export default function MaintenanceStaffInOutPublicForm() {
     }
   };
 
-  const canSubmit = date && contractorName.trim() && employeeId && mobileNumber.trim() && work.trim() && inTime;
+  const canSubmit = date && contractorName.trim() && staffName.trim() && mobileNumber.trim() && work.trim() && inTime;
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 px-4 py-8">
@@ -91,12 +85,12 @@ export default function MaintenanceStaffInOutPublicForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Labour Name/Staff Name</label>
-            <ThemedSelect
+            <input
               required
-              value={employeeId}
-              onChange={setEmployeeId}
-              options={staff.map((s) => ({ value: s.employeeId, label: `${s.nameHindi} (${s.name})` }))}
-              placeholder="Select staff"
+              value={staffName}
+              onChange={(e) => setStaffName(e.target.value)}
+              className="input"
+              placeholder="Naam likhein"
             />
           </div>
 
