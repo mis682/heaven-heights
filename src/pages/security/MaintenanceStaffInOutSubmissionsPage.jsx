@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Link as LinkIcon, ExternalLink, Check } from "lucide-react";
+import { Link as LinkIcon, ExternalLink, Save } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
 import Time12hInput from "../../components/Time12hInput";
+import { alertMessage } from "../../utils/confirmDialog";
 import { listMaintenanceStaffInOut, setMaintenanceStaffInOutOutTime } from "../../api/maintenanceStaffInOut";
 
 export default function MaintenanceStaffInOutSubmissionsPage() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [savedId, setSavedId] = useState(null);
+  // Draft Out-Time per entry, kept separate from the saved `entries` state
+  // so adjusting the hour/minute/AM-PM dropdowns doesn't save anything
+  // until the coordinator explicitly clicks Save.
+  const [drafts, setDrafts] = useState({});
+  const [savingId, setSavingId] = useState(null);
 
   useEffect(() => {
     listMaintenanceStaffInOut().then((data) => {
@@ -26,11 +31,26 @@ export default function MaintenanceStaffInOutSubmissionsPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const saveOutTime = async (id, outTime) => {
-    setEntries((prev) => prev.map((e) => (e._id === id ? { ...e, outTime } : e)));
-    await setMaintenanceStaffInOutOutTime(id, outTime);
-    setSavedId(id);
-    setTimeout(() => setSavedId((curr) => (curr === id ? null : curr)), 1500);
+  const draftOutTime = (entry) => (entry._id in drafts ? drafts[entry._id] : entry.outTime);
+  const isDirty = (entry) => entry._id in drafts && drafts[entry._id] !== entry.outTime;
+
+  const saveOutTime = async (entry) => {
+    const outTime = draftOutTime(entry);
+    setSavingId(entry._id);
+    try {
+      await setMaintenanceStaffInOutOutTime(entry._id, outTime);
+      setEntries((prev) => prev.map((e) => (e._id === entry._id ? { ...e, outTime } : e)));
+      setDrafts((prev) => {
+        const next = { ...prev };
+        delete next[entry._id];
+        return next;
+      });
+      await alertMessage("Out Time saved.", { title: "Saved", icon: "success" });
+    } catch {
+      await alertMessage("Saving Out Time failed — please try again.");
+    } finally {
+      setSavingId(null);
+    }
   };
 
   return (
@@ -55,8 +75,19 @@ export default function MaintenanceStaffInOutSubmissionsPage() {
             header: "Out-Time",
             render: (r) => (
               <div className="flex items-center gap-2">
-                <Time12hInput value={r.outTime} onChange={(outTime) => saveOutTime(r._id, outTime)} />
-                {savedId === r._id && <Check size={15} className="text-green-500" />}
+                <Time12hInput
+                  value={draftOutTime(r)}
+                  onChange={(outTime) => setDrafts((prev) => ({ ...prev, [r._id]: outTime }))}
+                />
+                {isDirty(r) && (
+                  <button
+                    onClick={() => saveOutTime(r)}
+                    disabled={savingId === r._id}
+                    className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:opacity-90 disabled:opacity-50"
+                  >
+                    <Save size={13} /> {savingId === r._id ? "Saving..." : "Save"}
+                  </button>
+                )}
               </div>
             ),
           },
