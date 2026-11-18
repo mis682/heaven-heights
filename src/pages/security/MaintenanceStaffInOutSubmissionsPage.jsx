@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Link as LinkIcon, ExternalLink } from "lucide-react";
+import { Link as LinkIcon, ExternalLink, Check } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import DataTable from "../../components/DataTable";
-import StatusPill from "../../components/StatusPill";
-import { listMaintenanceStaffInOut } from "../../api/maintenanceStaffInOut";
+import { listMaintenanceStaffInOut, setMaintenanceStaffInOutOutTime } from "../../api/maintenanceStaffInOut";
 
 export default function MaintenanceStaffInOutSubmissionsPage() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [savedId, setSavedId] = useState(null);
 
   useEffect(() => {
     listMaintenanceStaffInOut().then((data) => {
@@ -25,21 +25,48 @@ export default function MaintenanceStaffInOutSubmissionsPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const updateLocalOutTime = (id, outTime) =>
+    setEntries((prev) => prev.map((e) => (e._id === id ? { ...e, outTime } : e)));
+
+  const saveOutTime = async (id, outTime) => {
+    await setMaintenanceStaffInOutOutTime(id, outTime);
+    setSavedId(id);
+    setTimeout(() => setSavedId((curr) => (curr === id ? null : curr)), 1500);
+  };
+
   return (
     <div>
       <PageHeader
         title="Maintenance Staff In/Out"
-        subtitle="Main office mein aane-jaane wale maintenance staff ka entry/exit record."
+        subtitle="Main office mein aane-jaane wale labour/staff ka entry/exit record."
         secondaryActions={[{ label: copied ? "Link Copied!" : "Copy Form Link", icon: <LinkIcon size={16} />, onClick: copyLink }]}
         primaryAction={{ label: "Open Form", icon: <ExternalLink size={16} />, onClick: () => window.open(formUrl, "_blank") }}
       />
 
       <DataTable
         columns={[
-          { key: "employeeName", header: "Staff Name" },
-          { key: "status", header: "Status", render: (r) => <StatusPill status={r.status} /> },
-          { key: "reason", header: "Reason", render: (r) => r.reason || "—" },
-          { key: "createdAt", header: "Time", render: (r) => new Date(r.createdAt).toLocaleString() },
+          { key: "date", header: "Date" },
+          { key: "contractorName", header: "Contractor/Supervisor" },
+          { key: "employeeName", header: "Labour/Staff Name" },
+          { key: "mobileNumber", header: "Mobile Number" },
+          { key: "work", header: "Work" },
+          { key: "inTime", header: "In-Time" },
+          {
+            key: "outTime",
+            header: "Out-Time",
+            render: (r) => (
+              <div className="flex items-center gap-2">
+                <input
+                  type="time"
+                  value={r.outTime || ""}
+                  onChange={(e) => updateLocalOutTime(r._id, e.target.value)}
+                  onBlur={(e) => saveOutTime(r._id, e.target.value)}
+                  className="input py-1.5 w-28"
+                />
+                {savedId === r._id && <Check size={15} className="text-green-500" />}
+              </div>
+            ),
+          },
         ]}
         rows={loading ? [] : entries}
         emptyMessage={loading ? "Loading..." : "No records found"}

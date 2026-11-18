@@ -1,15 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Building2, CheckCircle2 } from "lucide-react";
 import ThemedSelect from "../../components/ThemedSelect";
+import ThemedDatePicker from "../../components/ThemedDatePicker";
 import { getMaintenanceStaffInOutMeta, createMaintenanceStaffInOut } from "../../api/maintenanceStaffInOut";
 
-const STATUS_OPTIONS = ["In", "Out"];
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function nowTime() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
 
 export default function MaintenanceStaffInOutPublicForm() {
   const [staff, setStaff] = useState([]);
+  const [date, setDate] = useState(today());
+  const [contractorName, setContractorName] = useState("");
   const [employeeId, setEmployeeId] = useState("");
-  const [status, setStatus] = useState("");
-  const [reason, setReason] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [work, setWork] = useState("");
+  const [inTime, setInTime] = useState(nowTime());
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -33,7 +44,7 @@ export default function MaintenanceStaffInOutPublicForm() {
     setSubmitting(true);
     setError("");
     try {
-      await createMaintenanceStaffInOut({ employeeId, status, reason });
+      await createMaintenanceStaffInOut({ date, contractorName, employeeId, mobileNumber, work, inTime });
       setDone(true);
     } catch {
       setError("Submission failed. Please try again.");
@@ -41,6 +52,8 @@ export default function MaintenanceStaffInOutPublicForm() {
       setSubmitting(false);
     }
   };
+
+  const canSubmit = date && contractorName.trim() && employeeId && mobileNumber.trim() && work.trim() && inTime;
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 px-4 py-8">
@@ -51,13 +64,29 @@ export default function MaintenanceStaffInOutPublicForm() {
           </div>
           <div>
             <p className="font-bold text-heading dark:text-gray-100 text-lg">Maintenance Staff In/Out</p>
-            <p className="text-sm text-subtext dark:text-gray-400">Main office entry/exit ke liye apna naam aur status select karein.</p>
+            <p className="text-sm text-subtext dark:text-gray-400">Main office entry ke liye details bharein.</p>
           </div>
         </div>
 
         <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+            <ThemedDatePicker value={date} max={today()} onChange={setDate} />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contractor Name/Supervisor Name</label>
+            <input
+              required
+              value={contractorName}
+              onChange={(e) => setContractorName(e.target.value)}
+              className="input"
+              placeholder="Contractor/Supervisor ka naam likhein"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Labour Name/Staff Name</label>
             <ThemedSelect
               required
               value={employeeId}
@@ -68,26 +97,38 @@ export default function MaintenanceStaffInOutPublicForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-            <ThemedSelect required value={status} onChange={setStatus} options={STATUS_OPTIONS} placeholder="Select In or Out" />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mobile Number</label>
+            <input
+              required
+              type="tel"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+              className="input"
+              placeholder="10-digit mobile number"
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Work</label>
             <input
               required
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              value={work}
+              onChange={(e) => setWork(e.target.value)}
               className="input"
-              placeholder="Reason likhein"
+              placeholder="Kis kaam ke liye aaye hain"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">In-Time</label>
+            <input required type="time" value={inTime} onChange={(e) => setInTime(e.target.value)} className="input" />
           </div>
 
           {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
 
           <button
             type="submit"
-            disabled={!employeeId || !status || !reason.trim() || submitting}
+            disabled={!canSubmit || submitting}
             className="w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit"}
