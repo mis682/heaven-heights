@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, User, Save, BadgeCheck, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
+import ThemedSelect from "../../components/ThemedSelect";
 import { getStaffProfile, updateStaffProfile } from "../../api/staffProfile";
 import { getTeamAttendanceSummary } from "../../api/attendanceScan";
 import { useAuth } from "../../context/AuthContext";
@@ -136,9 +137,17 @@ function AttendanceLedger({ employeeId }) {
   );
 }
 
+const BLOOD_GROUP_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const MARITAL_STATUS_OPTIONS = ["Single", "Married", "Divorced", "Widowed"];
+
 const EMPTY_DETAILS = {
   dateOfBirth: "",
   joiningDate: "",
+  contactNumber: "",
+  bloodGroup: "",
+  maritalStatus: "",
+  emergencyContactName: "",
+  emergencyContactPhone: "",
   aadharNumber: "",
   panNumber: "",
   uanNumber: "",
@@ -192,6 +201,11 @@ export default function StaffProfilePage() {
       setForm({
         dateOfBirth: p.dateOfBirth || "",
         joiningDate: p.joiningDate || "",
+        contactNumber: p.contactNumber || "",
+        bloodGroup: p.bloodGroup || "",
+        maritalStatus: p.maritalStatus || "",
+        emergencyContactName: p.emergencyContactName || "",
+        emergencyContactPhone: p.emergencyContactPhone || "",
         aadharNumber: p.aadharNumber || "",
         panNumber: p.panNumber || "",
         uanNumber: p.uanNumber || "",
@@ -320,6 +334,41 @@ export default function StaffProfilePage() {
           </Field>
           <Field label="PAN Number">
             <input value={form.panNumber} onChange={(e) => updateField("panNumber", e.target.value)} className="input" placeholder="ABCDE1234F" />
+          </Field>
+          <Field label="Contact Number">
+            <input value={form.contactNumber} onChange={(e) => updateField("contactNumber", e.target.value)} className="input" placeholder="+91 XXXXX XXXXX" />
+          </Field>
+          <Field label="Blood Group">
+            <ThemedSelect
+              value={form.bloodGroup}
+              onChange={(v) => updateField("bloodGroup", v)}
+              options={BLOOD_GROUP_OPTIONS}
+              placeholder="Select blood group"
+            />
+          </Field>
+          <Field label="Marital Status">
+            <ThemedSelect
+              value={form.maritalStatus}
+              onChange={(v) => updateField("maritalStatus", v)}
+              options={MARITAL_STATUS_OPTIONS}
+              placeholder="Select marital status"
+            />
+          </Field>
+          <Field label="Emergency Contact Name">
+            <input
+              value={form.emergencyContactName}
+              onChange={(e) => updateField("emergencyContactName", e.target.value)}
+              className="input"
+              placeholder="Contact person name"
+            />
+          </Field>
+          <Field label="Emergency Contact Phone">
+            <input
+              value={form.emergencyContactPhone}
+              onChange={(e) => updateField("emergencyContactPhone", e.target.value)}
+              className="input"
+              placeholder="+91 XXXXX XXXXX"
+            />
           </Field>
         </Section>
 
