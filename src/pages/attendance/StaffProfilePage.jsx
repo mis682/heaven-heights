@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, User, Save, BadgeCheck, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import ThemedSelect from "../../components/ThemedSelect";
-import { getStaffProfile, updateStaffProfile } from "../../api/staffProfile";
+import { getStaffProfile, updateStaffProfile, lookupPincode } from "../../api/staffProfile";
 import { getTeamAttendanceSummary } from "../../api/attendanceScan";
 import { useAuth } from "../../context/AuthContext";
 import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
@@ -159,6 +159,15 @@ const EMPTY_DETAILS = {
   maritalStatus: "",
   emergencyContactName: "",
   emergencyContactPhone: "",
+  currentPinCode: "",
+  currentAddressLine: "",
+  currentCity: "",
+  currentState: "",
+  permanentSameAsCurrent: true,
+  permanentPinCode: "",
+  permanentAddressLine: "",
+  permanentCity: "",
+  permanentState: "",
   aadharNumber: "",
   panNumber: "",
   uanNumber: "",
@@ -219,6 +228,15 @@ export default function StaffProfilePage() {
         maritalStatus: p.maritalStatus || "",
         emergencyContactName: p.emergencyContactName || "",
         emergencyContactPhone: p.emergencyContactPhone || "",
+        currentPinCode: p.currentPinCode || "",
+        currentAddressLine: p.currentAddressLine || "",
+        currentCity: p.currentCity || "",
+        currentState: p.currentState || "",
+        permanentSameAsCurrent: p.permanentSameAsCurrent !== false,
+        permanentPinCode: p.permanentPinCode || "",
+        permanentAddressLine: p.permanentAddressLine || "",
+        permanentCity: p.permanentCity || "",
+        permanentState: p.permanentState || "",
         aadharNumber: p.aadharNumber || "",
         panNumber: p.panNumber || "",
         uanNumber: p.uanNumber || "",
@@ -251,6 +269,19 @@ export default function StaffProfilePage() {
   }, [employeeId]);
 
   const updateField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  // "current" or "permanent" — auto-fills City/State once a full 6-digit
+  // PIN code is typed; the user can still edit either field afterwards.
+  const handlePinCodeChange = async (which, code) => {
+    updateField(`${which}PinCode`, code);
+    if (!/^\d{6}$/.test(code)) return;
+    try {
+      const { city, state } = await lookupPincode(code);
+      setForm((prev) => ({ ...prev, [`${which}City`]: city, [`${which}State`]: state }));
+    } catch {
+      // Unknown/invalid PIN code — leave City/State as-is for manual entry.
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -386,6 +417,85 @@ export default function StaffProfilePage() {
             />
           </Field>
         </Section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-heading dark:text-gray-100">Current Address</h3>
+            <p className="text-xs text-subtext dark:text-gray-400 mb-4">City &amp; state fill in from the PIN code — you can also edit them</p>
+            <div className="space-y-4">
+              <Field label="PIN Code">
+                <input
+                  value={form.currentPinCode}
+                  onChange={(e) => handlePinCodeChange("current", e.target.value)}
+                  maxLength={6}
+                  className="input"
+                  placeholder="6-digit PIN code"
+                />
+              </Field>
+              <Field label="Address Line">
+                <input value={form.currentAddressLine} onChange={(e) => updateField("currentAddressLine", e.target.value)} className="input" />
+              </Field>
+              <Field label="City">
+                <input value={form.currentCity} onChange={(e) => updateField("currentCity", e.target.value)} className="input" placeholder="City" />
+              </Field>
+              <Field label="State">
+                <input value={form.currentState} onChange={(e) => updateField("currentState", e.target.value)} className="input" placeholder="State" />
+              </Field>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-heading dark:text-gray-100">Permanent Address</h3>
+            <p className="text-xs text-subtext dark:text-gray-400 mb-4">Same as current, or enter separately</p>
+            <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-primary bg-primary/5 text-primary text-sm font-medium mb-4 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.permanentSameAsCurrent}
+                onChange={(e) => updateField("permanentSameAsCurrent", e.target.checked)}
+                className="accent-primary"
+              />
+              Same as current address
+            </label>
+            <div className="space-y-4">
+              <Field label="PIN Code">
+                <input
+                  value={form.permanentSameAsCurrent ? form.currentPinCode : form.permanentPinCode}
+                  onChange={(e) => handlePinCodeChange("permanent", e.target.value)}
+                  disabled={form.permanentSameAsCurrent}
+                  maxLength={6}
+                  className="input disabled:opacity-60"
+                  placeholder="6-digit PIN code"
+                />
+              </Field>
+              <Field label="Address Line">
+                <input
+                  value={form.permanentSameAsCurrent ? form.currentAddressLine : form.permanentAddressLine}
+                  onChange={(e) => updateField("permanentAddressLine", e.target.value)}
+                  disabled={form.permanentSameAsCurrent}
+                  className="input disabled:opacity-60"
+                />
+              </Field>
+              <Field label="City">
+                <input
+                  value={form.permanentSameAsCurrent ? form.currentCity : form.permanentCity}
+                  onChange={(e) => updateField("permanentCity", e.target.value)}
+                  disabled={form.permanentSameAsCurrent}
+                  className="input disabled:opacity-60"
+                  placeholder="City"
+                />
+              </Field>
+              <Field label="State">
+                <input
+                  value={form.permanentSameAsCurrent ? form.currentState : form.permanentState}
+                  onChange={(e) => updateField("permanentState", e.target.value)}
+                  disabled={form.permanentSameAsCurrent}
+                  className="input disabled:opacity-60"
+                  placeholder="State"
+                />
+              </Field>
+            </div>
+          </div>
+        </div>
 
         <Section title="Bank Details">
           <Field label="Bank Holder Name">

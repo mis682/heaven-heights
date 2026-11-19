@@ -5,3 +5,5 @@ export const getStaffProfile = (employeeId) =>
 
 export const updateStaffProfile = (employeeId, data) =>
   api.put(`/staff-profile/${encodeURIComponent(employeeId)}`, data).then((r) => r.data);
+
+export const lookupPincode = (code) => api.get(`/staff-profile/pincode/${code}`).then((r) => r.data);
