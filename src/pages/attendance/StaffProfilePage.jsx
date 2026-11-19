@@ -140,6 +140,17 @@ function AttendanceLedger({ employeeId }) {
 const BLOOD_GROUP_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const MARITAL_STATUS_OPTIONS = ["Married", "Unmarried"];
 
+const BANK_NAME_OPTIONS = [
+  "State Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "Punjab National Bank",
+  "Bank of Baroda", "Canara Bank", "Union Bank of India", "Bank of India", "Central Bank of India",
+  "Indian Bank", "Indian Overseas Bank", "UCO Bank", "Bank of Maharashtra", "Punjab & Sind Bank",
+  "IDBI Bank", "Yes Bank", "Kotak Mahindra Bank", "IndusInd Bank", "Federal Bank",
+  "South Indian Bank", "Karnataka Bank", "RBL Bank", "Bandhan Bank", "City Union Bank",
+  "DCB Bank", "Jammu & Kashmir Bank", "Karur Vysya Bank", "Tamilnad Mercantile Bank", "CSB Bank",
+  "AU Small Finance Bank", "Equitas Small Finance Bank", "Ujjivan Small Finance Bank",
+  "Paytm Payments Bank", "India Post Payments Bank", "Airtel Payments Bank",
+];
+
 const EMPTY_DETAILS = {
   dateOfBirth: "",
   joiningDate: "",
@@ -152,7 +163,9 @@ const EMPTY_DETAILS = {
   panNumber: "",
   uanNumber: "",
   esicNumber: "",
+  bankHolderName: "",
   bankName: "",
+  branchName: "",
   bankAccountNo: "",
   bankIfscCode: "",
   salary: 0,
@@ -210,7 +223,9 @@ export default function StaffProfilePage() {
         panNumber: p.panNumber || "",
         uanNumber: p.uanNumber || "",
         esicNumber: p.esicNumber || "",
+        bankHolderName: p.bankHolderName || "",
         bankName: p.bankName || "",
+        branchName: p.branchName || "",
         bankAccountNo: p.bankAccountNo || "",
         bankIfscCode: p.bankIfscCode || "",
         salary: p.salary || 0,
@@ -373,8 +388,20 @@ export default function StaffProfilePage() {
         </Section>
 
         <Section title="Bank Details">
+          <Field label="Bank Holder Name">
+            <input value={form.bankHolderName} onChange={(e) => updateField("bankHolderName", e.target.value)} className="input" />
+          </Field>
           <Field label="Bank Name">
-            <input value={form.bankName} onChange={(e) => updateField("bankName", e.target.value)} className="input" />
+            <ThemedSelect
+              creatable
+              value={form.bankName}
+              onChange={(v) => updateField("bankName", v)}
+              options={BANK_NAME_OPTIONS}
+              placeholder="Select bank"
+            />
+          </Field>
+          <Field label="Branch Name (Address)">
+            <input value={form.branchName} onChange={(e) => updateField("branchName", e.target.value)} className="input" />
           </Field>
           <Field label="Bank Account No.">
             <input value={form.bankAccountNo} onChange={(e) => updateField("bankAccountNo", e.target.value)} className="input" />
