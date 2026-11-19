@@ -138,7 +138,7 @@ function AttendanceLedger({ employeeId }) {
 }
 
 const BLOOD_GROUP_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-const MARITAL_STATUS_OPTIONS = ["Single", "Married", "Divorced", "Widowed"];
+const MARITAL_STATUS_OPTIONS = ["Married", "Unmarried"];
 
 const EMPTY_DETAILS = {
   dateOfBirth: "",
