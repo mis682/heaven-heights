@@ -252,7 +252,7 @@ export default function StaffProfilePage() {
       <PageHeader
         title="Staff Profile"
         subtitle="Personal, bank aur salary details — HR yahan se fill/edit kar sakte hain."
-        secondaryActions={[{ label: showLedger ? "Hide Ledger" : "Ledger", icon: <CalendarDays size={16} />, onClick: () => setShowLedger((v) => !v) }]}
+        secondaryActions={[{ label: showLedger ? "Hide Attendance Ledger" : "Attendance Ledger", icon: <CalendarDays size={16} />, onClick: () => setShowLedger((v) => !v) }]}
         primaryAction={{ label: saving ? "Saving..." : "Save", icon: <Save size={16} />, onClick: handleSave }}
       />
 
