@@ -16,7 +16,6 @@ const COLUMNS = [
   { key: "employeeId", label: "E.ID" },
   { key: "designation", label: "Designation" },
   { key: "bankAccountNo", label: "Bank A/C No." },
-  { key: "bankName", label: "Bank" },
   { key: "bankIfscCode", label: "IFSC" },
   { key: "salary", label: "Salary" },
   { key: "petrol", label: "Petrol" },
@@ -39,7 +38,6 @@ const COLUMNS = [
   { key: "uanNumber", label: "UAN" },
   { key: "esicNumber", label: "ESIC No." },
   { key: "aadharNumber", label: "Aadhar" },
-  { key: "panNumber", label: "PAN" },
 ];
 
 function SummaryRow({ label, sums, bold }) {
