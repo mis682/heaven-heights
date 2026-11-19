@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { ArrowLeft, FileText, FileSpreadsheet } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
-import { getDesignationPayroll, payrollExcelUrl, payrollPdfUrl } from "../../api/payroll";
+import { getCompanyPayroll, payrollExcelUrl, payrollPdfUrl } from "../../api/payroll";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -14,6 +14,7 @@ const COLUMNS = [
   { key: "siteName", label: "Site" },
   { key: "employeeName", label: "Name" },
   { key: "employeeId", label: "E.ID" },
+  { key: "designation", label: "Designation" },
   { key: "bankAccountNo", label: "Bank A/C No." },
   { key: "bankName", label: "Bank" },
   { key: "bankIfscCode", label: "IFSC" },
@@ -56,8 +57,8 @@ function SummaryRow({ label, sums, bold }) {
   );
 }
 
-export default function PayrollDesignationViewPage() {
-  const { designation } = useParams();
+export default function PayrollCompanyViewPage() {
+  const { company } = useParams();
   const [searchParams] = useSearchParams();
   const month = Number(searchParams.get("month")) || new Date().getMonth() + 1;
   const year = Number(searchParams.get("year")) || new Date().getFullYear();
@@ -66,11 +67,11 @@ export default function PayrollDesignationViewPage() {
 
   useEffect(() => {
     setLoading(true);
-    getDesignationPayroll(designation, month, year).then((p) => {
+    getCompanyPayroll(company, month, year).then((p) => {
       setPayroll(p);
       setLoading(false);
     });
-  }, [designation, month, year]);
+  }, [company, month, year]);
 
   return (
     <div>
@@ -79,15 +80,15 @@ export default function PayrollDesignationViewPage() {
       </Link>
 
       <PageHeader
-        title={`${designation} — Payroll`}
+        title={`${company} — Payroll`}
         subtitle={`${MONTH_NAMES[month - 1]} ${year}`}
         secondaryActions={[
-          { label: "PDF", icon: <FileText size={15} />, onClick: () => window.open(payrollPdfUrl(designation, month, year, false), "_blank") },
+          { label: "PDF", icon: <FileText size={15} />, onClick: () => window.open(payrollPdfUrl(company, month, year, false), "_blank") },
         ]}
         primaryAction={{
           label: "Excel Download",
           icon: <FileSpreadsheet size={16} />,
-          onClick: () => window.open(payrollExcelUrl(designation, month, year), "_blank"),
+          onClick: () => window.open(payrollExcelUrl(company, month, year), "_blank"),
         }}
       />
 
@@ -95,7 +96,7 @@ export default function PayrollDesignationViewPage() {
         {loading ? (
           <p className="text-center py-10 text-sm text-subtext dark:text-gray-400">Loading...</p>
         ) : !payroll || payroll.siteGroups.length === 0 ? (
-          <p className="text-center py-10 text-sm text-subtext dark:text-gray-400">Is designation mein koi staff nahi mila.</p>
+          <p className="text-center py-10 text-sm text-subtext dark:text-gray-400">Is company mein koi staff nahi mila.</p>
         ) : (
           <table className="text-xs border-collapse w-full">
             <thead>
@@ -122,7 +123,7 @@ export default function PayrollDesignationViewPage() {
                   <SummaryRow label={`Total — ${group.siteName}`} sums={group.subtotal} />
                 </React.Fragment>
               ))}
-              {payroll.grandTotal && <SummaryRow label={`Total Amount of ${designation} Salary`} sums={payroll.grandTotal} bold />}
+              {payroll.grandTotal && <SummaryRow label={`Total Amount of ${company} Salary`} sums={payroll.grandTotal} bold />}
             </tbody>
           </table>
         )}

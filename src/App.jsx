@@ -135,7 +135,7 @@ import TeamAttendancePage from "./pages/attendance/TeamAttendancePage";
 import OvertimePage from "./pages/attendance/OvertimePage";
 import StaffProfilePage from "./pages/attendance/StaffProfilePage";
 import PayrollPage from "./pages/attendance/PayrollPage";
-import PayrollDesignationViewPage from "./pages/attendance/PayrollDesignationViewPage";
+import PayrollCompanyViewPage from "./pages/attendance/PayrollCompanyViewPage";
 import MaintenanceStaffInOutPublicForm from "./pages/security/MaintenanceStaffInOutPublicForm";
 import MaintenanceStaffInOutSubmissionsPage from "./pages/security/MaintenanceStaffInOutSubmissionsPage";
 
@@ -948,10 +948,10 @@ export default function App() {
           }
         />
         <Route
-          path="/attendance/payroll/:designation"
+          path="/attendance/payroll/:company"
           element={
             <RequireAuth permission={{ module: "payroll", action: "view" }}>
-              <PayrollDesignationViewPage />
+              <PayrollCompanyViewPage />
             </RequireAuth>
           }
         />
