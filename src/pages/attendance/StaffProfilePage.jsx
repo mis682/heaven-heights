@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, User, Save, BadgeCheck } from "lucide-react";
+import { ArrowLeft, User, Save, BadgeCheck, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import { getStaffProfile, updateStaffProfile } from "../../api/staffProfile";
 import { getTeamAttendanceSummary } from "../../api/attendanceScan";
@@ -10,6 +10,130 @@ import { alertMessage } from "../../utils/confirmDialog";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
+}
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+const WEEKDAY_LABELS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+const LEDGER_STATUS_META = {
+  P: { label: "Present", dot: "bg-green-500", text: "text-green-700 dark:text-green-400", bg: "bg-green-50 dark:bg-green-900/10" },
+  A: { label: "Absent", dot: "bg-red-500", text: "text-red-700 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/10" },
+  HD: { label: "Half Day", dot: "bg-blue-500", text: "text-blue-700 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/10" },
+  SP: { label: "Single Punch", dot: "bg-amber-500", text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/10" },
+  ML: { label: "Monthly Leave", dot: "bg-teal-500", text: "text-teal-700 dark:text-teal-400", bg: "bg-teal-50 dark:bg-teal-900/10" },
+  H: { label: "Holiday", dot: "bg-purple-500", text: "text-purple-700 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-900/10" },
+};
+
+function formatTime(iso) {
+  if (!iso) return "";
+  return new Date(iso)
+    .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })
+    .toLowerCase();
+}
+
+function AttendanceLedger({ employeeId }) {
+  const now = new Date();
+  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(now.getFullYear());
+  const [days, setDays] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    getTeamAttendanceSummary({ month, year, search: employeeId }).then((res) => {
+      const row = res.rows.find((r) => r.employeeId === employeeId);
+      setDays(row?.days || []);
+      setLoading(false);
+    });
+  }, [employeeId, month, year]);
+
+  const changeMonth = (delta) => {
+    let m = month + delta;
+    let y = year;
+    if (m < 1) { m = 12; y -= 1; }
+    if (m > 12) { m = 1; y += 1; }
+    setMonth(m);
+    setYear(y);
+  };
+
+  const leadingBlanks = new Date(year, month - 1, 1).getDay();
+  const cells = [...Array(leadingBlanks).fill(null), ...days];
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <CalendarDays size={16} className="text-primary" />
+          <p className="text-sm font-semibold text-heading dark:text-gray-100">
+            Attendance Ledger — {MONTH_NAMES[month - 1]} {year}
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => changeMonth(-1)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400">
+            <ChevronLeft size={16} />
+          </button>
+          <button onClick={() => changeMonth(1)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400">
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <p className="text-sm text-subtext dark:text-gray-400 text-center py-6">Loading...</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse min-w-[700px]">
+            <thead>
+              <tr>
+                {WEEKDAY_LABELS.map((w) => (
+                  <th key={w} className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide pb-2 text-left">
+                    {w}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {weeks.map((week, wi) => (
+                <tr key={wi}>
+                  {week.map((d, di) => {
+                    if (!d) return <td key={di} className="border border-gray-100 dark:border-gray-700/50 p-2 align-top h-20" />;
+                    const meta = d.status ? LEDGER_STATUS_META[d.status] : null;
+                    return (
+                      <td
+                        key={di}
+                        className={`border border-gray-100 dark:border-gray-700/50 p-2 align-top h-20 ${meta ? meta.bg : ""}`}
+                      >
+                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{d.day}</p>
+                        {meta && (
+                          <>
+                            <p className={`text-xs font-medium flex items-center gap-1 ${meta.text}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} /> {meta.label}
+                            </p>
+                            {(d.status === "P" || d.status === "HD" || d.status === "SP") && d.punchIn && (
+                              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                                {formatTime(d.punchIn)}
+                                {d.punchOut && d.punchOut !== d.punchIn ? ` - ${formatTime(d.punchOut)}` : ""}
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 }
 
 const EMPTY_DETAILS = {
@@ -59,6 +183,7 @@ export default function StaffProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [monthStats, setMonthStats] = useState(null);
+  const [showLedger, setShowLedger] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -127,8 +252,11 @@ export default function StaffProfilePage() {
       <PageHeader
         title="Staff Profile"
         subtitle="Personal, bank aur salary details — HR yahan se fill/edit kar sakte hain."
+        secondaryActions={[{ label: showLedger ? "Hide Ledger" : "Ledger", icon: <CalendarDays size={16} />, onClick: () => setShowLedger((v) => !v) }]}
         primaryAction={{ label: saving ? "Saving..." : "Save", icon: <Save size={16} />, onClick: handleSave }}
       />
+
+      {showLedger && <AttendanceLedger employeeId={employeeId} />}
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 mb-6">
         <div className="flex flex-wrap items-center gap-5">
