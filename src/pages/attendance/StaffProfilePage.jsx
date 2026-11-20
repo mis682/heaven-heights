@@ -626,6 +626,9 @@ export default function StaffProfilePage() {
           <Field label="Salary Deduction">
             <input type="number" min={0} value={form.salaryDeduction} onChange={(e) => updateField("salaryDeduction", e.target.value)} className="input" placeholder="0" />
           </Field>
+          <Field label="Total Days in Month">
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{daysInCurrentMonth}</p>
+          </Field>
           <Field label="Rate">
             <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.rate}</p>
           </Field>
