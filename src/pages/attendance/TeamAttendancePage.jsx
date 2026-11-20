@@ -43,8 +43,8 @@ function presentPercent(days) {
 const OVERRIDE_STATUS_OPTIONS = ["P", "A", "HD", "SP", "ML", "H", "L", "EC"];
 
 export default function TeamAttendancePage() {
-  const { user } = useAuth();
-  const isAdmin = user?.role === "Admin";
+  const { user, hasPermission } = useAuth();
+  const canOverride = hasPermission("attendance", "edit");
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
@@ -78,7 +78,7 @@ export default function TeamAttendancePage() {
   const MENU_WIDTH = 180;
   const MENU_HEIGHT = 380;
   const openMenu = (e, row, d) => {
-    if (!isAdmin) return;
+    if (!canOverride) return;
     e.preventDefault();
     const x = Math.min(e.clientX, window.innerWidth - MENU_WIDTH - 8);
     const y = Math.min(e.clientY, window.innerHeight - MENU_HEIGHT - 8);
@@ -129,7 +129,7 @@ export default function TeamAttendancePage() {
       <PageHeader
         title="Team Attendance"
         subtitle={
-          isAdmin
+          canOverride
             ? "Pehla scan Punch In, aakhri scan Punch Out — beech ke scans ignore hote hain. Kisi bhi din ke status par right-click karke manually edit kar sakte hain."
             : "Pehla scan Punch In, aakhri scan Punch Out — beech ke scans ignore hote hain."
         }
@@ -251,7 +251,7 @@ export default function TeamAttendancePage() {
                               : STATUS_META[d.status].label
                           }
                           className={`inline-flex w-6 h-6 rounded-full ${STATUS_META[d.status].className} text-white items-center justify-center text-[10px] font-bold cursor-pointer ${
-                            isAdmin ? "cursor-context-menu" : ""
+                            canOverride ? "cursor-context-menu" : ""
                           } ${d.overridden ? "ring-2 ring-offset-1 dark:ring-offset-gray-800 ring-gray-400" : ""}`}
                         >
                           {d.status}
