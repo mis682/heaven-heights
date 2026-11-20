@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, User, Save, BadgeCheck, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import ThemedSelect from "../../components/ThemedSelect";
+import Time12hInput from "../../components/Time12hInput";
 import { getStaffProfile, updateStaffProfile, lookupPincode } from "../../api/staffProfile";
 import { getTeamAttendanceSummary } from "../../api/attendanceScan";
 import { useAuth } from "../../context/AuthContext";
@@ -11,6 +12,30 @@ import { alertMessage } from "../../utils/confirmDialog";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
+}
+
+// Parses a "hh:mm AM/PM" string (same format Time12hInput produces) into
+// minutes since midnight, for computing shift duration.
+function parseTime12h(value) {
+  const m = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(value || "");
+  if (!m) return null;
+  let hour = Number(m[1]) % 12;
+  if (m[3].toUpperCase() === "PM") hour += 12;
+  return hour * 60 + Number(m[2]);
+}
+
+// Shift Duration, auto-derived from Punch In/Out Time — not stored, so it
+// can never go stale relative to the two times it's computed from. Wraps
+// past midnight (e.g. 10 PM - 6 AM is an 8-hour night shift, not negative).
+function shiftDurationLabel(punchInTime, punchOutTime) {
+  const inMinutes = parseTime12h(punchInTime);
+  const outMinutes = parseTime12h(punchOutTime);
+  if (inMinutes === null || outMinutes === null) return "—";
+  let diff = outMinutes - inMinutes;
+  if (diff <= 0) diff += 24 * 60;
+  const hours = Math.floor(diff / 60);
+  const minutes = diff % 60;
+  return minutes === 0 ? `${hours} hour${hours === 1 ? "" : "s"}` : `${hours} hr ${minutes} min`;
 }
 
 const MONTH_NAMES = [
@@ -159,6 +184,8 @@ const EMPTY_DETAILS = {
   maritalStatus: "",
   emergencyContactName: "",
   emergencyContactPhone: "",
+  scheduledPunchInTime: "",
+  scheduledPunchOutTime: "",
   currentPinCode: "",
   currentAddressLine: "",
   currentCity: "",
@@ -228,6 +255,8 @@ export default function StaffProfilePage() {
         maritalStatus: p.maritalStatus || "",
         emergencyContactName: p.emergencyContactName || "",
         emergencyContactPhone: p.emergencyContactPhone || "",
+        scheduledPunchInTime: p.scheduledPunchInTime || "",
+        scheduledPunchOutTime: p.scheduledPunchOutTime || "",
         currentPinCode: p.currentPinCode || "",
         currentAddressLine: p.currentAddressLine || "",
         currentCity: p.currentCity || "",
@@ -415,6 +444,20 @@ export default function StaffProfilePage() {
               className="input"
               placeholder="+91 XXXXX XXXXX"
             />
+          </Field>
+        </Section>
+
+        <Section title="Shift Timing">
+          <Field label="Punch In Time">
+            <Time12hInput value={form.scheduledPunchInTime} onChange={(v) => updateField("scheduledPunchInTime", v)} />
+          </Field>
+          <Field label="Punch Out Time">
+            <Time12hInput value={form.scheduledPunchOutTime} onChange={(v) => updateField("scheduledPunchOutTime", v)} />
+          </Field>
+          <Field label="Duration">
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">
+              {shiftDurationLabel(form.scheduledPunchInTime, form.scheduledPunchOutTime)}
+            </p>
           </Field>
         </Section>
 
