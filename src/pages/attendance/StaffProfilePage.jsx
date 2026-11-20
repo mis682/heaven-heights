@@ -606,6 +606,15 @@ export default function StaffProfilePage() {
             {/* Auto-calculated once the formula is finalized — placeholder for now. */}
             <p className="input flex items-center text-gray-500 dark:text-gray-400">—</p>
           </Field>
+          <Field label="HRA">
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">—</p>
+          </Field>
+          <Field label="Salary Payable">
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">—</p>
+          </Field>
+          <Field label="Total CTC">
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">—</p>
+          </Field>
         </Section>
       </div>
     </div>
