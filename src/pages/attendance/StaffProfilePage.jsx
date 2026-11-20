@@ -52,6 +52,8 @@ const LEDGER_STATUS_META = {
   SP: { label: "Single Punch", dot: "bg-amber-500", text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/10" },
   ML: { label: "Monthly Leave", dot: "bg-teal-500", text: "text-teal-700 dark:text-teal-400", bg: "bg-teal-50 dark:bg-teal-900/10" },
   H: { label: "Holiday", dot: "bg-purple-500", text: "text-purple-700 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-900/10" },
+  L: { label: "Late", dot: "bg-yellow-500", text: "text-yellow-700 dark:text-yellow-400", bg: "bg-yellow-50 dark:bg-yellow-900/10" },
+  EC: { label: "Early Checkout", dot: "bg-orange-500", text: "text-orange-700 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-900/10" },
 };
 
 function formatTime(iso) {
@@ -376,7 +378,7 @@ export default function StaffProfilePage() {
         </div>
 
         {monthStats && (
-          <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-3 mt-5 pt-5 border-t border-gray-100 dark:border-gray-700">
+          <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-10 gap-3 mt-5 pt-5 border-t border-gray-100 dark:border-gray-700">
             {[
               { label: "Present %", value: `${monthStats.presentPercent}%`, color: "text-heading dark:text-gray-100" },
               { label: "Present", value: monthStats.totalPresent, color: "text-green-600 dark:text-green-400" },
@@ -385,6 +387,8 @@ export default function StaffProfilePage() {
               { label: "Single Punch", value: monthStats.totalSinglePunch, color: "text-amber-600 dark:text-amber-400" },
               { label: "Holiday", value: monthStats.totalHoliday, color: "text-purple-600 dark:text-purple-400" },
               { label: "Monthly Leave", value: monthStats.totalMonthlyLeave, color: "text-teal-600 dark:text-teal-400" },
+              { label: "Late", value: monthStats.totalLate, color: "text-yellow-600 dark:text-yellow-400" },
+              { label: "Early Checkout", value: monthStats.totalEarlyCheckout, color: "text-orange-600 dark:text-orange-400" },
               { label: "Payable Days", value: monthStats.payableDays, color: "text-heading dark:text-gray-100" },
             ].map((s) => (
               <div key={s.label} className="text-center">

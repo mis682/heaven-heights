@@ -29,6 +29,8 @@ const STATUS_META = {
   SP: { label: "Single Punch", className: "bg-amber-500" },
   ML: { label: "Monthly Leave", className: "bg-teal-500" },
   H: { label: "Holiday", className: "bg-purple-500" },
+  L: { label: "Late", className: "bg-yellow-500" },
+  EC: { label: "Early Checkout", className: "bg-orange-500" },
 };
 
 function presentPercent(days) {
@@ -38,7 +40,7 @@ function presentPercent(days) {
   return Math.round((presentCount / relevant.length) * 100);
 }
 
-const OVERRIDE_STATUS_OPTIONS = ["P", "A", "HD", "SP", "ML", "H"];
+const OVERRIDE_STATUS_OPTIONS = ["P", "A", "HD", "SP", "ML", "H", "L", "EC"];
 
 export default function TeamAttendancePage() {
   const { user } = useAuth();
@@ -74,7 +76,7 @@ export default function TeamAttendancePage() {
   }, [month, year, search]);
 
   const MENU_WIDTH = 180;
-  const MENU_HEIGHT = 320;
+  const MENU_HEIGHT = 380;
   const openMenu = (e, row, d) => {
     if (!isAdmin) return;
     e.preventDefault();
@@ -120,7 +122,7 @@ export default function TeamAttendancePage() {
     [data.daysInMonth, year, month]
   );
 
-  const colSpan = 10 + data.daysInMonth;
+  const colSpan = 12 + data.daysInMonth;
 
   return (
     <div>
@@ -199,6 +201,8 @@ export default function TeamAttendancePage() {
               <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[80px]">Half Day</th>
               <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[80px]">Holiday</th>
               <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[100px]">Monthly Leave</th>
+              <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[70px]">Late</th>
+              <th className="px-3 py-2.5 text-center font-medium text-gray-500 dark:text-gray-400 min-w-[110px]">Early Checkout</th>
             </tr>
           </thead>
           <tbody>
@@ -265,6 +269,8 @@ export default function TeamAttendancePage() {
                   <td className="px-3 py-2 text-center font-medium text-blue-600 dark:text-blue-400">{row.totalHalfDay}</td>
                   <td className="px-3 py-2 text-center font-medium text-purple-600 dark:text-purple-400">{row.totalHoliday}</td>
                   <td className="px-3 py-2 text-center font-medium text-teal-600 dark:text-teal-400">{row.totalMonthlyLeave}</td>
+                  <td className="px-3 py-2 text-center font-medium text-yellow-600 dark:text-yellow-400">{row.totalLate}</td>
+                  <td className="px-3 py-2 text-center font-medium text-orange-600 dark:text-orange-400">{row.totalEarlyCheckout}</td>
                 </tr>
               ))
             )}
