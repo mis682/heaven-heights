@@ -38,6 +38,29 @@ function shiftDurationLabel(punchInTime, punchOutTime) {
   return minutes === 0 ? `${hours} hour${hours === 1 ? "" : "s"}` : `${hours} hr ${minutes} min`;
 }
 
+// Same statutory rates as Payroll's computePayrollRow (backend/utils/payrollCalc.js)
+// — kept in sync with that file since both are reverse-engineered from the
+// same manual salary sheet. Here there's no attendance to prorate against,
+// so Gross is simply Salary + Petrol for a full month.
+const PF_RATE = 0.12;
+const ESIC_EMPLOYEE_RATE = 0.0075;
+const ESIC_EMPLOYER_RATE = 0.0325;
+const ESIC_GROSS_CEILING = 21000;
+
+function computeSalaryBreakdown({ salary, petrol, basic, salaryDeduction, daysInMonth }) {
+  const gross = salary + petrol;
+  const rate = daysInMonth > 0 ? Math.round(gross / daysInMonth) : 0;
+  const hra = gross - basic;
+  const employeePf = Math.round(basic * PF_RATE);
+  const employerPf = Math.round(basic * PF_RATE);
+  const esicApplies = gross <= ESIC_GROSS_CEILING;
+  const employeeEsic = esicApplies ? Math.round(gross * ESIC_EMPLOYEE_RATE) : 0;
+  const employerEsic = esicApplies ? Math.round(gross * ESIC_EMPLOYER_RATE) : 0;
+  const salaryPayable = gross - employeePf - employeeEsic - salaryDeduction;
+  const totalCtc = salary + petrol + employerPf + employerEsic;
+  return { gross, rate, hra, employeePf, employerPf, employeeEsic, employerEsic, salaryPayable, totalCtc };
+}
+
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -208,12 +231,7 @@ const EMPTY_DETAILS = {
   bankIfscCode: "",
   salary: 0,
   basicSalary: 0,
-  grossSalary: 0,
   petrolAmount: 0,
-  employeePf: 0,
-  employerPf: 0,
-  employeeEsic: 0,
-  employerEsic: 0,
   salaryDeduction: 0,
 };
 
@@ -279,12 +297,7 @@ export default function StaffProfilePage() {
         bankIfscCode: p.bankIfscCode || "",
         salary: p.salary || 0,
         basicSalary: p.basicSalary || 0,
-        grossSalary: p.grossSalary || 0,
         petrolAmount: p.petrolAmount || 0,
-        employeePf: p.employeePf || 0,
-        employerPf: p.employerPf || 0,
-        employeeEsic: p.employeeEsic || 0,
-        employerEsic: p.employerEsic || 0,
         salaryDeduction: p.salaryDeduction || 0,
       });
       setLoading(false);
@@ -333,6 +346,16 @@ export default function StaffProfilePage() {
   if (!staff) {
     return <p className="text-sm text-subtext dark:text-gray-400">Staff not found.</p>;
   }
+
+  const now = new Date();
+  const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const salaryBreakdown = computeSalaryBreakdown({
+    salary: Number(form.salary) || 0,
+    petrol: Number(form.petrolAmount) || 0,
+    basic: Number(form.basicSalary) || 0,
+    salaryDeduction: Number(form.salaryDeduction) || 0,
+    daysInMonth: daysInCurrentMonth,
+  });
 
   return (
     <div>
@@ -576,7 +599,7 @@ export default function StaffProfilePage() {
             <input type="number" min={0} value={form.basicSalary} onChange={(e) => updateField("basicSalary", e.target.value)} className="input" />
           </Field>
           <Field label="Gross Salary">
-            <input type="number" min={0} value={form.grossSalary} onChange={(e) => updateField("grossSalary", e.target.value)} className="input" />
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.gross}</p>
           </Field>
           <Field label="Petrol Amount">
             <input type="number" min={0} value={form.petrolAmount} onChange={(e) => updateField("petrolAmount", e.target.value)} className="input" />
@@ -588,32 +611,31 @@ export default function StaffProfilePage() {
             <input value={form.esicNumber} onChange={(e) => updateField("esicNumber", e.target.value)} className="input" />
           </Field>
           <Field label="Employee PF">
-            <input type="number" min={0} value={form.employeePf} onChange={(e) => updateField("employeePf", e.target.value)} className="input" />
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.employeePf}</p>
           </Field>
           <Field label="Employer PF">
-            <input type="number" min={0} value={form.employerPf} onChange={(e) => updateField("employerPf", e.target.value)} className="input" />
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.employerPf}</p>
           </Field>
           <Field label="Employee ESIC">
-            <input type="number" min={0} value={form.employeeEsic} onChange={(e) => updateField("employeeEsic", e.target.value)} className="input" />
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.employeeEsic}</p>
           </Field>
           <Field label="Employer ESIC">
-            <input type="number" min={0} value={form.employerEsic} onChange={(e) => updateField("employerEsic", e.target.value)} className="input" />
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.employerEsic}</p>
           </Field>
           <Field label="Salary Deduction">
             <input type="number" min={0} value={form.salaryDeduction} onChange={(e) => updateField("salaryDeduction", e.target.value)} className="input" placeholder="0" />
           </Field>
           <Field label="Rate">
-            {/* Auto-calculated once the formula is finalized — placeholder for now. */}
-            <p className="input flex items-center text-gray-500 dark:text-gray-400">—</p>
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.rate}</p>
           </Field>
           <Field label="HRA">
-            <p className="input flex items-center text-gray-500 dark:text-gray-400">—</p>
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.hra}</p>
           </Field>
           <Field label="Salary Payable">
-            <p className="input flex items-center text-gray-500 dark:text-gray-400">—</p>
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.salaryPayable}</p>
           </Field>
           <Field label="Total CTC">
-            <p className="input flex items-center text-gray-500 dark:text-gray-400">—</p>
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.totalCtc}</p>
           </Field>
         </Section>
       </div>
