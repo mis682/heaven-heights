@@ -23,7 +23,7 @@ const COLUMNS = [
   { key: "presentDays", label: "Present" },
   { key: "leaveAllowed", label: "Leave" },
   { key: "overTime", label: "OT" },
-  { key: "totalDays", label: "Tot. Days" },
+  { key: "totalDays", label: "Total Payable Days" },
   { key: "rate", label: "Rate" },
   { key: "gross", label: "Gross" },
   { key: "hra", label: "HRA" },
