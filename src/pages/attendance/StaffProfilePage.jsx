@@ -602,6 +602,10 @@ export default function StaffProfilePage() {
           <Field label="Salary Deduction">
             <input type="number" min={0} value={form.salaryDeduction} onChange={(e) => updateField("salaryDeduction", e.target.value)} className="input" placeholder="0" />
           </Field>
+          <Field label="Rate">
+            {/* Auto-calculated once the formula is finalized — placeholder for now. */}
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">—</p>
+          </Field>
         </Section>
       </div>
     </div>
