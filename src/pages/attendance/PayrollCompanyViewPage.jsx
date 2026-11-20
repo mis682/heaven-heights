@@ -19,7 +19,7 @@ const COLUMNS = [
   { key: "bankIfscCode", label: "IFSC" },
   { key: "salary", label: "Salary" },
   { key: "petrol", label: "Petrol" },
-  { key: "daysInMonth", label: "Days" },
+  { key: "daysInMonth", label: "Days in Month" },
   { key: "presentDays", label: "Present" },
   { key: "leaveAllowed", label: "Leave" },
   { key: "overTime", label: "OT" },
