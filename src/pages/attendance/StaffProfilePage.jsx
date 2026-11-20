@@ -41,15 +41,16 @@ function shiftDurationLabel(punchInTime, punchOutTime) {
 // Same statutory rates as Payroll's computePayrollRow (backend/utils/payrollCalc.js)
 // — kept in sync with that file since both are reverse-engineered from the
 // same manual salary sheet. Here there's no attendance to prorate against,
-// so Gross is simply Salary + Petrol for a full month.
+// so Rate is a flat (Salary + Petrol) / days-in-month for a full month, and
+// everything else is derived from Rate -> Gross in that order.
 const PF_RATE = 0.12;
 const ESIC_EMPLOYEE_RATE = 0.0075;
 const ESIC_EMPLOYER_RATE = 0.0325;
 const ESIC_GROSS_CEILING = 21000;
 
 function computeSalaryBreakdown({ salary, petrol, basic, salaryDeduction, daysInMonth }) {
-  const gross = salary + petrol;
-  const rate = daysInMonth > 0 ? Math.round(gross / daysInMonth) : 0;
+  const rate = daysInMonth > 0 ? Math.round((salary + petrol) / daysInMonth) : 0;
+  const gross = daysInMonth * rate;
   const hra = gross - basic;
   const employeePf = Math.round(basic * PF_RATE);
   const employerPf = Math.round(basic * PF_RATE);
