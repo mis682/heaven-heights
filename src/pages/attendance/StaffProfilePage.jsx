@@ -46,7 +46,6 @@ function shiftDurationLabel(punchInTime, punchOutTime) {
 const PF_RATE = 0.12;
 const ESIC_EMPLOYEE_RATE = 0.0075;
 const ESIC_EMPLOYER_RATE = 0.0325;
-const ESIC_GROSS_CEILING = 21000;
 
 function computeSalaryBreakdown({ salary, petrol, basic, salaryDeduction, daysInMonth }) {
   const rate = daysInMonth > 0 ? Math.round((salary + petrol) / daysInMonth) : 0;
@@ -54,9 +53,8 @@ function computeSalaryBreakdown({ salary, petrol, basic, salaryDeduction, daysIn
   const hra = gross - basic;
   const employeePf = Math.round(basic * PF_RATE);
   const employerPf = Math.round(basic * PF_RATE);
-  const esicApplies = gross <= ESIC_GROSS_CEILING;
-  const employeeEsic = esicApplies ? Math.round(gross * ESIC_EMPLOYEE_RATE) : 0;
-  const employerEsic = esicApplies ? Math.round(gross * ESIC_EMPLOYER_RATE) : 0;
+  const employeeEsic = Math.round(gross * ESIC_EMPLOYEE_RATE);
+  const employerEsic = Math.round(gross * ESIC_EMPLOYER_RATE);
   const salaryPayable = gross - employeePf - employeeEsic - salaryDeduction;
   const totalCtc = salary + petrol + employerPf + employerEsic;
   return { gross, rate, hra, employeePf, employerPf, employeeEsic, employerEsic, salaryPayable, totalCtc };
