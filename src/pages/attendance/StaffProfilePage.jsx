@@ -475,10 +475,24 @@ export default function StaffProfilePage() {
 
         <Section title="Shift Timing">
           <Field label="Punch In Time">
-            <Time12hInput value={form.scheduledPunchInTime} onChange={(v) => updateField("scheduledPunchInTime", v)} />
+            <div className="flex items-center gap-2">
+              <Time12hInput value={form.scheduledPunchInTime} onChange={(v) => updateField("scheduledPunchInTime", v)} />
+              {form.scheduledPunchInTime && (
+                <button type="button" onClick={() => updateField("scheduledPunchInTime", "")} className="text-xs text-red-500 hover:underline">
+                  Clear
+                </button>
+              )}
+            </div>
           </Field>
           <Field label="Punch Out Time">
-            <Time12hInput value={form.scheduledPunchOutTime} onChange={(v) => updateField("scheduledPunchOutTime", v)} />
+            <div className="flex items-center gap-2">
+              <Time12hInput value={form.scheduledPunchOutTime} onChange={(v) => updateField("scheduledPunchOutTime", v)} />
+              {form.scheduledPunchOutTime && (
+                <button type="button" onClick={() => updateField("scheduledPunchOutTime", "")} className="text-xs text-red-500 hover:underline">
+                  Clear
+                </button>
+              )}
+            </div>
           </Field>
           <Field label="Duration">
             <p className="input flex items-center text-gray-500 dark:text-gray-400">
