@@ -7,8 +7,8 @@ import Modal from "../../components/Modal";
 import PunchCell from "../../components/PunchCell";
 import {
   getTeamAttendanceSummary,
-  teamAttendanceExportExcelUrl,
-  teamAttendanceExportPdfUrl,
+  downloadTeamAttendanceExcel,
+  downloadTeamAttendancePdf,
   setAttendanceOverride,
   clearAttendanceOverride,
   listAttendanceScanRecords,
@@ -154,18 +154,20 @@ export default function TeamAttendancePage() {
           options={[year - 1, year, year + 1].map((y) => ({ value: y, label: String(y) }))}
           className="px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 flex items-center justify-between gap-2 w-auto"
         />
-        <a
-          href={teamAttendanceExportPdfUrl({ month, year, search: search || undefined })}
+        <button
+          type="button"
+          onClick={() => downloadTeamAttendancePdf({ month, year, search: search || undefined })}
           className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <FileText size={15} /> Export PDF
-        </a>
-        <a
-          href={teamAttendanceExportExcelUrl({ month, year, search: search || undefined })}
+        </button>
+        <button
+          type="button"
+          onClick={() => downloadTeamAttendanceExcel({ month, year, search: search || undefined })}
           className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <FileSpreadsheet size={15} /> Export Excel
-        </a>
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-4 mb-4">
