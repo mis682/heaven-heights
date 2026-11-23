@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link as LinkIcon, ExternalLink } from "lucide-react";
 import PageHeader from "../../components/PageHeader";
 import FilterBar, { Select } from "../../components/FilterBar";
 import DataTable from "../../components/DataTable";
@@ -11,6 +12,14 @@ export default function VehicleRideSubmissionsPage() {
   const [date, setDate] = useState("");
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const formUrl = `${window.location.origin}/daily-basis-ride-form`;
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(formUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     getVehicleMeta().then((m) => setVehicles(m.vehicles));
@@ -30,7 +39,12 @@ export default function VehicleRideSubmissionsPage() {
 
   return (
     <div>
-      <PageHeader title="Daily Basis Ride — Submissions" subtitle="Every logged ride, with the distance covered each time." />
+      <PageHeader
+        title="Daily Basis Ride — Submissions"
+        subtitle="Every logged ride, with the distance covered each time."
+        secondaryActions={[{ label: copied ? "Link Copied!" : "Copy Form Link", icon: <LinkIcon size={16} />, onClick: copyLink }]}
+        primaryAction={{ label: "Open Form", icon: <ExternalLink size={16} />, onClick: () => window.open("/daily-basis-ride-form", "_blank") }}
+      />
 
       <FilterBar
         search=""
