@@ -82,11 +82,11 @@ export default function DailyBasisRidePublicForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Meter Reading</label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               required
-              min={0}
               value={startReading}
-              onChange={(e) => setStartReading(e.target.value)}
+              onChange={(e) => setStartReading(e.target.value.replace(/\D/g, ""))}
               className="input"
               placeholder="0"
             />
@@ -95,11 +95,11 @@ export default function DailyBasisRidePublicForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ending Meter Reading</label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               required
-              min={0}
               value={endReading}
-              onChange={(e) => setEndReading(e.target.value)}
+              onChange={(e) => setEndReading(e.target.value.replace(/\D/g, ""))}
               className="input"
               placeholder="0"
             />
