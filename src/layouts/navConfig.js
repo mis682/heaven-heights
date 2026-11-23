@@ -1446,6 +1446,14 @@ export const NAV_SECTIONS = [
         ],
       },
       {
+        label: "Vehicle Management",
+        permission: { module: "vehicleManagement", action: "view" },
+        children: [
+          { label: "Daily Basis Ride — Submissions", path: "/vehicle/daily-basis-ride/submissions" },
+          { label: "Vehicle Daily Report", path: "/vehicle/daily-basis-ride/daily-report" },
+        ],
+      },
+      {
         label: "Maintenance Uniform",
         permission: { module: "maintenanceUniform", action: "view" },
         children: [

@@ -139,6 +139,10 @@ import PayrollCompanyViewPage from "./pages/attendance/PayrollCompanyViewPage";
 import MaintenanceStaffInOutPublicForm from "./pages/security/MaintenanceStaffInOutPublicForm";
 import MaintenanceStaffInOutSubmissionsPage from "./pages/security/MaintenanceStaffInOutSubmissionsPage";
 
+import DailyBasisRidePublicForm from "./pages/vehicle/DailyBasisRidePublicForm";
+import VehicleRideSubmissionsPage from "./pages/vehicle/VehicleRideSubmissionsPage";
+import VehicleDailyReportPage from "./pages/vehicle/VehicleDailyReportPage";
+
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
 import PrintIdCardsPage from "./pages/admin/PrintIdCardsPage";
@@ -174,6 +178,7 @@ export default function App() {
       <Route path="/pm-eden-garden-form/:formNumber" element={<PmEdenGardenPublicForm />} />
       <Route path="/pm-garden-city-form/:formNumber" element={<PmGardenCityPublicForm />} />
       <Route path="/maintenance-uniform-form" element={<MaintenanceUniformPublicForm />} />
+      <Route path="/daily-basis-ride-form" element={<DailyBasisRidePublicForm />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -960,6 +965,23 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "maintenanceStaffInOut", action: "view" }}>
               <MaintenanceStaffInOutSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/vehicle/daily-basis-ride/submissions"
+          element={
+            <RequireAuth permission={{ module: "vehicleManagement", action: "view" }}>
+              <VehicleRideSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/vehicle/daily-basis-ride/daily-report"
+          element={
+            <RequireAuth permission={{ module: "vehicleManagement", action: "view" }}>
+              <VehicleDailyReportPage />
             </RequireAuth>
           }
         />
