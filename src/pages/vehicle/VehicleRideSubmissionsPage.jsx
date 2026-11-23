@@ -9,12 +9,14 @@ import ThemedDatePicker from "../../components/ThemedDatePicker";
 import { getVehicleMeta, listVehicleSubmissions, updateVehicleRide, deleteVehicleRide } from "../../api/vehicle";
 import { confirmAction } from "../../utils/confirmDialog";
 import { useAuth } from "../../context/AuthContext";
+import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
 
 export default function VehicleRideSubmissionsPage() {
   const { hasPermission } = useAuth();
   const canEdit = hasPermission("vehicleManagement", "edit");
   const canDelete = hasPermission("vehicleManagement", "delete");
   const [vehicles, setVehicles] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [vehicleName, setVehicleName] = useState("");
   const [date, setDate] = useState("");
   const [rides, setRides] = useState([]);
@@ -31,7 +33,10 @@ export default function VehicleRideSubmissionsPage() {
   };
 
   useEffect(() => {
-    getVehicleMeta().then((m) => setVehicles(m.vehicles));
+    getVehicleMeta().then((m) => {
+      setVehicles(m.vehicles);
+      setDepartments(m.departments);
+    });
   }, []);
 
   const load = async () => {
@@ -83,6 +88,7 @@ export default function VehicleRideSubmissionsPage() {
         columns={[
           { key: "createdAt", header: "Timestamp", render: (r) => new Date(r.createdAt).toLocaleString() },
           { key: "vehicleName", header: "Vehicle Name" },
+          { key: "department", header: "Department" },
           { key: "date", header: "Date" },
           { key: "startReading", header: "Start Meter Reading" },
           { key: "endReading", header: "Ending Meter Reading" },
@@ -121,12 +127,18 @@ export default function VehicleRideSubmissionsPage() {
           <div className="space-y-2 text-sm">
             <ViewRow label="Timestamp" value={new Date(viewing.createdAt).toLocaleString()} />
             <ViewRow label="Vehicle Name" value={viewing.vehicleName} />
+            <ViewRow label="Department" value={viewing.department} />
             <ViewRow label="Date" value={viewing.date} />
             <ViewRow label="Start Meter Reading" value={viewing.startReading} />
             <ViewRow label="Ending Meter Reading" value={viewing.endReading} />
             <ViewRow label="Distance" value={`${viewing.distance} km`} />
             <ViewRow label="Reason" value={viewing.reason} />
             <ViewRow label="Person Name" value={viewing.personName} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <PhotoThumb label="Start Meter Reading" url={viewing.startReadingPhotoUrl} />
+            <PhotoThumb label="Ending Meter Reading" url={viewing.endReadingPhotoUrl} />
           </div>
         </Modal>
       )}
@@ -135,6 +147,7 @@ export default function VehicleRideSubmissionsPage() {
         <EditRideModal
           ride={editing}
           vehicles={vehicles}
+          departments={departments}
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
@@ -155,8 +168,19 @@ function ViewRow({ label, value }) {
   );
 }
 
-function EditRideModal({ ride, vehicles, onClose, onSaved }) {
+function PhotoThumb({ label, url }) {
+  if (!url) return null;
+  return (
+    <a href={url} target="_blank" rel="noreferrer" className="block">
+      <img src={cloudinaryThumbnailUrl(url, 300)} alt={label} className="w-full h-28 object-cover rounded-xl border border-gray-200 dark:border-gray-700" />
+      <p className="text-xs text-subtext dark:text-gray-400 text-center mt-1">{label}</p>
+    </a>
+  );
+}
+
+function EditRideModal({ ride, vehicles, departments, onClose, onSaved }) {
   const [vehicleName, setVehicleName] = useState(ride.vehicleName);
+  const [department, setDepartment] = useState(ride.department);
   const [date, setDate] = useState(ride.date);
   const [startReading, setStartReading] = useState(String(ride.startReading));
   const [endReading, setEndReading] = useState(String(ride.endReading));
@@ -174,7 +198,7 @@ function EditRideModal({ ride, vehicles, onClose, onSaved }) {
     }
     setSaving(true);
     try {
-      await updateVehicleRide(ride._id, { vehicleName, date, startReading, endReading, reason, personName });
+      await updateVehicleRide(ride._id, { vehicleName, department, date, startReading, endReading, reason, personName });
       onSaved();
     } catch (err) {
       setError(err.response?.data?.message || "Saving failed — please try again.");
@@ -188,6 +212,9 @@ function EditRideModal({ ride, vehicles, onClose, onSaved }) {
       <form onSubmit={submit} className="space-y-3">
         <Field label="Vehicle Name">
           <ThemedSelect value={vehicleName} onChange={setVehicleName} options={vehicles} placeholder="Select vehicle" />
+        </Field>
+        <Field label="Department">
+          <ThemedSelect value={department} onChange={setDepartment} options={departments} placeholder="Select department" />
         </Field>
         <Field label="Date">
           <ThemedDatePicker value={date} onChange={setDate} />

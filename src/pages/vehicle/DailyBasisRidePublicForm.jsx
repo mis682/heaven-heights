@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Car, CheckCircle2 } from "lucide-react";
 import ThemedSelect from "../../components/ThemedSelect";
 import ThemedDatePicker from "../../components/ThemedDatePicker";
+import CameraCapture from "../../components/CameraCapture";
 import { getVehicleMeta, createVehicleRide } from "../../api/vehicle";
 
 function today() {
@@ -10,10 +11,14 @@ function today() {
 
 export default function DailyBasisRidePublicForm() {
   const [vehicles, setVehicles] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [vehicleName, setVehicleName] = useState("");
+  const [department, setDepartment] = useState("");
   const [date, setDate] = useState(today());
   const [startReading, setStartReading] = useState("");
+  const [startCapture, setStartCapture] = useState(null);
   const [endReading, setEndReading] = useState("");
+  const [endCapture, setEndCapture] = useState(null);
   const [reason, setReason] = useState("");
   const [personName, setPersonName] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -21,7 +26,10 @@ export default function DailyBasisRidePublicForm() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getVehicleMeta().then((m) => setVehicles(m.vehicles));
+    getVehicleMeta().then((m) => {
+      setVehicles(m.vehicles);
+      setDepartments(m.departments);
+    });
   }, []);
 
   if (done) {
@@ -46,8 +54,19 @@ export default function DailyBasisRidePublicForm() {
       return;
     }
     setSubmitting(true);
+    const form = new FormData();
+    form.append("vehicleName", vehicleName);
+    form.append("department", department);
+    form.append("date", date);
+    form.append("startReading", startReading);
+    form.append("startReadingPhoto", startCapture.file);
+    form.append("endReading", endReading);
+    form.append("endReadingPhoto", endCapture.file);
+    form.append("reason", reason);
+    form.append("personName", personName);
+
     try {
-      await createVehicleRide({ vehicleName, date, startReading, endReading, reason, personName });
+      await createVehicleRide(form);
       setDone(true);
     } catch (err) {
       setError(err.response?.data?.message || "Submission failed. Please try again.");
@@ -55,6 +74,9 @@ export default function DailyBasisRidePublicForm() {
       setSubmitting(false);
     }
   };
+
+  const canSubmit =
+    vehicleName && department && date && startReading && startCapture && endReading && endCapture && reason && personName && !submitting;
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] dark:bg-gray-900 px-4 py-8">
@@ -76,6 +98,11 @@ export default function DailyBasisRidePublicForm() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+            <ThemedSelect required value={department} onChange={setDepartment} options={departments} placeholder="Select department" />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
             <ThemedDatePicker value={date} onChange={setDate} />
           </div>
@@ -92,6 +119,7 @@ export default function DailyBasisRidePublicForm() {
               placeholder="0"
             />
           </div>
+          <CameraCapture label="Start Meter Reading photo" onCapture={setStartCapture} />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ending Meter Reading</label>
@@ -105,6 +133,7 @@ export default function DailyBasisRidePublicForm() {
               placeholder="0"
             />
           </div>
+          <CameraCapture label="Ending Meter Reading photo" onCapture={setEndCapture} />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
@@ -134,7 +163,7 @@ export default function DailyBasisRidePublicForm() {
 
           <button
             type="submit"
-            disabled={!vehicleName || !date || !startReading || !endReading || !reason || !personName || submitting}
+            disabled={!canSubmit}
             className="w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit"}
