@@ -14,6 +14,7 @@ export default function DailyBasisRidePublicForm() {
   const [date, setDate] = useState(today());
   const [startReading, setStartReading] = useState("");
   const [endReading, setEndReading] = useState("");
+  const [reason, setReason] = useState("");
   const [personName, setPersonName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -46,7 +47,7 @@ export default function DailyBasisRidePublicForm() {
     }
     setSubmitting(true);
     try {
-      await createVehicleRide({ vehicleName, date, startReading, endReading, personName });
+      await createVehicleRide({ vehicleName, date, startReading, endReading, reason, personName });
       setDone(true);
     } catch (err) {
       setError(err.response?.data?.message || "Submission failed. Please try again.");
@@ -106,6 +107,18 @@ export default function DailyBasisRidePublicForm() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
+            <input
+              type="text"
+              required
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="input"
+              placeholder="Reason for this ride"
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Person Name</label>
             <input
               type="text"
@@ -121,7 +134,7 @@ export default function DailyBasisRidePublicForm() {
 
           <button
             type="submit"
-            disabled={!vehicleName || !date || !startReading || !endReading || !personName || submitting}
+            disabled={!vehicleName || !date || !startReading || !endReading || !reason || !personName || submitting}
             className="w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-orange-600 disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit"}

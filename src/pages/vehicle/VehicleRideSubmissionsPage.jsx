@@ -87,6 +87,7 @@ export default function VehicleRideSubmissionsPage() {
           { key: "startReading", header: "Start Meter Reading" },
           { key: "endReading", header: "Ending Meter Reading" },
           { key: "distance", header: "Distance (km)" },
+          { key: "reason", header: "Reason" },
           { key: "personName", header: "Person Name" },
           {
             key: "actions",
@@ -124,6 +125,7 @@ export default function VehicleRideSubmissionsPage() {
             <ViewRow label="Start Meter Reading" value={viewing.startReading} />
             <ViewRow label="Ending Meter Reading" value={viewing.endReading} />
             <ViewRow label="Distance" value={`${viewing.distance} km`} />
+            <ViewRow label="Reason" value={viewing.reason} />
             <ViewRow label="Person Name" value={viewing.personName} />
           </div>
         </Modal>
@@ -158,6 +160,7 @@ function EditRideModal({ ride, vehicles, onClose, onSaved }) {
   const [date, setDate] = useState(ride.date);
   const [startReading, setStartReading] = useState(String(ride.startReading));
   const [endReading, setEndReading] = useState(String(ride.endReading));
+  const [reason, setReason] = useState(ride.reason);
   const [personName, setPersonName] = useState(ride.personName);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -171,7 +174,7 @@ function EditRideModal({ ride, vehicles, onClose, onSaved }) {
     }
     setSaving(true);
     try {
-      await updateVehicleRide(ride._id, { vehicleName, date, startReading, endReading, personName });
+      await updateVehicleRide(ride._id, { vehicleName, date, startReading, endReading, reason, personName });
       onSaved();
     } catch (err) {
       setError(err.response?.data?.message || "Saving failed — please try again.");
@@ -208,6 +211,9 @@ function EditRideModal({ ride, vehicles, onClose, onSaved }) {
             onChange={(e) => setEndReading(e.target.value.replace(/\D/g, ""))}
             className="input"
           />
+        </Field>
+        <Field label="Reason">
+          <input required value={reason} onChange={(e) => setReason(e.target.value)} className="input" />
         </Field>
         <Field label="Person Name">
           <input required value={personName} onChange={(e) => setPersonName(e.target.value)} className="input" />
