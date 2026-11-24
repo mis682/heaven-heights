@@ -9,7 +9,7 @@ function normalizeOptions(options) {
   }));
 }
 
-export default function ThemedSelect({ value, onChange, options, placeholder, required, className, disabled, creatable }) {
+export default function ThemedSelect({ value, onChange, options, placeholder, required, className, disabled, creatable, multiple }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [coords, setCoords] = useState(null);
@@ -17,12 +17,24 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
   const popupRef = useRef(null);
 
   const normalized = normalizeOptions(options || []);
-  const selected = normalized.find((o) => String(o.value) === String(value));
+  // In multiple mode `value` is an array of selected values instead of a
+  // single one — the trigger shows the one label directly, or "N selected"
+  // once more than one is picked, since there's no room to list them all.
+  const selectedValues = multiple ? (Array.isArray(value) ? value : []) : [];
+  const selected = multiple ? null : normalized.find((o) => String(o.value) === String(value));
   // A freshly-created value (picked via "+ Add") won't be in `options` yet
   // — it only shows up there once the parent's data reloads after saving —
   // so falling back to `value` itself keeps it visible instead of the
   // trigger silently reverting to the placeholder.
-  const displayLabel = selected ? selected.label : value || null;
+  const displayLabel = multiple
+    ? selectedValues.length === 0
+      ? null
+      : selectedValues.length === 1
+      ? normalized.find((o) => String(o.value) === String(selectedValues[0]))?.label ?? selectedValues[0]
+      : `${selectedValues.length} selected`
+    : selected
+    ? selected.label
+    : value || null;
   const showSearch = creatable || normalized.length > 8;
   const filtered = showSearch
     ? normalized.filter((o) => String(o.label).toLowerCase().includes(search.toLowerCase()))
@@ -89,6 +101,16 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
   }, [open]);
 
   const pick = (opt) => {
+    if (multiple) {
+      if (opt.value === "") {
+        onChange?.([]);
+        setOpen(false);
+        return;
+      }
+      const exists = selectedValues.some((v) => String(v) === String(opt.value));
+      onChange?.(exists ? selectedValues.filter((v) => String(v) !== String(opt.value)) : [...selectedValues, opt.value]);
+      return; // stays open so more than one option can be picked in a row
+    }
     onChange?.(opt.value);
     setOpen(false);
   };
@@ -110,7 +132,15 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
         </span>
         <ChevronDown size={14} className={`shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      {required && <input tabIndex={-1} value={value || ""} onChange={() => {}} required className="sr-only" />}
+      {required && (
+        <input
+          tabIndex={-1}
+          value={multiple ? (selectedValues.length ? "x" : "") : value || ""}
+          onChange={() => {}}
+          required
+          className="sr-only"
+        />
+      )}
 
       {open &&
         coords &&
@@ -157,7 +187,9 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
                 </button>
               )}
               {filtered.map((opt) => {
-                const isSelected = String(opt.value) === String(value);
+                const isSelected = multiple
+                  ? selectedValues.some((v) => String(v) === String(opt.value))
+                  : String(opt.value) === String(value);
                 return (
                   <button
                     key={opt.value}

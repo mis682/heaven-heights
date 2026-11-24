@@ -33,8 +33,8 @@ export default function MaintenanceStaffPage() {
   const [meta, setMeta] = useState({ sites: [], designations: [], companies: [] });
   const [stats, setStats] = useState({ total: 0, byDesignation: [] });
   const [search, setSearch] = useState("");
-  const [siteFilter, setSiteFilter] = useState("");
-  const [designationFilter, setDesignationFilter] = useState("");
+  const [siteFilter, setSiteFilter] = useState([]);
+  const [designationFilter, setDesignationFilter] = useState([]);
   const [companyFilter, setCompanyFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
@@ -52,7 +52,7 @@ export default function MaintenanceStaffPage() {
   const loadStats = async () => {
     const requestId = ++statsRequestIdRef.current;
     const res = await getMaintenanceStaffStats({
-      siteName: siteFilter || undefined,
+      siteName: siteFilter.length ? siteFilter : undefined,
       companyName: companyFilter || undefined,
       search: search || undefined,
     });
@@ -65,8 +65,8 @@ export default function MaintenanceStaffPage() {
     const requestId = ++requestIdRef.current;
     setLoading(true);
     const data = await listMaintenanceStaff({
-      siteName: siteFilter || undefined,
-      designation: designationFilter || undefined,
+      siteName: siteFilter.length ? siteFilter : undefined,
+      designation: designationFilter.length ? designationFilter : undefined,
       companyName: companyFilter || undefined,
       search: search || undefined,
     });
@@ -127,8 +127,8 @@ export default function MaintenanceStaffPage() {
           value={stats.total}
           icon={<Users size={16} />}
           color="orange"
-          active={!designationFilter}
-          onClick={() => setDesignationFilter("")}
+          active={designationFilter.length === 0}
+          onClick={() => setDesignationFilter([])}
         />
         {stats.byDesignation.map((d, idx) => {
           const Icon = DESIGNATION_ICONS[d.designation] || Users;
@@ -139,8 +139,8 @@ export default function MaintenanceStaffPage() {
               value={d.count}
               icon={<Icon size={16} />}
               color={DESIGNATION_COLORS[idx % DESIGNATION_COLORS.length]}
-              active={designationFilter === d.designation}
-              onClick={() => setDesignationFilter(d.designation)}
+              active={designationFilter.length === 1 && designationFilter[0] === d.designation}
+              onClick={() => setDesignationFilter([d.designation])}
             />
           );
         })}
@@ -152,8 +152,8 @@ export default function MaintenanceStaffPage() {
         placeholder="Search by name, employee ID, site or designation..."
         filters={
           <>
-            <Select value={siteFilter} onChange={setSiteFilter} options={meta.sites} placeholder="All sites" />
-            <Select value={designationFilter} onChange={setDesignationFilter} options={meta.designations} placeholder="All designations" />
+            <Select multiple value={siteFilter} onChange={setSiteFilter} options={meta.sites} placeholder="All sites" />
+            <Select multiple value={designationFilter} onChange={setDesignationFilter} options={meta.designations} placeholder="All designations" />
             <Select value={companyFilter} onChange={setCompanyFilter} options={meta.companies} placeholder="All companies" />
           </>
         }
