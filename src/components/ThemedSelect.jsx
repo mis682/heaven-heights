@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, Check, Search } from "lucide-react";
+import { ChevronDown, Check, Search, X } from "lucide-react";
 
 function normalizeOptions(options) {
   return options.map((opt) => ({
@@ -130,6 +130,20 @@ export default function ThemedSelect({ value, onChange, options, placeholder, re
         <span className={`truncate ${!displayLabel ? "text-gray-400 dark:text-gray-500" : ""}`}>
           {displayLabel || placeholder || "Select"}
         </span>
+        {multiple && selectedValues.length > 0 && (
+          <span
+            role="button"
+            tabIndex={-1}
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange?.([]);
+            }}
+            className="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            title="Clear selection"
+          >
+            <X size={14} />
+          </span>
+        )}
         <ChevronDown size={14} className={`shrink-0 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {required && (
