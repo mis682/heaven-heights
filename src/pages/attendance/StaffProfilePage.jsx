@@ -6,6 +6,7 @@ import ThemedSelect from "../../components/ThemedSelect";
 import Time12hInput from "../../components/Time12hInput";
 import { getStaffProfile, updateStaffProfile, lookupPincode } from "../../api/staffProfile";
 import { getTeamAttendanceSummary } from "../../api/attendanceScan";
+import { getOvertimeList } from "../../api/attendanceOvertime";
 import { useAuth } from "../../context/AuthContext";
 import { cloudinaryThumbnailUrl } from "../../utils/cloudinary";
 import { alertMessage } from "../../utils/confirmDialog";
@@ -38,18 +39,19 @@ function shiftDurationLabel(punchInTime, punchOutTime) {
   return minutes === 0 ? `${hours} hour${hours === 1 ? "" : "s"}` : `${hours} hr ${minutes} min`;
 }
 
-// Same statutory rates as Payroll's computePayrollRow (backend/utils/payrollCalc.js)
-// — kept in sync with that file since both are reverse-engineered from the
-// same manual salary sheet. Here there's no attendance to prorate against,
-// so Rate is a flat (Salary + Petrol) / days-in-month for a full month, and
-// everything else is derived from Rate -> Gross in that order.
+// Same statutory rates and formula as Payroll's computePayrollRow
+// (backend/utils/payrollCalc.js) — kept in sync since both are
+// reverse-engineered from the same manual salary sheet. Rate is a flat
+// (Salary + Petrol) / days-in-current-month figure, but Gross is prorated
+// by Total Payable Days (this month's attendance + overtime so far), not
+// the full days-in-month.
 const PF_RATE = 0.12;
 const ESIC_EMPLOYEE_RATE = 0.0075;
 const ESIC_EMPLOYER_RATE = 0.0325;
 
-function computeSalaryBreakdown({ salary, petrol, basic, salaryDeduction, daysInMonth }) {
+function computeSalaryBreakdown({ salary, petrol, basic, salaryDeduction, daysInMonth, payableDays }) {
   const rate = daysInMonth > 0 ? Math.round((salary + petrol) / daysInMonth) : 0;
-  const gross = daysInMonth * rate;
+  const gross = Math.round(payableDays * rate);
   const hra = gross - basic;
   const employeePf = Math.round(basic * PF_RATE);
   const employerPf = Math.round(basic * PF_RATE);
@@ -260,6 +262,7 @@ export default function StaffProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [monthStats, setMonthStats] = useState(null);
+  const [overtimeDays, setOvertimeDays] = useState(0);
   const [showLedger, setShowLedger] = useState(false);
 
   useEffect(() => {
@@ -305,9 +308,15 @@ export default function StaffProfilePage() {
 
   useEffect(() => {
     const now = new Date();
-    getTeamAttendanceSummary({ month: now.getMonth() + 1, year: now.getFullYear(), search: employeeId }).then((res) => {
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+    getTeamAttendanceSummary({ month, year, search: employeeId }).then((res) => {
       const row = res.rows.find((r) => r.employeeId === employeeId);
       setMonthStats(row || null);
+    });
+    getOvertimeList({ month, year, search: employeeId }).then((res) => {
+      const row = res.rows.find((r) => r.employeeId === employeeId);
+      setOvertimeDays(row?.days || 0);
     });
   }, [employeeId]);
 
@@ -348,12 +357,14 @@ export default function StaffProfilePage() {
 
   const now = new Date();
   const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const totalPayableDays = Math.round(((monthStats?.payableDays || 0) + overtimeDays) * 100) / 100;
   const salaryBreakdown = computeSalaryBreakdown({
     salary: Number(form.salary) || 0,
     petrol: Number(form.petrolAmount) || 0,
     basic: Number(form.basicSalary) || 0,
     salaryDeduction: Number(form.salaryDeduction) || 0,
     daysInMonth: daysInCurrentMonth,
+    payableDays: totalPayableDays,
   });
 
   return (
@@ -640,6 +651,9 @@ export default function StaffProfilePage() {
           </Field>
           <Field label="Total Days in Month">
             <p className="input flex items-center text-gray-500 dark:text-gray-400">{daysInCurrentMonth}</p>
+          </Field>
+          <Field label="Total Payable Days">
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{totalPayableDays}</p>
           </Field>
           <Field label="Rate">
             <p className="input flex items-center text-gray-500 dark:text-gray-400">{salaryBreakdown.rate}</p>
