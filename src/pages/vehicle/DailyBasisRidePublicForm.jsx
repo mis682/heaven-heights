@@ -119,7 +119,7 @@ export default function DailyBasisRidePublicForm() {
               placeholder="0"
             />
           </div>
-          <CameraCapture label="Start Meter Reading photo" onCapture={setStartCapture} />
+          <CameraCapture label="Start Meter Reading photo" onCapture={setStartCapture} allowGallery />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ending Meter Reading</label>
@@ -133,7 +133,7 @@ export default function DailyBasisRidePublicForm() {
               placeholder="0"
             />
           </div>
-          <CameraCapture label="Ending Meter Reading photo" onCapture={setEndCapture} />
+          <CameraCapture label="Ending Meter Reading photo" onCapture={setEndCapture} allowGallery />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
