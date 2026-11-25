@@ -44,6 +44,7 @@ const STATUS_STYLES = {
   In: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
   Out: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
   "Blur video": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+  "Photos not provided": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
 };
 
 export default function StatusPill({ status }) {
