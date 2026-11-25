@@ -1461,6 +1461,7 @@ export const NAV_SECTIONS = [
         children: [
           { label: "Daily Basis Ride — Submissions", path: "/vehicle/daily-basis-ride/submissions" },
           { label: "Vehicle Daily Report", path: "/vehicle/daily-basis-ride/daily-report" },
+          { label: "Documentation", path: "/vehicle/documentation" },
         ],
       },
       {

@@ -996,6 +996,14 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route
+          path="/vehicle/documentation"
+          element={
+            <RequireAuth permission={{ module: "vehicleManagement", action: "view" }}>
+              <ComingSoon title="Documentation" />
+            </RequireAuth>
+          }
+        />
 
         <Route
           path="/admin/maintenance-staff"
