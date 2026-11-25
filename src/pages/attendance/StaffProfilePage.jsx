@@ -652,6 +652,9 @@ export default function StaffProfilePage() {
           <Field label="Total Days in Month">
             <p className="input flex items-center text-gray-500 dark:text-gray-400">{daysInCurrentMonth}</p>
           </Field>
+          <Field label="Overtime">
+            <p className="input flex items-center text-gray-500 dark:text-gray-400">{overtimeDays}</p>
+          </Field>
           <Field label="Total Payable Days">
             <p className="input flex items-center text-gray-500 dark:text-gray-400">{totalPayableDays}</p>
           </Field>
