@@ -138,6 +138,8 @@ import PayrollPage from "./pages/attendance/PayrollPage";
 import PayrollCompanyViewPage from "./pages/attendance/PayrollCompanyViewPage";
 import MaintenanceStaffInOutPublicForm from "./pages/security/MaintenanceStaffInOutPublicForm";
 import MaintenanceStaffInOutSubmissionsPage from "./pages/security/MaintenanceStaffInOutSubmissionsPage";
+import KeyHandoverPublicForm from "./pages/security/KeyHandoverPublicForm";
+import KeyHandoverSubmissionsPage from "./pages/security/KeyHandoverSubmissionsPage";
 
 import DailyBasisRidePublicForm from "./pages/vehicle/DailyBasisRidePublicForm";
 import VehicleRideSubmissionsPage from "./pages/vehicle/VehicleRideSubmissionsPage";
@@ -179,6 +181,7 @@ export default function App() {
       <Route path="/pm-garden-city-form/:formNumber" element={<PmGardenCityPublicForm />} />
       <Route path="/maintenance-uniform-form" element={<MaintenanceUniformPublicForm />} />
       <Route path="/daily-basis-ride-form" element={<DailyBasisRidePublicForm />} />
+      <Route path="/key-handover-form" element={<KeyHandoverPublicForm />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -965,6 +968,14 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "maintenanceStaffInOut", action: "view" }}>
               <MaintenanceStaffInOutSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/security/key-handover/submissions"
+          element={
+            <RequireAuth permission={{ module: "keyHandover", action: "view" }}>
+              <KeyHandoverSubmissionsPage />
             </RequireAuth>
           }
         />

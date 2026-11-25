@@ -1428,8 +1428,18 @@ export const NAV_SECTIONS = [
           },
           {
             label: "Maintenance Staff In/Out",
-            path: "/security/maintenance-staff-in-out/submissions",
-            permission: { module: "maintenanceStaffInOut", action: "view" },
+            children: [
+              {
+                label: "Submissions",
+                path: "/security/maintenance-staff-in-out/submissions",
+                permission: { module: "maintenanceStaffInOut", action: "view" },
+              },
+              {
+                label: "Key Handover",
+                path: "/security/key-handover/submissions",
+                permission: { module: "keyHandover", action: "view" },
+              },
+            ],
           },
         ],
       },
