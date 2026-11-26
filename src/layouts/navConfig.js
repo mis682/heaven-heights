@@ -766,6 +766,62 @@ export const HYDE_PARK_FORMS = [
   },
 ];
 
+// Silver Estate Office forms — same shape as HYDE_PARK_FORMS (all plain
+// photo checkpoints, no select/text rows). Mirrors
+// backend/constants/silverEstateOfficeForms.js — kept in sync manually.
+export const SILVER_ESTATE_OFFICE_FORMS = [
+  {
+    formNumber: 1,
+    label: "Silver Estate Office Cleaning Form",
+    checkpoints: [
+      "Parking Area -1",
+      "Parking Area -2",
+      "Parking Area  Dustbin",
+      "Reception Mirror-1",
+      "Reception Mirror-2",
+      "Reception Desk",
+      "Reception Area-1",
+      "Reception Area-2",
+      "Reception Dustbin",
+      "Reception  Area  Dustbin",
+      "Guest Area-1",
+      "Guest Area-2",
+      "Guest Area Miror-1",
+      "Guest Area Miror-2",
+      "Guest Area Miror-3",
+      "Guest Area Dustbin",
+      "Kitchen",
+      "Kitchen Bartan",
+      "Kitchen Dustbin",
+      "Conference Mirror-1",
+      "Conference Mirror-2",
+      "Conference Area-1",
+      "Conference Area-2",
+      "Conference Dustbin",
+      "Ajay Sir Cabin-1",
+      "Ajay Sir Cabin-2",
+      "Ajay Sir Cabin Dustbin",
+      "Washroom-1  Cleaning",
+      "Washroom-2  Cleaning",
+      "Washroom-1  Dustbin",
+      "Washroom-2  Dustbin",
+      "Sales Area-1",
+      "Sales Area-2",
+      "Sales Area Dustbin",
+      "Lunch Room Cleaning",
+      "Lunch Room Dustbin",
+      "Aditya Sir Cabin",
+      "Aditya Sir Cabin Dustbin",
+      "Bade Sir Cabin",
+      "Bade Sir Desk",
+      "Bade Sir Cabin  Dustbin",
+      "Workstation Area-1",
+      "Workstation Area-2",
+      "Workstation Area Dustbin",
+    ].map((label) => ({ label, type: "photo" })),
+  },
+];
+
 // Neo Meridian forms — same shape as REGAL_GARDEN_FORMS. Mirrors
 // backend/constants/neoMeridianForms.js — kept in sync manually.
 export const NEO_MERIDIAN_FORMS = [
@@ -1282,6 +1338,20 @@ export const NAV_SECTIONS = [
               },
               { label: "Admin Report View", path: "/housekeeping/hyde-park/admin-report" },
               { label: "KPI", path: "/housekeeping/hyde-park/kpi" },
+            ],
+          },
+          {
+            label: "Silver Estate Office",
+            permission: { module: "silverEstateOffice", action: "view" },
+            children: [
+              { label: "Submissions", path: "/housekeeping/silver-estate-office/submissions" },
+              {
+                label: "Daily Report",
+                path: "/housekeeping/silver-estate-office/daily-report",
+                permission: { module: "silverEstateOffice", action: "edit" },
+              },
+              { label: "Admin Report View", path: "/housekeeping/silver-estate-office/admin-report" },
+              { label: "KPI", path: "/housekeeping/silver-estate-office/kpi" },
             ],
           },
         ],

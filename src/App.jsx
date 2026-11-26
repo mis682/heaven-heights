@@ -76,6 +76,11 @@ import HydeParkSubmissionsPage from "./pages/housekeeping/HydeParkSubmissionsPag
 import HydeParkDailyReportPage from "./pages/housekeeping/HydeParkDailyReportPage";
 import HydeParkAdminReportPage from "./pages/housekeeping/HydeParkAdminReportPage";
 import HydeParkKpiPage from "./pages/housekeeping/HydeParkKpiPage";
+import SilverEstateOfficePublicForm from "./pages/housekeeping/SilverEstateOfficePublicForm";
+import SilverEstateOfficeSubmissionsPage from "./pages/housekeeping/SilverEstateOfficeSubmissionsPage";
+import SilverEstateOfficeDailyReportPage from "./pages/housekeeping/SilverEstateOfficeDailyReportPage";
+import SilverEstateOfficeAdminReportPage from "./pages/housekeeping/SilverEstateOfficeAdminReportPage";
+import SilverEstateOfficeKpiPage from "./pages/housekeeping/SilverEstateOfficeKpiPage";
 import HeadOfficePublicForm from "./pages/housekeeping/HeadOfficePublicForm";
 import HeadOfficeSubmissionsPage from "./pages/housekeeping/HeadOfficeSubmissionsPage";
 import HeadOfficeDailyReportPage from "./pages/housekeeping/HeadOfficeDailyReportPage";
@@ -175,6 +180,7 @@ export default function App() {
       <Route path="/sample-apartment-form/:formNumber" element={<SampleApartmentPublicForm />} />
       <Route path="/weekly-update-form/:formNumber" element={<WeeklyUpdatePublicForm />} />
       <Route path="/hyde-park-form/:formNumber" element={<HydeParkPublicForm />} />
+      <Route path="/silver-estate-office-form/:formNumber" element={<SilverEstateOfficePublicForm />} />
       <Route path="/property-management-form" element={<PropertyManagementFormEntry />} />
       <Route path="/pm-regal-garden-form/:formNumber" element={<PmRegalGardenPublicForm />} />
       <Route path="/pm-eden-garden-form/:formNumber" element={<PmEdenGardenPublicForm />} />
@@ -685,6 +691,39 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "hydePark", action: "view" }}>
               <HydeParkKpiPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/housekeeping/silver-estate-office/submissions"
+          element={
+            <RequireAuth permission={{ module: "silverEstateOffice", action: "view" }}>
+              <SilverEstateOfficeSubmissionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/silver-estate-office/daily-report"
+          element={
+            <RequireAuth permission={{ module: "silverEstateOffice", action: "edit" }}>
+              <SilverEstateOfficeDailyReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/silver-estate-office/admin-report"
+          element={
+            <RequireAuth permission={{ module: "silverEstateOffice", action: "view" }}>
+              <SilverEstateOfficeAdminReportPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/housekeeping/silver-estate-office/kpi"
+          element={
+            <RequireAuth permission={{ module: "silverEstateOffice", action: "view" }}>
+              <SilverEstateOfficeKpiPage />
             </RequireAuth>
           }
         />
