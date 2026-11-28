@@ -150,6 +150,9 @@ import DailyBasisRidePublicForm from "./pages/vehicle/DailyBasisRidePublicForm";
 import VehicleRideSubmissionsPage from "./pages/vehicle/VehicleRideSubmissionsPage";
 import VehicleDailyReportPage from "./pages/vehicle/VehicleDailyReportPage";
 
+import MaintenanceAuditPublicForm from "./pages/maintenanceAudit/MaintenanceAuditPublicForm";
+import MaintenanceAuditSubmissionsPage from "./pages/maintenanceAudit/MaintenanceAuditSubmissionsPage";
+
 import GuardMasterDataPage from "./pages/admin/GuardMasterDataPage";
 import MaintenanceStaffPage from "./pages/admin/MaintenanceStaffPage";
 import PrintIdCardsPage from "./pages/admin/PrintIdCardsPage";
@@ -188,6 +191,7 @@ export default function App() {
       <Route path="/maintenance-uniform-form" element={<MaintenanceUniformPublicForm />} />
       <Route path="/daily-basis-ride-form" element={<DailyBasisRidePublicForm />} />
       <Route path="/key-handover-form" element={<KeyHandoverPublicForm />} />
+      <Route path="/maintenance-audit-form" element={<MaintenanceAuditPublicForm />} />
 
       <Route path="/login" element={<Login />} />
 
@@ -1040,6 +1044,15 @@ export default function App() {
           element={
             <RequireAuth permission={{ module: "vehicleManagement", action: "view" }}>
               <ComingSoon title="Documentation" />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/maintenance-audit/submissions"
+          element={
+            <RequireAuth permission={{ module: "maintenanceAudit", action: "view" }}>
+              <MaintenanceAuditSubmissionsPage />
             </RequireAuth>
           }
         />

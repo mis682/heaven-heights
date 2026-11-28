@@ -1535,6 +1535,11 @@ export const NAV_SECTIONS = [
         ],
       },
       {
+        label: "Maintenance Audit",
+        permission: { module: "maintenanceAudit", action: "view" },
+        children: [{ label: "Submissions", path: "/maintenance-audit/submissions" }],
+      },
+      {
         label: "Maintenance Uniform",
         permission: { module: "maintenanceUniform", action: "view" },
         children: [
