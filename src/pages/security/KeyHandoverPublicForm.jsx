@@ -17,12 +17,15 @@ function nowTime() {
   return `${hour12}:${String(d.getMinutes()).padStart(2, "0")} ${period}`;
 }
 
+const OTHER = "Other";
+
 export default function KeyHandoverPublicForm() {
   const [vehicles, setVehicles] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [vehicle, setVehicle] = useState("");
   const [date, setDate] = useState(today());
-  const [driverName, setDriverName] = useState("");
+  const [driverSelect, setDriverSelect] = useState("");
+  const [customDriverName, setCustomDriverName] = useState("");
   const [inTime, setInTime] = useState(nowTime());
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -48,6 +51,8 @@ export default function KeyHandoverPublicForm() {
       </div>
     );
   }
+
+  const driverName = driverSelect === OTHER ? customDriverName.trim() : driverSelect;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -91,8 +96,22 @@ export default function KeyHandoverPublicForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Driver Name</label>
-            <ThemedSelect required value={driverName} onChange={setDriverName} options={drivers} placeholder="Select driver" />
+            <ThemedSelect required value={driverSelect} onChange={setDriverSelect} options={[...drivers, OTHER]} placeholder="Select driver" />
           </div>
+
+          {driverSelect === OTHER && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Driver Name (Other)</label>
+              <input
+                type="text"
+                required
+                value={customDriverName}
+                onChange={(e) => setCustomDriverName(e.target.value)}
+                placeholder="Enter driver name"
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">In-Time</label>

@@ -16,6 +16,8 @@ import {
   deleteKeyHandover,
 } from "../../api/keyHandover";
 
+const OTHER = "Other";
+
 function Field({ label, children }) {
   return (
     <div>
@@ -49,10 +51,14 @@ function ViewModal({ entry, onClose }) {
 function EditModal({ entry, vehicles, drivers, onClose, onSaved }) {
   const [vehicle, setVehicle] = useState(entry.vehicle);
   const [date, setDate] = useState(entry.date);
-  const [driverName, setDriverName] = useState(entry.driverName);
+  const isKnownDriver = drivers.includes(entry.driverName);
+  const [driverSelect, setDriverSelect] = useState(isKnownDriver ? entry.driverName : OTHER);
+  const [customDriverName, setCustomDriverName] = useState(isKnownDriver ? "" : entry.driverName);
   const [inTime, setInTime] = useState(entry.inTime);
   const [outTime, setOutTime] = useState(entry.outTime);
   const [saving, setSaving] = useState(false);
+
+  const driverName = driverSelect === OTHER ? customDriverName.trim() : driverSelect;
 
   const save = async () => {
     setSaving(true);
@@ -78,8 +84,19 @@ function EditModal({ entry, vehicles, drivers, onClose, onSaved }) {
           <ThemedDatePicker value={date} onChange={setDate} />
         </Field>
         <Field label="Driver Name">
-          <ThemedSelect value={driverName} onChange={setDriverName} options={drivers} placeholder="Select driver" />
+          <ThemedSelect value={driverSelect} onChange={setDriverSelect} options={[...drivers, OTHER]} placeholder="Select driver" />
         </Field>
+        {driverSelect === OTHER && (
+          <Field label="Driver Name (Other)">
+            <input
+              type="text"
+              value={customDriverName}
+              onChange={(e) => setCustomDriverName(e.target.value)}
+              placeholder="Enter driver name"
+              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+          </Field>
+        )}
         <Field label="In-Time">
           <Time12hInput value={inTime} onChange={setInTime} />
         </Field>
